@@ -35,7 +35,7 @@ tv_info <- sapply(1:length(s), function(i) {
 })
 
 # fit dwlb
-res <- dwlb(times = t[-c(1:(n/2))], preds = preds, s = s, verbose.plot = FALSE)
+res <- dwlb_min(times = t[-c(1:(n/2))], preds = preds, s = s, verbose.plot = FALSE)
 
 # witness lower bounds
 plot(s,unlist(lapply(wit_info, function(l) sum(l$wF))),type="b",col="red",ylim=c(0, n/2))

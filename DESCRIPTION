@@ -1,14 +1,15 @@
 Package: dWit
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Distributional Witness algorithms
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
+Author: Loris Michel, Jeffrey Naef
+Maintainer: Loris Michel <michel@stat.math.ethz.ch>
+Description: R library for algorithms around the notion of distributional witnesses
     Use four spaces when indenting paragraphs within the Description.
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
+Depends: data.table
 Suggests: 
     testthat
 RoxygenNote: 6.1.1

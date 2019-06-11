@@ -10,7 +10,7 @@
 #' @param alpha the level of the type 1 error control.
 #' @import data.table
 #' @export
-dwlb <- function(times,
+dwlb_min <- function(times,
                  preds,
                  s,
                  verbose.plot = FALSE,
@@ -31,9 +31,8 @@ dwlb <- function(times,
   data.table::setkey(ranks.table, "rank")
 
   TVhat_asymptoticFs<-c()
-  TVhat_asymptoticGs<-c()
-  lambdahat_asymptoticFs<-c()
-  lambdahat_asymptoticGs<-c()
+  lambdahat_asymptoticFs <- rep(2, length(s))
+
   i <- 0
 
 
@@ -60,43 +59,24 @@ dwlb <- function(times,
 
     # define the beta bounding sequence from the asymptotic result & the standard deviation
     # TODO: check these values
-    x_alpha <- -log(-log(1-alpha)/2)
-    betaFs <- sqrt(2 * log(log(m))) + (log(log(log(m)))-log(pi)+2*x_alpha) / (2 * sqrt(2 * log(log(m))))
-    betaGs <- sqrt(2 * log(log(n))) + (log(log(log(n)))-log(pi)+2*x_alpha) / (2 * sqrt(2 * log(log(n))))
-
-    sd0 <- sapply(1:nrow(ranks.table), function(z) sqrt(z * (m /(m+n)) * (n /(m+n)) * ((m+n-z)/(m+n-1))))
-
-    # centered stats
-    centered.statFs <- (V_zFs - sapply(1:nrow(ranks.table), function(z) (z*m)/(m+n)))
-    centered.statGs <- (V_zGs - sapply(1:nrow(ranks.table), function(z) (z*n)/(m+n)))
-
-
-    # summary plot
-    if (verbose.plot) {
-      plot(1:nrow(ranks.table),centered.statFs,type="l",ylab="V_z - (zm)/(m+n)",ylim=c(min(c(betaFs*sd0,centered.statFs)), max(c(betaFs*sd0,centered.statFs))),
-           font.main=3,font.lab=3,
-           xlab="z (order statistics of combined sample)",main="Observed Maximal Discrepancies")
-      lines(1:nrow(ranks.table), betaFs*sd0,col="black",lty=2)
-      lines(1:nrow(ranks.table), centered.statGs,col="brown")
-      lines(1:nrow(ranks.table), betaGs*sd0,col="brown",lty=2)
+    m.loc <- m
+    while (lambdahat_asymptoticFs[i] > 0) {
+      x_alpha <- -log(-log(1-alpha)/2)
+      betaFs <- sqrt(2 * log(log(m.loc))) + (log(log(log(m.loc)))-log(pi)+2*x_alpha) / (2 * sqrt(2 * log(log(m.loc))))
+      centered.statFs <- (V_zFs - sapply(1:nrow(ranks.table), function(z) (z*m.loc)/(m.loc+n)))
+      sd0 <- sapply(1:nrow(ranks.table), function(z) sqrt(z * (m.loc /(m+n)) * (n /(m.loc+n)) * ((m.loc+n-z)/(m.loc+n-1))))
+      lambdahat_asymptoticFs[i] <- max(max(centered.statFs - betaFs * sd0), 0)
+      m.loc <- m.loc - 1
     }
 
-
-    # correction term applied
-    lambdahat_asymptoticFs[i] <- max(max(centered.statFs - betaFs * sd0), 0) / (n/(m+n))
-    lambdahat_asymptoticGs[i] <- max(max(centered.statGs - betaGs * sd0), 0) / (m/(m+n))
+    #betaGs <- sqrt(2 * log(log(n))) + (log(log(log(n)))-log(pi)+2*x_alpha) / (2 * sqrt(2 * log(log(n))))
 
     TVhat_asymptoticFs[i]<-invertBinMeanTest(n.success = lambdahat_asymptoticFs[i],
                                              n.trial = m+n,alpha = alpha,
                                              rule.of.three = T)/ss
-    TVhat_asymptoticGs[i]<-invertBinMeanTest(n.success = lambdahat_asymptoticGs[i],
-                                             n.trial = n+m,alpha = alpha,
-                                             rule.of.three = T)/(1-ss)
   }
 
   return(list(lambdahat_asymptoticFs = lambdahat_asymptoticFs,
-              lambdahat_asymptoticGs = lambdahat_asymptoticGs,
-              TVhat_asymptoticFs = TVhat_asymptoticFs,
-              TVhat_asymptoticGs = TVhat_asymptoticGs))
+              TVhat_asymptoticFs = TVhat_asymptoticFs))
 }
 
