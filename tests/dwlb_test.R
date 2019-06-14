@@ -35,15 +35,24 @@ tv_info <- sapply(1:length(s), function(i) {
 })
 
 # fit dwlb
-res <- dwlb_min(times = t[-c(1:(n/2))], preds = preds, s = s, verbose.plot = FALSE)
+res1 <- dwlb(times = t[-c(1:(n/2))], preds = preds, s = s, verbose.plot = FALSE, type = "global null", use.correction.term = FALSE)
+res2 <- dwlb(times = t[-c(1:(n/2))], preds = preds, s = s, verbose.plot = FALSE, type = "global null", use.correction.term = TRUE)
+res3 <- dwlb(times = t[-c(1:(n/2))], preds = preds, s = s, verbose.plot = FALSE, type = "search")
 
 # witness lower bounds
 plot(s,unlist(lapply(wit_info, function(l) sum(l$wF))),type="b",col="red",ylim=c(0, n/2))
-lines(s, res$lambdahat_asymptoticFs,type="b")
+lines(s, res1$lambdahat_asymptoticFs,type="b")
+lines(s, res2$lambdahat_asymptoticFs,type="b",col="brown")
+lines(s, res3$lambdahat_asymptoticFs,type="b",col="blue")
 
 plot(s,unlist(lapply(wit_info, function(l) sum(l$wG))),type="b",col="red",ylim=c(0,n/2))
-lines(s, res$lambdahat_asymptoticGs,type="b")
+lines(s, res1$lambdahat_asymptoticGs,type="b")
+lines(s, res2$lambdahat_asymptoticGs,type="b",col="brown")
+lines(s, res3$lambdahat_asymptoticGs,type="b",col="blue")
 
 # tv lower bounds
 plot(s, tv_info, type="b",col="red",ylim=c(0,1))
-lines(s, res$TVhat_asymptoticFs,type="b")
+lines(s, res1$TVhat_asymptoticFs,type="b")
+lines(s, res2$TVhat_asymptoticFs,type="b",col="brown")
+lines(s, res3$TVhat_asymptoticFs,type="b",col="blue")
+
