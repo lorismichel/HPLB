@@ -1,6 +1,6 @@
 #' Distributional witnesses sampling
 #'@export
-dw_sampling <- function(x, f, g, seed = 0) {
+dWitSampling <- function(x, f, g, seed = 0) {
   if (!is.null(seed)) {
     set.seed(seed)
   }
