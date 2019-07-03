@@ -8,6 +8,8 @@ getTvLbDistanceMatrix(labels, ordering.array, alpha = 0.05,
   computation.type = "non-optimized")
 }
 \arguments{
+\item{labels}{the labels of the classes, should be encoded as 0-->nclass-1}
+
 \item{ordering.array}{array of size (nclass, nclass, nobs) such that the value (i,j,k) represents a propensity of beeing of class j instead of i for observation k.}
 
 \item{alpha}{type I error control}
