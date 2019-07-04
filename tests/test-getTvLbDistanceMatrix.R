@@ -57,3 +57,22 @@ par(mfrow=c(2,1))
 image(tv.dist)
 image(dist.mat)
 
+
+# real data
+data("iris")
+dim(iris)
+ind.train <- sample(1:nrow(iris), size = nrow(iris)/2, replace = FALSE)
+
+rf <- ranger::ranger(Species~., data = iris[ind.train, ], probability = TRUE)
+preds <- predict(rf, iris[-ind.train,])$predictions
+
+ar <- array(dim = c(3, 3, nrow(preds)))
+for (i in 1:3) {
+  for (j in 1:3) {
+    ar[i,j,] <- preds[,j] - preds[,i]
+  }
+}
+y <- factor(iris$Species)
+levels(y) <- c(0,1,2)
+dist.mat.iris <- getTvLbDistanceMatrix(labels = y[-ind.train], ordering.array = ar)
+dist.mat.iris
