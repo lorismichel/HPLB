@@ -6,9 +6,10 @@
 #'   a classifier, a regressor, a witness function from an MMD kernel or anything else.
 #' @param s a numeric value giving split points on t.
 #' @param alpha the level of the type 1 error control.
-#' @param estimator.type either "basic", "tv-search" or "wit-search"
+#' @param estimator.type either "basic", "tv-search", "wit-search", "binomial"
 #' @param tv.grid a grid of values for the search.
-#' @param direction which witness to estimatw.
+#' @param direction which witness to estimate.
+#' @param threshold this is the threshold used if missclassification error in used.
 #' @import data.table
 #' @export
 dWit <- function(t,
@@ -19,7 +20,8 @@ dWit <- function(t,
                  tv.grid            = seq(from = 0,
                                           to   = 1,
                                           by   = 0.01),
-                 direction          = rep("left", length(s))) {
+                 direction          = rep("left", length(s)),
+                 threshold          = 0.5) {
 
   # parameters checks
 
@@ -55,7 +57,7 @@ dWit <- function(t,
   }
 
   # test for the estimator type
-  if (!is.character(estimator.type) || !(estimator.type %in% c("basic", "tv-search", "wit-search"))) {
+  if (!is.character(estimator.type) || !(estimator.type %in% c("basic", "tv-search", "wit-search", "binomial"))) {
     stop("Invalid estimator type, please see ?dWit.")
   }
 
@@ -265,6 +267,9 @@ dWit <- function(t,
 
       # return the tv estimate
       tvhat[k] <- tv.cur
+    } else if (estimator.type == "binomial") {
+      obs <- mean((rho > threshold & t == 0) | (rho <= threshold & t == 1))
+      tvhat <- 1-2*(obs - 4/sqrt(length(rho)))
     }
   }
 
