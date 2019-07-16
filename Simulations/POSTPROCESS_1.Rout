@@ -1,0 +1,31 @@
+
+R version 3.6.1 (2019-07-05) -- "Action of the Toes"
+Copyright (C) 2019 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+Warning message:
+In libPIns(xLib2, beforeLib = .Library, msgTxt = paste("for Fedora",  :
+  .libPaths() contains no entries matching ‘/usr/local64.sfs/app/R/R-3.6.1-inst/library’
+> PATH.DATA <- "../Data/"
+> PATH.PLOTS <- "../Plots/"
+> load(paste0(PATH.DATA, "powerStudy.Rdata"))
+> 
+> png(filename = paste0(PATH.PLOTS,"sim1.png"))
+> plot(power.table$logn,power.table$loglambda,cex = power.table$power*2, pch=19,xlab="log(n)",ylab="-gamma*log(n)")
+Error in plot(power.table$logn, power.table$loglambda, cex = power.table$power *  : 
+  object 'power.table' not found
+Execution halted
