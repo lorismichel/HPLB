@@ -269,7 +269,7 @@ dWit <- function(t,
       tvhat[k] <- tv.cur
     } else if (estimator.type == "binomial") {
       obs <- mean((rho > threshold & t == 0) | (rho <= threshold & t == 1))
-      tvhat <- 1-2*(obs - 4/sqrt(length(rho)))
+      tvhat <- 1-2*(obs + 4/sqrt(length(rho)))
     }
   }
 
