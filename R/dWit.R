@@ -108,9 +108,10 @@ dWit <- function(t,
     }
 
     # define the function function V_z corresponding to m and z
-    V_zFs <- sapply(1:nrow(ranks.table), function(z) nrow(ranks.table[t <= s[k] & rank <= z]))
-    #V_zGs <- sapply(1:nrow(ranks.table), function(z) nrow(ranks.table[t > ss & rank <= z]))
-    V_zGs <- sapply(nrow(ranks.table):1, function(z) nrow(ranks.table[t > s[k] & rank >= z]))
+    V_zFs <- cumsum(ranks.table$t <= s[k])
+    V_zGs <- cumsum(rev(ranks.table$t > s[k]))
+    #V_zFs <- sapply(1:nrow(ranks.table), function(z) nrow(ranks.table[t <= s[k] & rank <= z]))
+    #V_zGs <- sapply(nrow(ranks.table):1, function(z) nrow(ranks.table[t > s[k] & rank >= z]))
 
     # branching on estimators
     if (estimator.type == "basic") {
