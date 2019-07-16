@@ -27,7 +27,7 @@ generateInputData <- function(n, lambda) {
 # params sims
 nrep <- 5
 grid.gamma <- rep(seq(0.1, 1.2, by = 0.1), nrep)
-grid.n <- rep(10^{2:3}, nrep)
+grid.n <- rep(10^{2:6}, nrep)
 grid <- expand.grid(grid.n, grid.gamma)
 
 # running simulations
@@ -38,7 +38,9 @@ res <- mcmapply(FUN = function(n, gamma) {
   tvhat <- rep(NA, 2)
   tvhat[1] <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "tv-search")$tvhat
   tvhat[2] <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
-  as.numeric(tvhat > 0)}, grid[,1], grid[,2], mc.cores = 30)
+  as.numeric(tvhat > 0)}, grid[,1], grid[,2], mc.cores = 20)
+
+print(dim(res))
 
 # gathering data
 power.data <- data.table(logn = log(grid[,1], base = 10), loglambda = -log(grid[,1], base = 10)*grid[,2], reject_search = res[1,], reject_binomial = res[2,])
