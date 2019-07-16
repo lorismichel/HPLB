@@ -41,7 +41,5 @@ res <- mcmapply(FUN = function(n, gamma) {
 # gathering data
 power.data <- data.table(logn = log(grid[,1], base = 10), loglambda = -log(grid[,1], base = 10)*grid[,2], reject = res)
 power.table <- power.data[,.(power = mean(reject)),by=c("logn","loglambda")]
-plot(power.table$logn,power.table$loglambda,cex = power.table$power*2,pch=19)
-abline(a = 0, b = -1,col="blue")
 
 save(power.data, file = paste0(PATH.SAVE, "powerStudy.Rdata"))
