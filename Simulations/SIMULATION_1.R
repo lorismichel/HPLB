@@ -26,8 +26,8 @@ generateInputData <- function(n, lambda) {
 # running simulations on clusters
 # params sims
 nrep <- 5
-grid.gamma <- rep(seq(0.1, 1, by = 0.1), nrep)
-grid.n <- rep(10^{2:5}, nrep)
+grid.gamma <- rep(seq(0.1, 1.2, by = 0.1), nrep)
+grid.n <- rep(10^{2:6}, nrep)
 grid <- expand.grid(grid.n, grid.gamma)
 
 # running simulations
@@ -44,4 +44,4 @@ power.table <- power.data[,.(power = mean(reject)),by=c("logn","loglambda")]
 plot(power.table$logn,power.table$loglambda,cex = power.table$power*2,pch=19)
 abline(a = 0, b = -1,col="blue")
 
-save(d, file = paste0(PATH.SAVE, "powerStudy.Rdata"))
+save(power.data, file = paste0(PATH.SAVE, "powerStudy.Rdata"))
