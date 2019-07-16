@@ -2,10 +2,10 @@
 # type: checking power by a loglog plot of sample size against contamination/tv
 
 ## saving paths
-PATH.SAVE = ""
+PATH.SAVE = "../Data/"
 ## requirements
 require(dWit)
-
+require(parallel)
 
 ## data generation & bayes ratio
 sampleExpContamination <- function(n, lambda) {
@@ -20,43 +20,23 @@ generateInputData <- function(n, lambda) {
   rho <- c(rho1, rho2)
   return(list(t = t, rho = rho))
 }
-inputs <- generateInputData(1000, lambda = 0.1)
 
-grid.n <- 10^c(1,2,3,4,5,6,8,9,10)
-gamma <- c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 2)
-res <- matrix(0,nrow=length(gamma),ncol=length(grid.n))
-B <- 5
-for (k in 1:B) {
-for (i in 1:length(gamma)) {
-  for (j in 1:length(grid.n)) {
-    lambda <- grid.n[j]^{-gamma[i]}
-    inputs <- generateInputData(grid.n[j], lambda = lambda)
-    tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "tv-search")$tvhat
-    res[i,j] <- res[i,j] + as.numeric(tvhat > 0)/B
-  }
-}
-  print(k)
-}
-mapply(FUN = function(n, gamma) {
-  lambda <- n^{-gamma}
-  inputs <- generateInputData(n, lambda = n^{-gamma})
-  tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "tv-search")$tvhat
-  as.numeric(tvhat > 0)}, c(1000,1000,1000), c(0.5, 0.6, 0.6))
 
 
 # running simulations on clusters
 # params sims
 nrep <- 5
 grid.gamma <- rep(seq(0.1, 1, by = 0.1), nrep)
-grid.n <- rep(10^{2:5},B)
+grid.n <- rep(10^{2:5}, nrep)
 grid <- expand.grid(grid.n, grid.gamma)
 
 # running simulations
+set.seed(123, "L'Ecuyer")
 res <- mcmapply(FUN = function(n, gamma) {
   lambda <- n^{-gamma}
   inputs <- generateInputData(n, lambda = n^{-gamma})
   tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "tv-search")$tvhat
-  as.numeric(tvhat > 0)}, grid[,1], grid[,2])
+  as.numeric(tvhat > 0)}, grid[,1], grid[,2], mc.cores = 30)
 
 # gathering data
 power.data <- data.table(logn = log(grid[,1], base = 10), loglambda = -log(grid[,1], base = 10)*grid[,2], reject = res)
