@@ -35,11 +35,13 @@ set.seed(123, "L'Ecuyer")
 res <- mcmapply(FUN = function(n, gamma) {
   lambda <- n^{-gamma}
   inputs <- generateInputData(n, lambda = n^{-gamma})
-  tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "tv-search")$tvhat
+  tvhat <- rep(NA,2)
+  tvhat[1] <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "tv-search")$tvhat
+  tvhat[2] <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   as.numeric(tvhat > 0)}, grid[,1], grid[,2], mc.cores = 30)
 
 # gathering data
-power.data <- data.table(logn = log(grid[,1], base = 10), loglambda = -log(grid[,1], base = 10)*grid[,2], reject = res)
-power.table <- power.data[,.(power = mean(reject)),by=c("logn","loglambda")]
+power.data <- data.table(logn = log(grid[,1], base = 10), loglambda = -log(grid[,1], base = 10)*grid[,2], reject_search = res[1,], reject_binomial = res[2,])
+power.table <- power.data[,.(power_search = mean(reject_search), power_binomial = mean(reject_binomial)),by=c("logn","loglambda")]
 
-save(power.data, file = paste0(PATH.SAVE, "powerStudy.Rdata"))
+save(power.table, file = paste0(PATH.SAVE, "powerStudy.Rdata"))
