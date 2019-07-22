@@ -18,11 +18,11 @@ cols = rev(colfunc(10))
 png(filename = paste0(PATH.PLOTS,"PLOT_SIMULATION_1.png"))
 par(mfrow=c(1,2))
 plot(power.table$logn,power.table$loglambda,
-     col = cut(power.table$power_search, labels = FALSE, breaks = seq(0.1,0.9,0.1)),
+     col = cols[cut(power.table$power_search, labels = FALSE, breaks = seq(0.1,0.9,0.1))],
      pch=19,xlab="log(n)",
      ylab="-gamma*log(n)")
 plot(power.table$logn,power.table$loglambda,
-     col = cut(power.table$power_binomial, labels = FALSE, breaks = seq(0.1,0.9,0.1)),
+     col = cols[cut(power.table$power_binomial, labels = FALSE, breaks = seq(0.1,0.9,0.1))],
      pch=19,xlab="log(n)",
      ylab="-gamma*log(n)")
 dev.off()
