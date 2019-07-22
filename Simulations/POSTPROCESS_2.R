@@ -10,9 +10,6 @@ load(paste0(PATH.DATA, "DATA_SIMULATION_2.Rdata"))
 require(data.table)
 
 
-colfunc <- colorRampPalette(c("black", "white"))
-cols = rev(colfunc(length(seq(-0.1,1.1,0.1))))
-print(cut(power.table$power_search, labels = FALSE, breaks = seq(-0.1,1.1,0.1)))
 		 
 # loglogplot
 png(filename = paste0(PATH.PLOTS,"PLOT_SIMULATION_2.png"))
