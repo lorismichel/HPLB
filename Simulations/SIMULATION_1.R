@@ -57,4 +57,4 @@ power.data <- data.table(logn = log(grid[,1], base = 10),
 power.table <- power.data[,.(power_search = mean(reject_search), power_binomial = mean(reject_binomial)),by=c("logn","loglambda")]
 
 # saving results of simulations
-save(power.table, file = paste0(PATH.SAVE, "DATA_SIMULATION_1.Rdata"))
+save(power.data, power.table, file = paste0(PATH.SAVE, "DATA_SIMULATION_1.Rdata"))

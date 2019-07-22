@@ -24,17 +24,17 @@ dataContamination <- function(y, p = 0) {
 # running simulations on clusters
 # params sims
 grid.p <- seq(0, 0.5, by = 0.025)
-grid.n <- c(10000)
-grid <- expand.grid(grid.n, grid.p)
-
+grid.mean <- c(0.5, 2, 4, 10)
+grid <- expand.grid(grid.mean, grid.p)
+n <- 10000
 
 # running simulations
 set.seed(123, "L'Ecuyer")
-res1 <- mcmapply(FUN = function(n, p) {
+res1 <- mcmapply(FUN = function(m, p) {
   y.train <- factor(c(rep(0,n), rep(1,n)))
-  x.train <- ifelse(y.train == 0, rnorm(n, 0), rnorm(n, 4))
+  x.train <- ifelse(y.train == 0, rnorm(n, 0), rnorm(n, m))
   y.test <- factor(c(rep(0,n), rep(1,n)))
-  x.test <- ifelse(y.test == 0, rnorm(n, 0), rnorm(n, 4))
+  x.test <- ifelse(y.test == 0, rnorm(n, 0), rnorm(n, m))
   y.train <- dataContamination(y.train, p)
   y.test  <- dataContamination(y.test, p)
   rf <- ranger(y~x, data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
@@ -44,11 +44,11 @@ res1 <- mcmapply(FUN = function(n, p) {
   tvhat}, grid[,1], grid[,2], mc.cores = 20)
 
 set.seed(123, "L'Ecuyer")
-res2 <- mcmapply(FUN = function(n, p) {
+res2 <- mcmapply(FUN = function(m, p) {
   y.train <- factor(c(rep(0,n), rep(1,n)))
-  x.train <- ifelse(y.train == 0, rnorm(n, 0), rnorm(n, 2))
+  x.train <- ifelse(y.train == 0, rnorm(n, 0), rnorm(n, m))
   y.test <- factor(c(rep(0,n), rep(1,n)))
-  x.test <- ifelse(y.test == 0, rnorm(n, 0), rnorm(n, 2))
+  x.test <- ifelse(y.test == 0, rnorm(n, 0), rnorm(n, m))
   y.train <- dataContamination(y.train, p)
   y.test  <- dataContamination(y.test, p)
   rf <- ranger(y~x, data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
@@ -58,7 +58,7 @@ res2 <- mcmapply(FUN = function(n, p) {
   tvhat}, grid[,1], grid[,2], mc.cores = 20)
 
 # gathering data
-power.table <- data.table(n     = grid[,1], 
+power.table <- data.table(m     = grid[,1], 
 			  p     = grid[,2], 
 			  tvhat_search = res1,
                           tvhat_binomial = res2)
