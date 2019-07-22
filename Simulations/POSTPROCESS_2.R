@@ -10,7 +10,7 @@ load(paste0(PATH.DATA, "DATA_SIMULATION_2.Rdata"))
 require(data.table)
 
 
-		 
+print(summary(power.table[n==10000,]$tvhat_binomial))		 
 # loglogplot
 png(filename = paste0(PATH.PLOTS,"PLOT_SIMULATION_2.png"))
 plot(power.table[n == 10000, ]$p, power.table[n==10000,]$tvhat_search,pch=19, xlab="p", ylab="tv")
