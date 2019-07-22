@@ -1,11 +1,14 @@
 # SIMUlATION_1
 # type: checking power by a loglog plot of sample size against contamination/tv
+#       comparison with missclassification error rate test.
 
 ## saving paths
 PATH.SAVE = "../Data/"
+
 ## requirements
 require(dWit)
 require(parallel)
+require(data.table)
 
 ## data generation & bayes ratio
 sampleExpContamination <- function(n, lambda) {
@@ -26,7 +29,7 @@ generateInputData <- function(n, lambda) {
 # running simulations on clusters
 # params sims
 nrep <- 5
-grid.gamma <- rep(seq(0.1, 1.2, by = 0.1), nrep)
+grid.gamma <- rep(seq(0.1,  1.2, by = 0.1), nrep)
 grid.n <- rep(10^{2:6}, nrep)
 grid <- expand.grid(grid.n, grid.gamma)
 
@@ -40,7 +43,7 @@ res1 <- mcmapply(FUN = function(n, gamma) {
   as.numeric(tvhat > 0)}, grid[,1], grid[,2], mc.cores = 20)
 
 set.seed(123, "L'Ecuyer")
-res3 <- mcmapply(FUN = function(n, gamma) {
+res2 <- mcmapply(FUN = function(n, gamma) {
   lambda <- n^{-gamma}
   inputs <- generateInputData(n, lambda = n^{-gamma})
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "tv-search")$tvhat
@@ -48,7 +51,10 @@ res3 <- mcmapply(FUN = function(n, gamma) {
   as.numeric(tvhat > 0)}, grid[,1], grid[,2], mc.cores = 20)
 
 # gathering data
-power.data <- data.table(logn = log(grid[,1], base = 10), loglambda = -log(grid[,1], base = 10)*grid[,2], reject_search = res1, reject_binomial = res2)
+power.data <- data.table(logn = log(grid[,1], base = 10), 
+			 loglambda = -log(grid[,1], base = 10)*grid[,2], 
+			 reject_search = res1, reject_binomial = res2)
 power.table <- power.data[,.(power_search = mean(reject_search), power_binomial = mean(reject_binomial)),by=c("logn","loglambda")]
 
-save(power.table, file = paste0(PATH.SAVE, "powerStudy.Rdata"))
+# saving results of simulations
+save(power.table, file = paste0(PATH.SAVE, "DATA_SIMULATION_1.Rdata"))
