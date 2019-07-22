@@ -19,4 +19,5 @@ plot(power.table$logn,power.table$loglambda,
 points(power.table$logn,power.table$loglambda, 
        cex = power.table$power_binomial*2, pch=19,col="red")
 abline(a = 0, b = -1,col="blue")
+abline(a = 0, b = -1/2, col="brown")
 dev.off()
