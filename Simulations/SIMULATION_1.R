@@ -28,7 +28,7 @@ generateInputData <- function(n, lambda) {
 
 # running simulations on clusters
 # params sims
-nrep <- 5
+nrep <- 100
 grid.gamma <- rep(seq(0.1,  1.2, by = 0.1), nrep)
 grid.n <- rep(10^{2:6}, nrep)
 grid <- expand.grid(grid.n, grid.gamma)
@@ -40,7 +40,7 @@ res1 <- mcmapply(FUN = function(n, gamma) {
   inputs <- generateInputData(n, lambda = n^{-gamma})
   tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "tv-search")$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
-  as.numeric(tvhat > 0)}, grid[,1], grid[,2], mc.cores = 20)
+  as.numeric(tvhat > 0)}, grid[,1], grid[,2], mc.cores = 25)
 
 set.seed(123, "L'Ecuyer")
 res2 <- mcmapply(FUN = function(n, gamma) {
@@ -48,7 +48,7 @@ res2 <- mcmapply(FUN = function(n, gamma) {
   inputs <- generateInputData(n, lambda = n^{-gamma})
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "tv-search")$tvhat
   tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
-  as.numeric(tvhat > 0)}, grid[,1], grid[,2], mc.cores = 20)
+  as.numeric(tvhat > 0)}, grid[,1], grid[,2], mc.cores = 25)
 
 # gathering data
 power.data <- data.table(logn = log(grid[,1], base = 10), 
