@@ -10,14 +10,19 @@ load(paste0(PATH.DATA, "DATA_SIMULATION_1.Rdata"))
 require(data.table)
 
 
+colfunc <- colorRampPalette(c("black", "white"))
+cols = rev(colfunc(10))
+
+
 # loglogplot
 png(filename = paste0(PATH.PLOTS,"PLOT_SIMULATION_1.png"))
+par(mfrow=c(1,2))
 plot(power.table$logn,power.table$loglambda,
-     cex = power.table$power_search*2, 
+     col = cut(power.table$power_search, labels = FALSE, breaks = seq(0.1,0.9,0.1)),
      pch=19,xlab="log(n)",
      ylab="-gamma*log(n)")
-points(power.table$logn,power.table$loglambda, 
-       cex = power.table$power_binomial*2, pch=19,col="red")
-abline(a = 0, b = -1,col="blue")
-abline(a = 0, b = -1/2, col="brown")
+plot(power.table$logn,power.table$loglambda,
+     col = cut(power.table$power_binomial, labels = FALSE, breaks = seq(0.1,0.9,0.1)),
+     pch=19,xlab="log(n)",
+     ylab="-gamma*log(n)")
 dev.off()
