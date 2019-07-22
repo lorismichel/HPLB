@@ -24,7 +24,7 @@ dataContamination <- function(y, p = 0) {
 # running simulations on clusters
 # params sims
 grid.p <- seq(0, 0.5, by = 0.025)
-grid.n <- c(1000, 10000)
+grid.n <- c(10000)
 grid <- expand.grid(grid.n, grid.p)
 
 
@@ -32,9 +32,9 @@ grid <- expand.grid(grid.n, grid.p)
 set.seed(123, "L'Ecuyer")
 res1 <- mcmapply(FUN = function(n, p) {
   y.train <- factor(c(rep(0,n), rep(1,n)))
-  x.train <- ifelse(y.train == 0, rnorm(n, 0), rnorm(n, 2))
+  x.train <- ifelse(y.train == 0, rnorm(n, 0), rnorm(n, 4))
   y.test <- factor(c(rep(0,n), rep(1,n)))
-  x.test <- ifelse(y.test == 0, rnorm(n, 0), rnorm(n, 2))
+  x.test <- ifelse(y.test == 0, rnorm(n, 0), rnorm(n, 4))
   y.train <- dataContamination(y.train, p)
   y.test  <- dataContamination(y.test, p)
   rf <- ranger(y~x, data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
