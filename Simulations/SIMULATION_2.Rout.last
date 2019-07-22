@@ -1,0 +1,104 @@
+
+R version 3.6.1 (2019-07-05) -- "Action of the Toes"
+Copyright (C) 2019 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+Warning message:
+In libPIns(xLib2, beforeLib = .Library, msgTxt = paste("for Fedora",  :
+  .libPaths() contains no entries matching ‘/usr/local64.sfs/app/R/R-3.6.1-inst/library’
+> # SIMUlATION_1
+> # type: checking power by a loglog plot of sample size against contamination/tv
+> #       comparison with missclassification error rate test.
+> 
+> ## saving paths
+> PATH.SAVE = "../Data/"
+> 
+> ## requirements
+> require(dWit)
+Loading required package: dWit
+Loading required package: data.table
+
+Attaching package: ‘data.table’
+
+The following object is masked from ‘package:sfsmisc’:
+
+    last
+
+> require(parallel)
+Loading required package: parallel
+> require(data.table)
+> require(stats)
+> require(ranger)
+Loading required package: ranger
+> 
+> 
+> ## data generation & bayes ratio
+> dataContamination <- function(y, p = 0) {
++   y <- as.numeric(levels(y))[y]
++   return(factor(ifelse(rbinom(n = length(y), size = 1, p = p) == 0, y, 1-y)))
++ }
+> 
+> 
+> 
+> # running simulations on clusters
+> # params sims
+> grid.p <- seq(0, 0.5, by = 0.025)
+> grid.n <- c(10000)
+> grid <- expand.grid(grid.n, grid.p)
+> 
+> 
+> # running simulations
+> set.seed(123, "L'Ecuyer")
+> res1 <- mcmapply(FUN = function(n, p) {
++   y.train <- factor(c(rep(0,n), rep(1,n)))
++   x.train <- ifelse(y.train == 0, rnorm(n, 0), rnorm(n, 4))
++   y.test <- factor(c(rep(0,n), rep(1,n)))
++   x.test <- ifelse(y.test == 0, rnorm(n, 0), rnorm(n, 4))
++   y.train <- dataContamination(y.train, p)
++   y.test  <- dataContamination(y.test, p)
++   rf <- ranger(y~x, data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
++   rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
++   tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "tv-search")$tvhat
++   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
++   tvhat}, grid[,1], grid[,2], mc.cores = 20)
+> 
+> set.seed(123, "L'Ecuyer")
+> res2 <- mcmapply(FUN = function(n, p) {
++   y.train <- factor(c(rep(0,n), rep(1,n)))
++   x.train <- ifelse(y.train == 0, rnorm(n, 0), rnorm(n, 2))
++   y.test <- factor(c(rep(0,n), rep(1,n)))
++   x.test <- ifelse(y.test == 0, rnorm(n, 0), rnorm(n, 2))
++   y.train <- dataContamination(y.train, p)
++   y.test  <- dataContamination(y.test, p)
++   rf <- ranger(y~x, data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
++   rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
++   tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "binomial")$tvhat
++   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
++   tvhat}, grid[,1], grid[,2], mc.cores = 20)
+> 
+> # gathering data
+> power.table <- data.table(n     = grid[,1], 
++ 			  p     = grid[,2], 
++ 			  tvhat_search = res1,
++                           tvhat_binomial = res2)
+> 
+> # saving results of simulations
+> save(power.table, file = paste0(PATH.SAVE, "DATA_SIMULATION_2.Rdata"))
+> 
+> proc.time()
+    user   system  elapsed 
+1871.740   62.262   52.298 

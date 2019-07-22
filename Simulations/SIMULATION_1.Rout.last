@@ -22,9 +22,11 @@ In libPIns(xLib2, beforeLib = .Library, msgTxt = paste("for Fedora",  :
   .libPaths() contains no entries matching ‘/usr/local64.sfs/app/R/R-3.6.1-inst/library’
 > # SIMUlATION_1
 > # type: checking power by a loglog plot of sample size against contamination/tv
+> #       comparison with missclassification error rate test.
 > 
 > ## saving paths
 > PATH.SAVE = "../Data/"
+> 
 > ## requirements
 > require(dWit)
 Loading required package: dWit
@@ -38,6 +40,7 @@ The following object is masked from ‘package:sfsmisc’:
 
 > require(parallel)
 Loading required package: parallel
+> require(data.table)
 > 
 > ## data generation & bayes ratio
 > sampleExpContamination <- function(n, lambda) {
@@ -58,25 +61,36 @@ Loading required package: parallel
 > # running simulations on clusters
 > # params sims
 > nrep <- 5
-> grid.gamma <- rep(seq(0.1, 1, by = 0.1), nrep)
-> grid.n <- rep(10^{2:5}, nrep)
+> grid.gamma <- rep(seq(0.1,  1.2, by = 0.1), nrep)
+> grid.n <- rep(10^{2:6}, nrep)
 > grid <- expand.grid(grid.n, grid.gamma)
 > 
 > # running simulations
 > set.seed(123, "L'Ecuyer")
-> res <- mcmapply(FUN = function(n, gamma) {
+> res1 <- mcmapply(FUN = function(n, gamma) {
 +   lambda <- n^{-gamma}
 +   inputs <- generateInputData(n, lambda = n^{-gamma})
 +   tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "tv-search")$tvhat
-+   as.numeric(tvhat > 0)}, grid[,1], grid[,2], mc.cores = 30)
++   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
++   as.numeric(tvhat > 0)}, grid[,1], grid[,2], mc.cores = 20)
+> 
+> set.seed(123, "L'Ecuyer")
+> res2 <- mcmapply(FUN = function(n, gamma) {
++   lambda <- n^{-gamma}
++   inputs <- generateInputData(n, lambda = n^{-gamma})
++   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "tv-search")$tvhat
++   tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
++   as.numeric(tvhat > 0)}, grid[,1], grid[,2], mc.cores = 20)
 > 
 > # gathering data
-> power.data <- data.table(logn = log(grid[,1], base = 10), loglambda = -log(grid[,1], base = 10)*grid[,2], reject = res)
-> power.table <- power.data[,.(power = mean(reject)),by=c("logn","loglambda")]
-> plot(power.table$logn,power.table$loglambda,cex = power.table$power*2,pch=19)
-> abline(a = 0, b = -1,col="blue")
+> power.data <- data.table(logn = log(grid[,1], base = 10), 
++ 			 loglambda = -log(grid[,1], base = 10)*grid[,2], 
++ 			 reject_search = res1, reject_binomial = res2)
+> power.table <- power.data[,.(power_search = mean(reject_search), power_binomial = mean(reject_binomial)),by=c("logn","loglambda")]
 > 
-> save(d, file = paste0(PATH.SAVE, "powerStudy.Rdata"))
-Error in save(d, file = paste0(PATH.SAVE, "powerStudy.Rdata")) : 
-  object ‘d’ not found
-Execution halted
+> # saving results of simulations
+> save(power.table, file = paste0(PATH.SAVE, "DATA_SIMULATION_1.Rdata"))
+> 
+> proc.time()
+    user   system  elapsed 
+9204.527   40.521 2470.701 
