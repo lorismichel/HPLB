@@ -30,7 +30,7 @@ grid <- expand.grid(grid.n, grid.p)
 
 # running simulations
 set.seed(123, "L'Ecuyer")
-res <- mcmapply(FUN = function(n, p) {
+res1 <- mcmapply(FUN = function(n, p) {
   y.train <- factor(c(rep(0,n), rep(1,n)))
   x.train <- ifelse(y.train == 0, rnorm(n, 0), rnorm(n, 2))
   y.test <- factor(c(rep(0,n), rep(1,n)))
@@ -43,11 +43,25 @@ res <- mcmapply(FUN = function(n, p) {
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid[,1], grid[,2], mc.cores = 20)
 
+set.seed(123, "L'Ecuyer")
+res2 <- mcmapply(FUN = function(n, p) {
+  y.train <- factor(c(rep(0,n), rep(1,n)))
+  x.train <- ifelse(y.train == 0, rnorm(n, 0), rnorm(n, 2))
+  y.test <- factor(c(rep(0,n), rep(1,n)))
+  x.test <- ifelse(y.test == 0, rnorm(n, 0), rnorm(n, 2))
+  y.train <- dataContamination(y.train, p)
+  y.test  <- dataContamination(y.test, p)
+  rf <- ranger(y~x, data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
+  rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "binomial")$tvhat
+  #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
+  tvhat}, grid[,1], grid[,2], mc.cores = 20)
 
 # gathering data
 power.table <- data.table(n     = grid[,1], 
 			  p     = grid[,2], 
-			  tvhat = res)
+			  tvhat_search = res1,
+                          tvhat_binomial = res2)
 
 # saving results of simulations
 save(power.table, file = paste0(PATH.SAVE, "DATA_SIMULATION_2.Rdata"))

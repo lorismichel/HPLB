@@ -13,5 +13,6 @@ require(data.table)
 		 
 # loglogplot
 png(filename = paste0(PATH.PLOTS,"PLOT_SIMULATION_2.png"))
-plot(power.table[n == 10000, ]$p, power.table[n==10000,]$tvhat,pch=19, xlab="p", ylab="tv")
+plot(power.table[n == 10000, ]$p, power.table[n==10000,]$tvhat_search,pch=19, xlab="p", ylab="tv")
+points(power.table[n == 10000, ]$p, power.table[n==10000,]$tvhat_binomial,pch=19,col="red")
 dev.off()
