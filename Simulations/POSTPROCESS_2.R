@@ -14,5 +14,5 @@ print(summary(power.table[n==10000,]$tvhat_binomial))
 # loglogplot
 png(filename = paste0(PATH.PLOTS,"PLOT_SIMULATION_2.png"))
 plot(power.table[n == 10000, ]$p, power.table[n==10000,]$tvhat_search,pch=19, xlab="p", ylab="tv")
-points(power.table[n == 10000, ]$p, power.table[n==10000,]$tvhat_binomial,pch=19,col="red")
+points(power.table[n == 10000, ]$p, pmax(0, power.table[n==10000,]$tvhat_binomial),pch=19,col="red")
 dev.off()
