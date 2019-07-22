@@ -11,7 +11,7 @@ require(data.table)
 
 
 colfunc <- colorRampPalette(c("black", "white"))
-cols = rev(colfunc(10))
+cols = rev(colfunc(length(seq(0.1,0.9,0.1)))
 
 
 # loglogplot
