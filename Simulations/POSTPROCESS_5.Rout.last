@@ -42,11 +42,10 @@ The following object is masked from ‘package:sfsmisc’:
 > 
 > # loglogplot
 > png(filename = paste0(PATH.PLOTS,"PLOT_SIMULATION_5.png"))
-> plot(power.table$p, power.table$tvhat_search, pch=19, xlab="p", ylab="tv")
-Error in plot.window(...) : need finite 'ylim' values
-Calls: plot -> plot.default -> localWindow -> plot.window
-In addition: Warning messages:
-1: In xy.coords(x, y, xlabel, ylabel, log) : NAs introduced by coercion
-2: In min(x) : no non-missing arguments to min; returning Inf
-3: In max(x) : no non-missing arguments to max; returning -Inf
+> par(mfrow=c(1,2))
+> # Boston
+> plot(power.table.boston$p, power.table$tvhat_search, pch=19, xlab="p", ylab="tv",main="Boston")
+Error in xy.coords(x, y, xlabel, ylabel, log) : 
+  object 'power.table' not found
+Calls: plot -> plot.default -> xy.coords
 Execution halted

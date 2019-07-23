@@ -14,9 +14,9 @@ require(data.table)
 png(filename = paste0(PATH.PLOTS,"PLOT_SIMULATION_5.png"))
 par(mfrow=c(1,2))
 # Boston
-plot(power.table.boston$p, power.table$tvhat_search, pch=19, xlab="p", ylab="tv",main="Boston")
-points(power.table.boston$p,pmax(0, power.table$tvhat_binomial), pch=19,col="red")
+plot(power.table.boston$p, power.table.boston$tvhat_search, pch=19, xlab="p", ylab="tv",main="Boston")
+points(power.table.boston$p,pmax(0, power.table.boston$tvhat_binomial), pch=19,col="red")
 # titanic
-plot(power.table.titanic$p, power.table$tvhat_search, pch=19, xlab="p", ylab="tv",main="titanic")
-points(power.table.titanic$p,pmax(0, power.table$tvhat_binomial), pch=19,col="red")
+plot(power.table.titanic$p, power.table.boston$tvhat_search, pch=19, xlab="p", ylab="tv",main="titanic")
+points(power.table.titanic$p,pmax(0, power.table.boston$tvhat_binomial), pch=19,col="red")
 dev.off()
