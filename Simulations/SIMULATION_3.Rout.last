@@ -84,3 +84,17 @@ Growing trees.. Progress: 53%. Estimated remaining time: 27 seconds.
 Growing trees.. Progress: 56%. Estimated remaining time: 23 seconds.
 Growing trees.. Progress: 51%. Estimated remaining time: 30 seconds.
 Growing trees.. Progress: 58%. Estimated remaining time: 22 seconds.
+Warning message:
+In mclapply(seq_len(n), do_one, mc.preschedule = mc.preschedule,  :
+  all scheduled cores encountered errors in user code
+> 
+> # gathering data
+> power.table <- data.table(m     = grid.mean, 
++ 			  tvhat_search = res)
+> 
+> # saving results of simulations
+> save(power.table, file = paste0(PATH.SAVE, "DATA_SIMULATION_3.Rdata"))
+> 
+> proc.time()
+   user  system elapsed 
+792.127  35.072 257.809 

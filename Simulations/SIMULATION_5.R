@@ -39,7 +39,7 @@ grid <- grid.p
 
 # running simulations
 set.seed(123, "L'Ecuyer")
-res1 <- mcmapply(FUN = function(m, p) {
+res1 <- mcmapply(FUN = function(p) {
   y.train <- crim01.train
   x.train <- Boston.train
   y.test <- crim01.test
@@ -53,7 +53,7 @@ res1 <- mcmapply(FUN = function(m, p) {
   tvhat}, grid, mc.cores = 10)
 
 set.seed(123, "L'Ecuyer")
-res2 <- mcmapply(FUN = function(m, p) {
+res2 <- mcmapply(FUN = function(p) {
   y.train <- crim01.train
   x.train <- Boston.train
   y.test <- crim01.test

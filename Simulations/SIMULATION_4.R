@@ -30,7 +30,7 @@ grid <- c(1:nrep)
 
 # running simulations
 set.seed(123, "L'Ecuyer")
-res1 <- mcmapply(FUN = function(m, p) {
+res1 <- mcmapply(FUN = function(r) {
   y.train <- factor(c(rep(0,n), rep(1,n)))
   x.train <- rbind(genMultiVar(n = n, cov1), genMultiVar(n = n, cov2))
   y.test <- factor(c(rep(0,n), rep(1,n)))
@@ -42,7 +42,7 @@ res1 <- mcmapply(FUN = function(m, p) {
   tvhat}, grid, mc.cores = 10)
 
 set.seed(123, "L'Ecuyer")
-res2 <- mcmapply(FUN = function(m, p) {
+res2 <- mcmapply(FUN = function(r) {
   y.train <- factor(c(rep(0,n), rep(1,n)))
   x.train <- rbind(genMultiVar(n = n, cov1), genMultiVar(n = n, cov2))
   y.test <- factor(c(rep(0,n), rep(1,n)))

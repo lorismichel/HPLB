@@ -44,3 +44,43 @@ Loading required package: parallel
 > require(stats)
 > require(ranger)
 Loading required package: ranger
+> 
+> 
+> # running simulations on clusters
+> # params sim
+> nrep <- 50
+> grid.mean <- c(rep(0.5, nrep), rep(2, nrep), rep(4, nrep), rep(10, nrep))
+> n <- 10000
+> 
+> # running simulations
+> set.seed(123, "L'Ecuyer")
+> res1 <- mcmapply(FUN = function(m, p) {
++   y.train <- factor(c(rep(0,n), rep(1,n)))
++   x.train <- rnorm(n, m)
++   y.test <- factor(c(rep(0,n), rep(1,n)))
++   x.test <- rnorm(n, m)
++   rf <- ranger(y~x, data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
++   rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
++   tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "tv-search")$tvhat
++   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
++   tvhat}, grid.mean, mc.cores = 20)
+Growing trees.. Progress: 98%. Estimated remaining time: 0 seconds.
+Growing trees.. Progress: Growing trees.. Progress: Growing trees.. Progress: 62%. Estimated remaining time: 18 seconds.
+Growing trees.. Progress: 50%. Estimated remaining time: 31 seconds.
+60%. Estimated remaining time: 20 seconds.
+Growing trees.. Progress: Growing trees.. Progress: Growing trees.. Progress: 55%. Estimated remaining time: 25 seconds.
+92%. Estimated remaining time: 2 seconds.
+Growing trees.. Progress: 48%. Estimated remaining time: 33 seconds.
+Growing trees.. Progress: 67%. Estimated remaining time: 15 seconds.
+Growing trees.. Progress: 58%. Estimated remaining time: 22 seconds.
+Growing trees.. Progress: Growing trees.. Progress: 62%. Estimated remaining time: 18 seconds.
+Growing trees.. Progress: Growing trees.. Progress: 43%. Estimated remaining time: 40 seconds.
+49%. Estimated remaining time: 32 seconds.
+Growing trees.. Progress: 56%. Estimated remaining time: 24 seconds.
+Growing trees.. Progress: 58%. Estimated remaining time: 22 seconds.
+Growing trees.. Progress: 53%. Estimated remaining time: 27 seconds.
+53%. Estimated remaining time: 27 seconds.
+59%. Estimated remaining time: 21 seconds.
+Growing trees.. Progress: 49%. Estimated remaining time: 32 seconds.
+Growing trees.. Progress: 50%. Estimated remaining time: 31 seconds.
+49%. Estimated remaining time: 33 seconds.

@@ -1,0 +1,106 @@
+
+R version 3.6.1 (2019-07-05) -- "Action of the Toes"
+Copyright (C) 2019 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+Warning message:
+In libPIns(xLib2, beforeLib = .Library, msgTxt = paste("for Fedora",  :
+  .libPaths() contains no entries matching ‘/usr/local64.sfs/app/R/R-3.6.1-inst/library’
+> # SIMUlATION_4
+> # type: copula shift
+> 
+> ## saving paths
+> PATH.SAVE = "../Data/"
+> 
+> ## requirements
+> require(dWit)
+Loading required package: dWit
+Loading required package: data.table
+
+Attaching package: ‘data.table’
+
+The following object is masked from ‘package:sfsmisc’:
+
+    last
+
+> require(parallel)
+Loading required package: parallel
+> require(data.table)
+> require(stats)
+> require(ranger)
+Loading required package: ranger
+> require(MASS)
+Loading required package: MASS
+> 
+> ## data generation & bayes ratio
+> genMultiVar <- function(n, Sigma = diag(1, 3)) {
++   return(mvrnorm(n = n, mu = rep(0, nrow(covariance)), Sigma = Sigma))
++ }
+> 
+> 
+> 
+> # running simulations on clusters
+> # params sims
+> cov1 <- diag(1, 3)
+> cov2 <- diag(0.5, 3) + matrix(0.5, 3, 3)
+> n <- 10000
+> nrep <- 100
+> grid <- c(1:nrep)
+> 
+> 
+> # running simulations
+> set.seed(123, "L'Ecuyer")
+> res1 <- mcmapply(FUN = function(m, p) {
++   y.train <- factor(c(rep(0,n), rep(1,n)))
++   x.train <- rbind(genMultiVar(n = n, cov1), genMultiVar(n = n, cov2))
++   y.test <- factor(c(rep(0,n), rep(1,n)))
++   x.test <- rbind(genMultiVar(n = n, cov1), genMultiVar(n = n, cov2))
++   rf <- ranger(y~., data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
++   rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
++   tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "tv-search")$tvhat
++   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
++   tvhat}, grid, mc.cores = 10)
+Warning message:
+In mclapply(seq_len(n), do_one, mc.preschedule = mc.preschedule,  :
+  all scheduled cores encountered errors in user code
+> 
+> set.seed(123, "L'Ecuyer")
+> res2 <- mcmapply(FUN = function(m, p) {
++   y.train <- factor(c(rep(0,n), rep(1,n)))
++   x.train <- rbind(genMultiVar(n = n, cov1), genMultiVar(n = n, cov2))
++   y.test <- factor(c(rep(0,n), rep(1,n)))
++   x.test <- rbind(genMultiVar(n = n, cov1), genMultiVar(n = n, cov2))
++   rf <- ranger(y~., data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
++   rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
++   tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "binomial")$tvhat
++   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
++   tvhat}, grid, mc.cores = 10)
+Warning message:
+In mclapply(seq_len(n), do_one, mc.preschedule = mc.preschedule,  :
+  all scheduled cores encountered errors in user code
+> 
+> # gathering data
+> power.table <- data.table(rep     = grid,
++                           tvhat_search = res1,
++                           tvhat_binomial = res2)
+> 
+> # saving results of simulations
+> save(power.table, file = paste0(PATH.SAVE, "DATA_SIMULATION_4.Rdata"))
+> 
+> proc.time()
+   user  system elapsed 
+  3.470   0.579  43.963 
