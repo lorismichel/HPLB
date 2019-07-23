@@ -12,6 +12,6 @@ require(data.table)
 
 # loglogplot
 png(filename = paste0(PATH.PLOTS,"PLOT_SIMULATION_4.png"))
-plot(power.table$tvhat_search, pch=19, xlab="p", ylab="tv", ylim=c(-0.5,1))
+plot(power.table$tvhat_search, pch=19, xlab="p", ylab="tv", ylim=c(-0,0.4))
 points(pmax(0, power.table$tvhat_binomial), pch=19,col="red")
 dev.off()
