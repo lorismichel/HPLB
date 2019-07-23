@@ -127,7 +127,7 @@ Loading required package: MASS
 > 
 > # running simulations on clusters
 > # params sims
-> grid.p <- seq(0, 0.5, by = 0.025)
+> grid.p <- seq(0, 0.5, by = 0.01)
 > grid <- grid.p
 > 
 > # running simulations
@@ -173,4 +173,4 @@ Loading required package: MASS
 > 
 > proc.time()
    user  system elapsed 
- 23.647   4.164   9.438 
+ 41.148   6.860  13.180 
