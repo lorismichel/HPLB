@@ -26,38 +26,10 @@ In libPIns(xLib2, beforeLib = .Library, msgTxt = paste("for Fedora",  :
 > # PATHS
 > PATH.DATA <- "../Data/"
 > PATH.PLOTS <- "../Plots/"
-> load(paste0(PATH.DATA, "DATA_SIMULATION_2.Rdata"))
-> 
-> # libs
-> require(data.table)
-Loading required package: data.table
-
-Attaching package: ‘data.table’
-
-The following object is masked from ‘package:sfsmisc’:
-
-    last
-
-> 
-> 
-> # loglogplot
-> png(filename = paste0(PATH.PLOTS,"PLOT_SIMULATION_2.png"))
-> par(mfrow=c(2,2))
-> plot(power.table[m == 0.5, ]$p, power.table[m==0.5,]$tvhat_search,pch=19, xlab="p", ylab="tv")
-> points(power.table[m == 0.5, ]$p, pmax(0, power.table[m==0.5,]$tvhat_binomial),pch=19,col="red")
-> 
-> plot(power.table[m == 2, ]$p, power.table[m==2,]$tvhat_search,pch=19, xlab="p", ylab="tv")
-> points(power.table[m == 2, ]$p, pmax(0, power.table[m==2,]$tvhat_binomial),pch=19,col="red")
-> 
-> plot(power.table[m == 4, ]$p, power.table[m==4,]$tvhat_search,pch=19, xlab="p", ylab="tv")
-> points(power.table[m == 4, ]$p, pmax(0, power.table[m==4,]$tvhat_binomial),pch=19,col="red")
-> 
-> plot(power.table[m == 10, ]$p, power.table[m==10,]$tvhat_search,pch=19, xlab="p", ylab="tv")
-> points(power.table[m == 10, ]$p, pmax(0, power.table[m==10,]$tvhat_binomial),pch=19,col="red")
-> dev.off()
-null device 
-          1 
-> 
-> proc.time()
-   user  system elapsed 
-  1.845   0.143   0.746 
+> load(paste0(PATH.DATA, "DATA_SIMULATION_2_new.Rdata"))
+Error in readChar(con, 5L, useBytes = TRUE) : cannot open the connection
+Calls: load -> readChar
+In addition: Warning message:
+In readChar(con, 5L, useBytes = TRUE) :
+  cannot open compressed file '../Data/DATA_SIMULATION_2_new.Rdata', probable reason 'No such file or directory'
+Execution halted

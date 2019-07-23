@@ -26,43 +26,10 @@ In libPIns(xLib2, beforeLib = .Library, msgTxt = paste("for Fedora",  :
 > # PATHS
 > PATH.DATA <- "../Data/"
 > PATH.PLOTS <- "../Plots/"
-> load(paste0(PATH.DATA, "DATA_SIMULATION_1.Rdata"))
-> 
-> # libs
-> require(data.table)
-Loading required package: data.table
-
-Attaching package: ‘data.table’
-
-The following object is masked from ‘package:sfsmisc’:
-
-    last
-
-> 
-> 
-> colfunc <- colorRampPalette(c("black", "white"))
-> cols = rev(colfunc(length(seq(-0.1,1.1,0.1))))
-> print(cut(power.table$power_search, labels = FALSE, breaks = seq(-0.1,1.1,0.1)))
- [1] 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11  7 11 11 11 11  3 11 11 11 11
-[26]  1  5 11 11 11  1  2  5 11 11  1  1  1  1  5  1  1  1  1  1  1  1  1  1  1
-[51]  1  1  1  1  1  1  1  1  1  1
-> 		 
-> # loglogplot
-> png(filename = paste0(PATH.PLOTS,"PLOT_SIMULATION_1.png"))
-> par(mfrow=c(2,2))
-> plot(power.table$logn,power.table$loglambda,
-+      col = cols[cut(power.table$power_search, labels = FALSE, breaks = seq(-0.1,1.1,0.1))],
-+      pch=19,xlab="log(n)",
-+      ylab="-gamma*log(n)")
-> plot(power.table$logn,power.table$loglambda,
-+      col = cols[cut(power.table$power_binomial, labels = FALSE, breaks = seq(-0.1,1.1,0.1))],
-+      pch=19,xlab="log(n)",
-+      ylab="-gamma*log(n)")
-> plot(seq(-0.1,1.1,0.1), rep(1, length(seq(-0.1,1.1,0.1))), col=cols,pch=19,cex=3)
-> dev.off()
-null device 
-          1 
-> 
-> proc.time()
-   user  system elapsed 
-  0.850   0.188   1.082 
+> load(paste0(PATH.DATA, "DATA_SIMULATION_1_neq.Rdata"))
+Error in readChar(con, 5L, useBytes = TRUE) : cannot open the connection
+Calls: load -> readChar
+In addition: Warning message:
+In readChar(con, 5L, useBytes = TRUE) :
+  cannot open compressed file '../Data/DATA_SIMULATION_1_neq.Rdata', probable reason 'No such file or directory'
+Execution halted
