@@ -4,7 +4,7 @@
 # PATHS
 PATH.DATA <- "../Data/"
 PATH.PLOTS <- "../Plots/"
-load(paste0(PATH.DATA, "DATA_SIMULATION_1.Rdata"))
+load(paste0(PATH.DATA, "DATA_SIMULATION_1_new.Rdata"))
 
 # libs
 require(data.table)
@@ -21,9 +21,11 @@ plot(power.table$logn,power.table$loglambda,
      col = cols[cut(power.table$power_search, labels = FALSE, breaks = seq(-0.1,1.1,0.1))],
      pch=19,xlab="log(n)",
      ylab="-gamma*log(n)")
+abline(a = 0, b = -1,col="red")
 plot(power.table$logn,power.table$loglambda,
      col = cols[cut(power.table$power_binomial, labels = FALSE, breaks = seq(-0.1,1.1,0.1))],
      pch=19,xlab="log(n)",
      ylab="-gamma*log(n)")
+abline(a = 0, b = -1/2, col="red")
 plot(seq(-0.1,1.1,0.1), rep(1, length(seq(-0.1,1.1,0.1))), col=cols,pch=19,cex=3)
 dev.off()
