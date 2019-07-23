@@ -39,7 +39,7 @@ res1 <- mcmapply(FUN = function(m, p) {
   rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
   tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "tv-search")$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
-  tvhat}, grid, mc.cores = 20)
+  tvhat}, grid, mc.cores = 10)
 
 set.seed(123, "L'Ecuyer")
 res2 <- mcmapply(FUN = function(m, p) {
@@ -51,7 +51,7 @@ res2 <- mcmapply(FUN = function(m, p) {
   rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
   tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "binomial")$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
-  tvhat}, grid, mc.cores = 20)
+  tvhat}, grid, mc.cores = 10)
 
 # gathering data
 power.table <- data.table(rep     = grid,
