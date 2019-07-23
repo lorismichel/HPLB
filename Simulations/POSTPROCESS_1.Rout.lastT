@@ -58,11 +58,11 @@ The following object is masked from ‘package:sfsmisc’:
 +      col = cols[cut(power.table$power_binomial, labels = FALSE, breaks = seq(-0.1,1.1,0.1))],
 +      pch=19,xlab="log(n)",
 +      ylab="-gamma*log(n)")
-> plot(seq(-0.1,1.1,0.1),col=cols,pch=19,cex=3)
+> plot(seq(-0.1,1.1,0.1), rep(1, length(seq(-0.1,1.1,0.1))), col=cols,pch=19,cex=3)
 > dev.off()
 null device 
           1 
 > 
 > proc.time()
    user  system elapsed 
-  0.494   0.120   0.648 
+  0.850   0.188   1.082 
