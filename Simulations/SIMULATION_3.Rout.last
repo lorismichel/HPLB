@@ -20,7 +20,7 @@ Type 'q()' to quit R.
 Warning message:
 In libPIns(xLib2, beforeLib = .Library, msgTxt = paste("for Fedora",  :
   .libPaths() contains no entries matching ‘/usr/local64.sfs/app/R/R-3.6.1-inst/library’
-> # SIMUlATION_1
+> # SIMUlATION_3
 > # type: checking power by a loglog plot of sample size against contamination/tv
 > #       comparison with missclassification error rate test.
 > 
@@ -46,59 +46,41 @@ Loading required package: parallel
 Loading required package: ranger
 > 
 > 
-> ## data generation & bayes ratio
-> dataContamination <- function(y, p = 0) {
-+   y <- as.numeric(levels(y))[y]
-+   return(factor(ifelse(rbinom(n = length(y), size = 1, p = p) == 0, y, 1-y)))
-+ }
-> 
-> 
-> 
 > # running simulations on clusters
-> # params sims
-> grid.p <- seq(0, 0.5, by = 0.025)
-> grid.mean <- c(0.5, 2, 4, 10)
-> grid <- expand.grid(grid.mean, grid.p)
+> # params sim
+> nrep <- 50
+> grid.mean <- c(rep(0.5, nrep), rep(2, nrep), rep(4, nrep), rep(10, nrep))
 > n <- 10000
 > 
 > # running simulations
 > set.seed(123, "L'Ecuyer")
-> res1 <- mcmapply(FUN = function(m, p) {
+> res <- mcmapply(FUN = function(m, p) {
 +   y.train <- factor(c(rep(0,n), rep(1,n)))
-+   x.train <- ifelse(y.train == 0, rnorm(n, 0), rnorm(n, m))
++   x.train <- rnorm(n, m)
 +   y.test <- factor(c(rep(0,n), rep(1,n)))
-+   x.test <- ifelse(y.test == 0, rnorm(n, 0), rnorm(n, m))
-+   y.train <- dataContamination(y.train, p)
-+   y.test  <- dataContamination(y.test, p)
++   x.test <- rnorm(n, m)
 +   rf <- ranger(y~x, data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
 +   rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
 +   tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "tv-search")$tvhat
 +   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
-+   tvhat}, grid[,1], grid[,2], mc.cores = 20)
-> 
-> set.seed(123, "L'Ecuyer")
-> res2 <- mcmapply(FUN = function(m, p) {
-+   y.train <- factor(c(rep(0,n), rep(1,n)))
-+   x.train <- ifelse(y.train == 0, rnorm(n, 0), rnorm(n, m))
-+   y.test <- factor(c(rep(0,n), rep(1,n)))
-+   x.test <- ifelse(y.test == 0, rnorm(n, 0), rnorm(n, m))
-+   y.train <- dataContamination(y.train, p)
-+   y.test  <- dataContamination(y.test, p)
-+   rf <- ranger(y~x, data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
-+   rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
-+   tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "binomial")$tvhat
-+   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
-+   tvhat}, grid[,1], grid[,2], mc.cores = 20)
-> 
-> # gathering data
-> power.table <- data.table(m     = grid[,1], 
-+ 			  p     = grid[,2], 
-+ 			  tvhat_search = res1,
-+                           tvhat_binomial = res2)
-> 
-> # saving results of simulations
-> save(power.table, file = paste0(PATH.SAVE, "DATA_SIMULATION_2.Rdata"))
-> 
-> proc.time()
-    user   system  elapsed 
-7872.065  148.549  238.571 
++   tvhat}, grid.mean, mc.cores = 20)
+Growing trees.. Progress: Growing trees.. Progress: 62%. Estimated remaining time: 19 seconds.
+69%. Estimated remaining time: 13 seconds.
+Growing trees.. Progress: 60%. Estimated remaining time: 20 seconds.
+Growing trees.. Progress: 77%. Estimated remaining time: 9 seconds.
+Growing trees.. Progress: Growing trees.. Progress: 67%. Estimated remaining time: 15 seconds.
+49%. Estimated remaining time: 32 seconds.
+Growing trees.. Progress: Growing trees.. Progress: 70%. Estimated remaining time: 13 seconds.
+66%. Estimated remaining time: 15 seconds.
+Growing trees.. Progress: Growing trees.. Progress: 67%. Estimated remaining time: 15 seconds.
+Growing trees.. Progress: Growing trees.. Progress: Growing trees.. Progress: 79%. Estimated remaining time: 8 seconds.
+68%. Estimated remaining time: 14 seconds.
+89%. Estimated remaining time: 3 seconds.
+Growing trees.. Progress: 80%. Estimated remaining time: 7 seconds.
+Growing trees.. Progress: 76%. Estimated remaining time: 10 seconds.
+Growing trees.. Progress: 57%. Estimated remaining time: 23 seconds.
+58%. Estimated remaining time: 22 seconds.
+Growing trees.. Progress: 53%. Estimated remaining time: 27 seconds.
+Growing trees.. Progress: 56%. Estimated remaining time: 23 seconds.
+Growing trees.. Progress: 51%. Estimated remaining time: 30 seconds.
+Growing trees.. Progress: 58%. Estimated remaining time: 22 seconds.
