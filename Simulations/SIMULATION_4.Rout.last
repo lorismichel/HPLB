@@ -103,4 +103,4 @@ In mclapply(seq_len(n), do_one, mc.preschedule = mc.preschedule,  :
 > 
 > proc.time()
    user  system elapsed 
-  3.240   0.648  31.367 
+  3.385   0.560  24.548 

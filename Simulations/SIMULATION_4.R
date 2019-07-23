@@ -14,7 +14,7 @@ require(MASS)
 
 ## data generation & bayes ratio
 genMultiVar <- function(n, Sigma = diag(1, 3)) {
-  return(mvrnorm(n = n, mu = rep(0, nrow(covariance)), Sigma = Sigma))
+  return(mvrnorm(n = n, mu = rep(0, nrow(Sigma)), Sigma = Sigma))
 }
 
 
