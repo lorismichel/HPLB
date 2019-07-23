@@ -28,9 +28,9 @@ generateInputData <- function(n, lambda) {
 
 # running simulations on clusters
 # params sims
-nrep <- 100
+nrep <- 10
 grid.gamma <- rep(seq(0.1,  1.2, by = 0.1), nrep)
-grid.n <- rep(10^{2:6}, nrep)
+grid.n <- rep(10^{2:5}, nrep)
 grid <- expand.grid(grid.n, grid.gamma)
 
 # running simulations
@@ -57,4 +57,4 @@ power.data <- data.table(logn = log(grid[,1], base = 10),
 power.table <- power.data[,.(power_search = mean(reject_search), power_binomial = mean(reject_binomial)),by=c("logn","loglambda")]
 
 # saving results of simulations
-save(power.data, power.table, file = paste0(PATH.SAVE, "DATA_SIMULATION_1.Rdata"))
+save(power.data, power.table, file = paste0(PATH.SAVE, "DATA_SIMULATION_1_new.Rdata"))
