@@ -12,7 +12,7 @@ require(data.table)
 
 # loglogplot
 png(filename = paste0(PATH.PLOTS,"PLOT_SIMULATION_5.png"))
-par(mfrow=c(1,2))
+par(mfrow=c(2,1))
 # Boston
 plot(power.table.boston$p, power.table.boston$tvhat_search, pch=19, xlab="p", ylab="tv",main="Boston",type="b")
 points(power.table.boston$p,pmax(0, power.table.boston$tvhat_binomial), pch=19,col="red",type="b")
