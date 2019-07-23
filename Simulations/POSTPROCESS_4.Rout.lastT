@@ -42,8 +42,7 @@ The following object is masked from ‘package:sfsmisc’:
 > 
 > # loglogplot
 > png(filename = paste0(PATH.PLOTS,"PLOT_SIMULATION_4.png"))
-> par(mfrow=c(1,1))
-> plot(power.table$tvhat_search,pch=19, xlab="p", ylab="tv")
+> plot(power.table$tvhat_search, pch=19, xlab="p", ylab="tv")
 Error in plot.window(...) : need finite 'ylim' values
 Calls: plot -> plot.default -> localWindow -> plot.window
 In addition: Warning messages:

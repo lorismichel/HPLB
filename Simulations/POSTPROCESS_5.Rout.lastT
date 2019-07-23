@@ -20,13 +20,13 @@ Type 'q()' to quit R.
 Warning message:
 In libPIns(xLib2, beforeLib = .Library, msgTxt = paste("for Fedora",  :
   .libPaths() contains no entries matching ‘/usr/local64.sfs/app/R/R-3.6.1-inst/library’
-> # POSTPROCESS 4
+> # POSTPROCESS 5
 > # type: producing plots for the loglog scatter plot of sample size against tv
 > 
 > # PATHS
 > PATH.DATA <- "../Data/"
 > PATH.PLOTS <- "../Plots/"
-> load(paste0(PATH.DATA, "DATA_SIMULATION_4.Rdata"))
+> load(paste0(PATH.DATA, "DATA_SIMULATION_5.Rdata"))
 > 
 > # libs
 > require(data.table)
@@ -41,8 +41,8 @@ The following object is masked from ‘package:sfsmisc’:
 > 
 > 
 > # loglogplot
-> png(filename = paste0(PATH.PLOTS,"PLOT_SIMULATION_4.png"))
-> plot(power.table$tvhat_search, pch=19, xlab="p", ylab="tv")
+> png(filename = paste0(PATH.PLOTS,"PLOT_SIMULATION_5.png"))
+> plot(power.table$p, power.table$tvhat_search, pch=19, xlab="p", ylab="tv")
 Error in plot.window(...) : need finite 'ylim' values
 Calls: plot -> plot.default -> localWindow -> plot.window
 In addition: Warning messages:

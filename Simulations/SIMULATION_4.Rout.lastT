@@ -64,7 +64,7 @@ Loading required package: MASS
 > 
 > # running simulations
 > set.seed(123, "L'Ecuyer")
-> res1 <- mcmapply(FUN = function(r) {
+> res1 <- mcmapply(FUN = function(m, p) {
 +   y.train <- factor(c(rep(0,n), rep(1,n)))
 +   x.train <- rbind(genMultiVar(n = n, cov1), genMultiVar(n = n, cov2))
 +   y.test <- factor(c(rep(0,n), rep(1,n)))
@@ -79,7 +79,7 @@ In mclapply(seq_len(n), do_one, mc.preschedule = mc.preschedule,  :
   all scheduled cores encountered errors in user code
 > 
 > set.seed(123, "L'Ecuyer")
-> res2 <- mcmapply(FUN = function(r) {
+> res2 <- mcmapply(FUN = function(m, p) {
 +   y.train <- factor(c(rep(0,n), rep(1,n)))
 +   x.train <- rbind(genMultiVar(n = n, cov1), genMultiVar(n = n, cov2))
 +   y.test <- factor(c(rep(0,n), rep(1,n)))
@@ -103,4 +103,4 @@ In mclapply(seq_len(n), do_one, mc.preschedule = mc.preschedule,  :
 > 
 > proc.time()
    user  system elapsed 
-  3.240   0.648  31.367 
+  3.470   0.579  43.963 
