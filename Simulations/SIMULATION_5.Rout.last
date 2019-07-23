@@ -46,6 +46,8 @@ Loading required package: parallel
 Loading required package: ranger
 > require(MASS)
 Loading required package: MASS
+> require(mlbench)
+Loading required package: mlbench
 > 
 > 
 > ## data generation & bayes ratio
@@ -168,9 +170,69 @@ Loading required package: MASS
 > 
 > 
 > 
+> ####################### breast cancer dataset
+> 
+> # PrePro
+> data("BreastCancer")
+> breast <- na.omit(BreastCancer)
+> 
+> response <- factor(breast$Class)
+> levels(response) <- c(0,1)
+> 
+> train = 1:(dim(breast)[1]/2)
+> test = (dim(breast)[1]/2 + 1):dim(breast)[1]
+> breast.train = breast[train, -c(1,10)]
+> breast.test = breast[test, -c(1,10)]
+> response.test = factor(response[test])
+> response.train = factor(response[train])
+> #
+> 
+> 
+> # running simulations on clusters
+> # params sims
+> grid.p <- seq(0, 0.5, by = 0.01)
+> grid <- grid.p
+> 
+> # running simulations
+> set.seed(123, "L'Ecuyer")
+> res1 <- mcmapply(FUN = function(p) {
++   y.train <- response.train
++   x.train <- breast.train
++   y.test <- response.test
++   x.test <- breast.test
++   y.train <- dataContamination(y.train, p)
++   y.test  <- dataContamination(y.test, p)
++   rf <- ranger(y~., data = data.frame(y = y.train, x.train),classification = TRUE, probability = TRUE)
++   rho <- predict(rf, data = data.frame(x.test))$predictions[,"1"]
++   tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "tv-search")$tvhat
++   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
++   tvhat}, grid, mc.cores = 10)
+> 
+> set.seed(123, "L'Ecuyer")
+> res2 <- mcmapply(FUN = function(p) {
++   y.train <- response.train
++   x.train <- breast.train
++   y.test <- response.test
++   x.test <- breast.test
++   y.train <- dataContamination(y.train, p)
++   y.test  <- dataContamination(y.test, p)
++   rf <- ranger(y~., data = data.frame(y = y.train, x.train),classification = TRUE, probability = TRUE)
++   rho <- predict(rf, data = data.frame(x.test))$predictions[,"1"]
++   tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "binomial")$tvhat
++   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
++   tvhat}, grid, mc.cores = 10)
+> 
+> # gathering data
+> power.table.breast <- data.table(p     = grid,
++                                   tvhat_search = res1,
++                                   tvhat_binomial = res2)
+> 
+> 
+> 
+> 
 > # saving results of simulations
-> save(power.table.boston, power.table.titanic, file = paste0(PATH.SAVE, "DATA_SIMULATION_5.Rdata"))
+> save(power.table.boston, power.table.titanic, power.table.breast, file = paste0(PATH.SAVE, "DATA_SIMULATION_5.Rdata"))
 > 
 > proc.time()
    user  system elapsed 
- 41.148   6.860  13.180 
+ 64.760  10.621  17.879 
