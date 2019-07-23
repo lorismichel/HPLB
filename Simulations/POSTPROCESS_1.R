@@ -4,7 +4,7 @@
 # PATHS
 PATH.DATA <- "../Data/"
 PATH.PLOTS <- "../Plots/"
-load(paste0(PATH.DATA, "DATA_SIMULATION_1.Rdata"))
+load(paste0(PATH.DATA, "DATA_SIMULATION_1_new.Rdata"))
 
 # libs
 require(data.table)
