@@ -268,8 +268,11 @@ dWit <- function(t,
       # return the tv estimate
       tvhat[k] <- tv.cur
     } else if (estimator.type == "binomial") {
-      obs <- mean((rho > threshold & t == 0) | (rho <= threshold & t == 1))
-      tvhat <- 1-2*(obs + 4/sqrt(length(rho)))
+      obs <- sum((rho > threshold & t == 0) | (rho <= threshold & t == 1))
+      phat <- invertBinMeanTest(n.success = obs, n.trial = length(t),
+                                alpha = 1-alpha,
+                                rule.of.three = FALSE)
+      tvhat <- 1-2*phat
     }
   }
 
