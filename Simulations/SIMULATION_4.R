@@ -11,6 +11,11 @@ require(data.table)
 require(stats)
 require(ranger)
 require(MASS)
+require(reticulate)
+
+# Source mmd
+source('Simulations/func_mmd.R')
+
 
 ## data generation & bayes ratio
 genMultiVar <- function(n, Sigma = diag(1, 3)) {
