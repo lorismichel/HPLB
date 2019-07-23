@@ -272,7 +272,7 @@ dWit <- function(t,
       phat <- invertBinMeanTest(n.success = obs, n.trial = length(t),
                                 alpha = 1-alpha,
                                 rule.of.three = FALSE)
-      tvhat <- 1-2*phat
+      tvhat <- max(1-2*phat,0)
     }
   }
 
