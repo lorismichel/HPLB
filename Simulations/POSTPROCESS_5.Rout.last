@@ -44,8 +44,15 @@ The following object is masked from ‘package:sfsmisc’:
 > png(filename = paste0(PATH.PLOTS,"PLOT_SIMULATION_5.png"))
 > par(mfrow=c(1,2))
 > # Boston
-> plot(power.table.boston$p, power.table$tvhat_search, pch=19, xlab="p", ylab="tv",main="Boston")
-Error in xy.coords(x, y, xlabel, ylabel, log) : 
-  object 'power.table' not found
-Calls: plot -> plot.default -> xy.coords
-Execution halted
+> plot(power.table.boston$p, power.table.boston$tvhat_search, pch=19, xlab="p", ylab="tv",main="Boston")
+> points(power.table.boston$p,pmax(0, power.table.boston$tvhat_binomial), pch=19,col="red")
+> # titanic
+> plot(power.table.titanic$p, power.table.boston$tvhat_search, pch=19, xlab="p", ylab="tv",main="titanic")
+> points(power.table.titanic$p,pmax(0, power.table.boston$tvhat_binomial), pch=19,col="red")
+> dev.off()
+null device 
+          1 
+> 
+> proc.time()
+   user  system elapsed 
+  0.824   0.155   1.002 
