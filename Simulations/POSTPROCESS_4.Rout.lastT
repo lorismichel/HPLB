@@ -43,10 +43,11 @@ The following object is masked from ‘package:sfsmisc’:
 > # loglogplot
 > png(filename = paste0(PATH.PLOTS,"PLOT_SIMULATION_4.png"))
 > plot(power.table$tvhat_search, pch=19, xlab="p", ylab="tv")
-Error in plot.window(...) : need finite 'ylim' values
-Calls: plot -> plot.default -> localWindow -> plot.window
-In addition: Warning messages:
-1: In xy.coords(x, y, xlabel, ylabel, log) : NAs introduced by coercion
-2: In min(x) : no non-missing arguments to min; returning Inf
-3: In max(x) : no non-missing arguments to max; returning -Inf
-Execution halted
+> points(pmax(0, power.table$tvhat_binomial), pch=19,col="red")
+> dev.off()
+null device 
+          1 
+> 
+> proc.time()
+   user  system elapsed 
+  0.815   0.179   1.045 
