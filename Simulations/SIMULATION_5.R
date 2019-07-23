@@ -71,5 +71,11 @@ power.table <- data.table(p     = grid,
                           tvhat_search = res1,
                           tvhat_binomial = res2)
 
+
+
+## titanic dataset
+read.table.url(https://web.stanford.edu/class/archive/cs/cs109/cs109.1166/stuff/titanic.csv)
+
+
 # saving results of simulations
 save(power.table, file = paste0(PATH.SAVE, "DATA_SIMULATION_5.Rdata"))
