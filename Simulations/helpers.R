@@ -1,6 +1,20 @@
 # helpers functions
 
-generateWitnessFunctionGaussianKernel <- function(sample1, sample2, rho) {
+generateWitnessFunctionGaussianKernel <- function(sample1, sample2, rho=NULL) {
+
+    # Get median heuristic
+
+
+  if (is.null(rho)){
+  aggsamp<-as.matrix(rbind(sample1,sample2))
+  G <- apply( aggsamp^2,1,function(y) sum(y))
+  Q <- matrix(rep(G,dim(aggsamp)[1]), ncol=dim(aggsamp)[1])
+  dists <- Q + t(Q) - 2*aggsamp%*%t(aggsamp)
+  dists <- dists[upper.tri(dists, diag = FALSE)]
+  rho <- sqrt(0.5*median(dists[dists > 0]))
+  }
+
+
   f1 <- function(x) mean(apply(sample1,1,function(y) exp(-sum((y-x)^2)/rho)))
   f2 <- function(x) mean(apply(sample2,1,function(y) exp(-sum((y-x)^2)/rho)))
 
