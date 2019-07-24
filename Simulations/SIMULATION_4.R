@@ -14,7 +14,7 @@ require(MASS)
 require(reticulate)
 
 # Source mmd
-source('Simulations/func_mmd.R')
+source('Simulations/helpers.R')
 
 
 ## data generation & bayes ratio
@@ -28,8 +28,8 @@ genMultiVar <- function(n, Sigma = diag(1, 3)) {
 # params sims
 cov1 <- diag(1, 3)
 cov2 <- diag(0.5, 3) + matrix(0.5, 3, 3)
-n <- 10000
-nrep <- 100
+n <- 500
+nrep <- 10
 grid <- c(1:nrep)
 
 
@@ -58,10 +58,38 @@ res2 <- mcmapply(FUN = function(r) {
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid, mc.cores = 10)
 
+set.seed(123, "L'Ecuyer")
+res3 <- mcmapply(FUN = function(r) {
+  y.train <- factor(c(rep(0,n), rep(1,n)))
+  x.train <- rbind(genMultiVar(n = n, cov1), genMultiVar(n = n, cov2))
+  y.test <- factor(c(rep(0,n), rep(1,n)))
+  x.test <- rbind(genMultiVar(n = n, cov1), genMultiVar(n = n, cov2))
+  #rf <- ranger(y~., data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
+  #rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
+  f <- generateWitnessFunctionGaussianKernel(sample2 = x.train[1:n,], sample1 = x.train[-c(1:n),])
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = apply(x.test, 1, function(x) f(x)), s = 0.5, estimator.type = "tv-search")$tvhat
+  #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
+  tvhat}, grid, mc.cores = 10)
+
+set.seed(123, "L'Ecuyer")
+res4 <- mcmapply(FUN = function(r) {
+  y.train <- factor(c(rep(0,n), rep(1,n)))
+  x.train <- rbind(genMultiVar(n = n, cov1), genMultiVar(n = n, cov2))
+  y.test <- factor(c(rep(0,n), rep(1,n)))
+  x.test <- rbind(genMultiVar(n = n, cov1), genMultiVar(n = n, cov2))
+  #rf <- ranger(y~., data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
+  #rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
+  f <- generateWitnessFunctionGaussianKernel(sample2 = x.train[1:n,], sample1 = x.train[-c(1:n),])
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = apply(x.test, 1, function(x) f(x)), s = 0.5, estimator.type = "binomial")$tvhat
+  #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
+  tvhat}, grid, mc.cores = 10)
+
 # gathering data
 power.table <- data.table(rep     = grid,
-                          tvhat_search = res1,
-                          tvhat_binomial = res2)
+                          tvhat_search_rf = res1,
+                          tvhat_search_mmd = res3,
+                          tvhat_binomial_rf = res2,
+                          tvhat_binomial_mmd = res4)
 
 # saving results of simulations
 save(power.table, file = paste0(PATH.SAVE, "DATA_SIMULATION_4.Rdata"))
