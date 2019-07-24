@@ -28,8 +28,8 @@ genMultiVar <- function(n, Sigma = diag(1, 3)) {
 # params sims
 cov1 <- diag(1, 3)
 cov2 <- diag(0.5, 3) + matrix(0.5, 3, 3)
-n <- 500
-nrep <- 10
+n <- 700
+nrep <- 100
 grid <- c(1:nrep)
 
 
