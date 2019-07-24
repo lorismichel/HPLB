@@ -26,7 +26,7 @@ tr, te = tst_data.split_tr_te(tr_proportion=1, seed=10)
 med = util.meddistance(tr.stack_xy(), 1000)
 k = kernel.KGauss(med)
 mmd_test = tst.QuadMMDTest(k, n_permute=400, alpha=alpha)
-output = mmd_test.perform_test(tr)")
+output = mmd_test.compute_stat(tr,use_1sample_U=False)")
 
 
   decision <- py$output$h0_rejected
