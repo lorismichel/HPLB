@@ -22,4 +22,7 @@ points(power.table.titanic$p,pmax(0, power.table.titanic$tvhat_binomial), pch=19
 
 plot(power.table.breast$p, power.table.breast$tvhat_search, pch=19, xlab="p", ylab="tv",main="Breast cancer dataset", type="b")
 points(power.table.breast$p,pmax(0, power.table.breast$tvhat_binomial), pch=19,col="red", type="b")
+
+plot(power.table.iono$p, power.table.iono$tvhat_search, pch=19, xlab="p", ylab="tv",main="Ionosphere cancer dataset", type="b")
+points(power.table.iono$p,pmax(0, power.table.iono$tvhat_binomial), pch=19,col="red", type="b")
 dev.off()
