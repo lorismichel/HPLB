@@ -14,7 +14,7 @@ require(MASS)
 require(reticulate)
 
 # Source mmd
-source('Simulations/helpers.R')
+source('./helpers.R')
 
 
 ## data generation & bayes ratio
