@@ -160,12 +160,39 @@ if (type=="regression"){
   # getting the ranks of the predictions on the test set
   preds.test <- predict(rf, data = dtest)$predictions
 
+  s <- s_vec
+  dsearchTV <- dWit(t = dtest$t, rho = preds.test, s = s, alpha = 0.05, estimator.type = "tv-search")
+  dsearchTV$tvhat
+
 }
 
 
-s <- s_vec
-dsearchTV <- dWit(t = dtest$t, rho = preds.test, s = s, alpha = 0.05, estimator.type = "tv-search")
-dsearchTV$tvhat
+
+
+if (type=="classification"){
+
+  tvhat<-c()
+  l=0
+  preds.test <- c()
+  for (s in s_vec){
+
+    l<-l+1
+    dtrains<-dtrain
+    dtrains$t<-NULL
+    dtrains$ytrain <- as.factor(as.numeric(dtrain$t > s))
+
+  rf <- ranger::ranger(ytrain~., data = dtrains, probability = T)
+  # getting the ranks of the predictions on the test set
+  preds.test <- cbind(preds.test, predict(rf, data = dtest)$predictions[,"1"])
+
+  #ytest <- as.numeric(dtest$t <= s)
+
+  }
+
+  dsearchTV <- dWit(t = dtest$t, rho = preds.test, s = s_vec, alpha = 0.05, estimator.type = "tv-search")
+
+
+}
 
 
 
