@@ -1,4 +1,5 @@
 # helpers functions
+require(mvtnorm)
 
 generateWitnessFunctionGaussianKernel <- function(sample1, sample2, rho=NULL) {
 
