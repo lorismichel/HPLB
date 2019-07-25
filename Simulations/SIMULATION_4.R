@@ -31,6 +31,7 @@ genMultiVarT <- function(n, R = diag(1, 3), df = 3) {
 # params sims
 cov1 <- diag(1, 3)
 cov2 <- diag(0.5, 3) + matrix(0.5, 3, 3)
+R <- diag(1, 10)
 n <- 700
 nrep <- 100
 grid <- c(1:nrep)
@@ -77,9 +78,9 @@ res3 <- mcmapply(FUN = function(r) {
 set.seed(123, "L'Ecuyer")
 res4 <- mcmapply(FUN = function(r) {
   y.train <- factor(c(rep(0,n), rep(1,n)))
-  x.train <- rbind(genMultiVar(n = n, cov1), genMultiVarT(n = n, cov1))
+  x.train <- rbind(genMultiVar(n = n, R), genMultiVarT(n = n, R))
   y.test <- factor(c(rep(0,n), rep(1,n)))
-  x.test <- rbind(genMultiVar(n = n, cov1), genMultiVarT(n = n, cov1))
+  x.test <- rbind(genMultiVar(n = n, R), genMultiVarT(n = n, R))
   #rf <- ranger(y~., data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
   #rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
   f <- generateWitnessFunctionGaussianKernel(sample2 = x.train[1:n,], sample1 = x.train[-c(1:n),])
@@ -90,9 +91,9 @@ res4 <- mcmapply(FUN = function(r) {
 set.seed(123, "L'Ecuyer")
 res5 <- mcmapply(FUN = function(r) {
   y.train <- factor(c(rep(0,n), rep(1,n)))
-  x.train <- rbind(genMultiVar(n = n, cov1), genMultiVarT(n = n, cov1))
+  x.train <- rbind(genMultiVar(n = n, R), genMultiVarT(n = n, R))
   y.test <- factor(c(rep(0,n), rep(1,n)))
-  x.test <- rbind(genMultiVar(n = n, cov1), genMultiVarT(n = n, cov1))
+  x.test <- rbind(genMultiVar(n = n, R), genMultiVarT(n = n, R))
   #rf <- ranger(y~., data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
   #rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
   rf <- ranger(y~., data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
@@ -104,9 +105,9 @@ res5 <- mcmapply(FUN = function(r) {
 set.seed(123, "L'Ecuyer")
 res6 <- mcmapply(FUN = function(r) {
   y.train <- factor(c(rep(0,n), rep(1,n)))
-  x.train <- rbind(genMultiVar(n = n, cov1), genMultiVarT(n = n, cov1))
+  x.train <- rbind(genMultiVar(n = n, R), genMultiVarT(n = n, R))
   y.test <- factor(c(rep(0,n), rep(1,n)))
-  x.test <- rbind(genMultiVar(n = n, cov1), genMultiVarT(n = n, cov1))
+  x.test <- rbind(genMultiVar(n = n, R), genMultiVarT(n = n, R))
   #rf <- ranger(y~., data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
   #rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
   rf <- ranger(y~., data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
