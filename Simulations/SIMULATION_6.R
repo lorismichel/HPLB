@@ -89,7 +89,7 @@ F_s <- function(s, startpoints) { if (s <= startpoints[2]) {Norm(m1,sigma1)} els
 G_s <- function(s, startpoints) { if (s >= startpoints[length(startpoints)]) {Norm(m4,sigma4)} else {UnivarMixingDistribution(Norm(m1,sigma1), Norm(m2,sigma2),Norm(m3,sigma3),Norm(m4,sigma4),
                                                                                                                               mixCoeff= mix_right(s,startpoints))}}
 # sampling the data with the witnesses as well as the split s
-set.seed(100)
+set.seed(1)
 #par(mfrow=c(1,1))
 n=5000
 t <- runif(n = n, min = 0, max = 1)
@@ -151,8 +151,8 @@ for (s in s_vec) {
 }
 
 
-type="regression"
-#type="classification"
+#type="regression"
+type="classification"
 
 
 if (type=="regression"){
