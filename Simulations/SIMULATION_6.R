@@ -89,9 +89,9 @@ F_s <- function(s, startpoints) { if (s <= startpoints[2]) {Norm(m1,sigma1)} els
 G_s <- function(s, startpoints) { if (s >= startpoints[length(startpoints)]) {Norm(m4,sigma4)} else {UnivarMixingDistribution(Norm(m1,sigma1), Norm(m2,sigma2),Norm(m3,sigma3),Norm(m4,sigma4),
                                                                                                                               mixCoeff= mix_right(s,startpoints))}}
 # sampling the data with the witnesses as well as the split s
-set.seed(0)
+set.seed(100)
 #par(mfrow=c(1,1))
-n=2000
+n=5000
 t <- runif(n = n, min = 0, max = 1)
 
 #for (j in 1:lenght(startpoints)){
@@ -122,7 +122,7 @@ dtest <- d[-id,]
 
 
 # total variation and densities
-set.seed(0)
+set.seed(1)
 s_vec <- runif(100)
 tv_s <- c()
 for (s in s_vec) {
@@ -160,9 +160,7 @@ if (type=="regression"){
   # getting the ranks of the predictions on the test set
   preds.test <- predict(rf, data = dtest)$predictions
 
-  s <- s_vec
-  dsearchTV <- dWit(t = dtest$t, rho = preds.test, s = s, alpha = 0.05, estimator.type = "tv-search")
-  dsearchTV$tvhat
+
 
 }
 
@@ -189,22 +187,20 @@ if (type=="classification"){
 
   }
 
-  dsearchTV <- dWit(t = dtest$t, rho = preds.test, s = s_vec, alpha = 0.05, estimator.type = "tv-search")
-
 
 }
 
 
 
-N=1
-ind1 <- (s_vec <= 0.5*N)
-ind2 <- ((rep(1,length(s)) - ind1)==1)
-tvhat_s<-rep(0,length(s_vec))
-tvhat_s[ind1]<-l$TVhat_asymptoticFs[ind1]
-tvhat_s[ind2]<-l$TVhat_asymptoticGs[ind2]
+#N=1
+#ind1 <- (s_vec <= 0.5*N)
+#ind2 <- ((rep(1,length(s)) - ind1)==1)
+#tvhat_s<-rep(0,length(s_vec))
 
-withat_s[ind1]<-l$lambdahat_asymptoticFs[ind1]
-withat_s[ind2]<-l$lambdahat_asymptoticGs[ind2]
+tvhat_s <- dWit(t = dtest$t, rho = preds.test, s = s_vec, alpha = 0.05, estimator.type = "tv-search")$tvhat
+wit_all<-dWit(t = dtest$t, rho = preds.test, s = s_vec, alpha = 0.05, estimator.type = "wit-search", direction = c(rep("left", sum(s_vec<=0.5)), rep("right", sum(s_vec > 0.5)) )  )
+withat_s <- ifelse( s_vec <=0.5, wit_all$lambdahat.Fs, wit_all$lambdahat.Gs)
+
 
 
 # ploting the lower bound estimates as well as the true ones
@@ -218,7 +214,7 @@ lines(x = sort(s_vec), y = tvhat_s[order(s_vec)], col="blue",type="b",pch=19)
 
 
 # witnesses lower bound
-wit_s <- sapply(s_vec, function(s) {ifelse(s <= 0.5, sum(witness_pointing(seed = NULL, x = x, f = f_s(s, startpoints), g = g_s(s, startpoints))$wF[-id][dtest$t <= s]), sum(witness_pointing(x = x, f = f_s(s, startpoints), g = g_s(s, startpoints))$wG[-id][dtest$t > s]))})
+wit_s <- sapply(s_vec, function(s) {ifelse(s <= 0.5, sum(dWitSampling( x = x, f = f_s(s, startpoints), g = g_s(s, startpoints))$wF[-id][dtest$t <= s], seed=NULL), sum(dWitSampling(x = x, f = f_s(s, startpoints), g = g_s(s, startpoints), seed=NULL)$wG[-id][dtest$t > s]))})
 plot(sort(s_vec), wit_s[order(s_vec)],type="b", main = "Witness Count",pch=19, xlab="s", ylab="")
 lines(x = sort(s_vec), y = withat_s[order(s_vec)], col="blue",type="b",pch=19)
 

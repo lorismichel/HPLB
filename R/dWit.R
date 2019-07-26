@@ -276,9 +276,14 @@ dWit <- function(t,
     }
   }
 
+  #print(lambdahat.Gs)
+  # Reverse the non-NA part in Gs, but don't mix it with the NaN part.
+  #lambdahat.Gs[!is.nan(lambdahat.Gs)]<-rev(lambdahat.Gs[!is.nan(lambdahat.Gs)])
+  #print(lambdahat.Gs)
+
   # return list
   return(list(lambdahat.Fs = lambdahat.Fs,
-              lambdahat.Gs = rev(lambdahat.Gs),
+              lambdahat.Gs = lambdahat.Gs,
               tvhat.Fs     = tvhat.Fs,
               tvhat.Gs     = tvhat.Gs,
               tvhat        = tvhat))
