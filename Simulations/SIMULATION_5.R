@@ -35,7 +35,7 @@ crim01.test = factor(crime01[test])
 crim01.train = factor(crime01[train])
 # running simulations on clusters
 # params sims
-grid.p <- seq(0, 0.5, by = 0.025)
+grid.p <- seq(0, 0.5, by = 0.01)
 grid <- grid.p
 
 # running simulations
