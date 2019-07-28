@@ -44,16 +44,16 @@ The following object is masked from ‘package:sfsmisc’:
 > png(filename = paste0(PATH.PLOTS,"PLOT_SIMULATION_5.png"))
 > par(mfrow=c(2,2))
 > # Boston
-> plot(power.table.boston$p, power.table.boston$tvhat_search, pch=19, xlab="p", ylab="tv",main="Boston",type="b", cex = 0.7, font.main=2)
+> plot(power.table.boston$p, power.table.boston$tvhat_search, pch=19, xlab="p", ylab="TV",main="Boston",type="b", cex = 0.7, font.main=3)
 > points(power.table.boston$p,pmax(0, power.table.boston$tvhat_binomial), pch=19,col="red",type="b")
 > # titanic
-> plot(power.table.titanic$p, power.table.titanic$tvhat_search, pch=19, xlab="p", ylab="tv",main="Titanic", type="b", cex = 0.7, font.main=2)
+> plot(power.table.titanic$p, power.table.titanic$tvhat_search, pch=19, xlab="p", ylab="TV",main="Titanic", type="b", cex = 0.7, font.main=3)
 > points(power.table.titanic$p,pmax(0, power.table.titanic$tvhat_binomial), pch=19,col="red", type="b")
 > 
-> plot(power.table.breast$p, power.table.breast$tvhat_search, pch=19, xlab="p", ylab="tv",main="Breast Cancer", type="b", cex = 0.7, font.main=2)
+> plot(power.table.breast$p, power.table.breast$tvhat_search, pch=19, xlab="p", ylab="TV",main="Breast Cancer", type="b", cex = 0.7, font.main=3)
 > points(power.table.breast$p,pmax(0, power.table.breast$tvhat_binomial), pch=19,col="red", type="b")
 > 
-> plot(power.table.iono$p, power.table.iono$tvhat_search, pch=19, xlab="p", ylab="TV",main="Ionosphere", type="b", cex = 0.7, font.main=2)
+> plot(power.table.iono$p, power.table.iono$tvhat_search, pch=19, xlab="p", ylab="TV",main="Ionosphere", type="b", cex = 0.7, font.main=3)
 > points(power.table.iono$p,pmax(0, power.table.iono$tvhat_binomial), pch=19,col="red", type="b")
 > dev.off()
 null device 
@@ -61,4 +61,4 @@ null device
 > 
 > proc.time()
    user  system elapsed 
-  0.956   0.168   2.444 
+  0.955   0.191   3.037 
