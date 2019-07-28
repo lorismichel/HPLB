@@ -1,5 +1,4 @@
 # SIMUlATION_4
-# type: copula shift
 
 ## saving paths
 PATH.SAVE = "../Data/"
@@ -28,10 +27,11 @@ genMultiVarT <- function(n, R = diag(1, 3), df = 3) {
 
 
 # running simulations on clusters
+
 # params sims
 cov1 <- diag(1, 3)
 cov2 <- diag(0.5, 3) + matrix(0.5, 3, 3)
-R <- diag(1, 10)
+R <- diag(1, 50)
 n <- 700
 nrep <- 100
 grid <- c(1:nrep)

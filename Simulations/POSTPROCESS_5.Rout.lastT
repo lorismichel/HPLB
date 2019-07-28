@@ -52,10 +52,13 @@ The following object is masked from ‘package:sfsmisc’:
 > 
 > plot(power.table.breast$p, power.table.breast$tvhat_search, pch=19, xlab="p", ylab="tv",main="Breast cancer dataset", type="b")
 > points(power.table.breast$p,pmax(0, power.table.breast$tvhat_binomial), pch=19,col="red", type="b")
+> 
+> plot(power.table.iono$p, power.table.iono$tvhat_search, pch=19, xlab="p", ylab="tv",main="Ionosphere dataset", type="b")
+> points(power.table.iono$p,pmax(0, power.table.iono$tvhat_binomial), pch=19,col="red", type="b")
 > dev.off()
 null device 
           1 
 > 
 > proc.time()
    user  system elapsed 
-  0.995   0.153   1.630 
+  0.510   0.108   0.659 
