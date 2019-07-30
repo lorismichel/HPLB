@@ -1,0 +1,53 @@
+
+R version 3.6.1 (2019-07-05) -- "Action of the Toes"
+Copyright (C) 2019 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+Warning message:
+In libPIns(xLib2, beforeLib = .Library, msgTxt = paste("for Fedora",  :
+  .libPaths() contains no entries matching ‘/usr/local64.sfs/app/R/R-3.6.1-inst/library’
+> # POSTPROCESS 2
+> # type: producing plots for the loglog scatter plot of sample size against tv
+> 
+> # PATHS
+> PATH.DATA <- "../Data/"
+> PATH.PLOTS <- "../Plots/"
+> load(paste0(PATH.DATA, "DATA_SIMULATION_3.Rdata"))
+> 
+> # libs
+> require(data.table)
+Loading required package: data.table
+
+Attaching package: ‘data.table’
+
+The following object is masked from ‘package:sfsmisc’:
+
+    last
+
+> 
+> 
+> # loglogplot
+> png(filename = paste0(PATH.PLOTS,"PLOT_SIMULATION_3.png"))
+> par(mfrow=c(2,2))
+> plot(power.table[m==0.5,]$tvhat_search,pch=19, xlab="p", ylab="TV", main="Null hypothesis")
+Error in plot.window(...) : need finite 'ylim' values
+Calls: plot -> plot.default -> localWindow -> plot.window
+In addition: Warning messages:
+1: In xy.coords(x, y, xlabel, ylabel, log) : NAs introduced by coercion
+2: In min(x) : no non-missing arguments to min; returning Inf
+3: In max(x) : no non-missing arguments to max; returning -Inf
+Execution halted
