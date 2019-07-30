@@ -16,7 +16,7 @@ print(cut(power.table$power_search, labels = FALSE, breaks = seq(-0.1,1.1,0.1)))
 		 
 # loglogplot
 png(filename = paste0(PATH.PLOTS,"PLOT_SIMULATION_1.png"))
-par(mfrow=c(1,2))
+par(mfrow=c(2,1))
 plot(power.table$logn,power.table$loglambda,
      col = cols[cut(power.table$power_search, labels = FALSE, breaks = seq(-0.1,1.1,0.1))],
      pch=19,xlab="log(n)",
