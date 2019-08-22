@@ -5,6 +5,7 @@
 PATH.DATA <- "../Data/"
 PATH.PLOTS <- "../Plots/"
 load(paste0(PATH.DATA, "DATA_SIMULATION_5.Rdata"))
+#load("C:/Users/jeffr/Dropbox/tvForest/SimulationsData/DATA_SIMULATION_5.Rdata")
 
 # libs
 require(data.table)
