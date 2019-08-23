@@ -4,13 +4,14 @@ ll =matrix(c(0,0,0,1,0,3,0,5),ncol=2,byrow=TRUE)
 plot(gg,layout=ll)
 
 
-nba <- read.csv("http://datasets.flowingdata.com/ppg2008.csv")
+#nba <- read.csv("http://datasets.flowingdata.com/ppg2008.csv")
 load("~/phdWork/dWit/python/distance.Rdata")
 dist_m <- mat
 dist_m
 dist_mi <- 1/dist_m
 library(qgraph)
-qgraph(dist_mi, layout = "spring",vsize=10)
+qgraph(dist_mi, layout = "spring",vsize=10, rotation="promax", borders=FALSE, vTrans=200, cut=0.4, color="white")
+#qgraph(dist_mi, layout = "spring",vsize=10, rotation="promax", borders=FALSE, vTrans=200, cut=0.4)
 attr(mat, 'Labels') <- colnames(mat)
 
 "coldiss" <- function(D, nc = 4, byrank = TRUE, diag = FALSE)
@@ -43,9 +44,11 @@ attr(mat, 'Labels') <- colnames(mat)
    # plotcolors(spe.color, rlabels=attributes(D)$Labels,
    #            main="Dissimilarity Matrix")
     plotcolors(speo.color, rlabels=attributes(D)$Labels[spe.o],
-               dlabels=attributes(D)$Labels[spe.o],
-               #clabels=attributes(D)$Labels[spe.o],
-               main="Total Variation Lower-bound Matrix Between Classes")
+               #dlabels=attributes(D)$Labels[spe.o],
+               clabels=attributes(D)$Labels[spe.o]#,
+               #main="Total Variation Lower-bound Matrix Between Classes"
+               )
+    #title("Total Variation Lower-bound Matrix Between Classes", line = 3)
   }
 
   par(op)
