@@ -5,25 +5,29 @@
 #' @param rho a numeric value giving an ordering function. This could be
 #'   a classifier, a regressor, a witness function from an MMD kernel or anything else.
 #' @param s a numeric value giving split points on t.
-#' @param alpha the level of the type 1 error control.
-#' @param estimator.type either "basic", "tv-search", "wit-search", "binomial"
-#' @param tv.grid a grid of values for the search.
+#' @param estimator.type either "asymptotic-tv-search", "custom-tv-search", "asymptotic-wit-search", "binomial" or "tv-search"
+#'   for retro-compatibility.
+#' @param alpha the overall level of the type 1 error control.
+#' @param tv.seq a sequence of values between 0 and 1 used as the grid of search for the total variation distance.
+#' @param custom.bounding.seq a list of bounding
 #' @param direction which witness to estimate.
 #' @param threshold this is the threshold used if missclassification error in used.
+#' @param verbose.plot
 #' @import data.table
 #' @export
 dWit <- function(t,
                  rho,
-                 s,
-                 alpha              = 0.05,
-                 estimator.type     = "basic",
-                 tv.grid            = seq(from = 0,
-                                          to   = 1,
-                                          by   = 0.01),
-                 direction          = rep("left", length(s)),
-                 threshold          = 0.5) {
+                 s                   = 0.5,
+                 estimator.type      = "asymptotic-tv-search",
+                 alpha               = 0.05,
+                 tv.seq              = seq(from = 0, to = 1, by = 0.01),
+                 custom.bounding.seq = NULL,
+                 direction           = rep("left", length(s)),
+                 threshold           = 0.5,
+                 verbose.plot        = FALSE,
+                 ...) {
 
-  # parameters checks
+  ## parameters checks
 
   # test for t
   if (!is.numeric(t) || any(!is.finite(t)) || is.matrix(t)) {
@@ -40,8 +44,9 @@ dWit <- function(t,
     stop("Invalid values for rho, please see ?dWit.")
   }
 
-  # two cases
+  # two cases depending on the dimension of rho
   if (is.matrix(rho)) {
+
     if (nrow(rho) != length(t)) {
       stop("Incompatible dimensions between t and rho, please see ?dWit.")
     }
@@ -49,6 +54,7 @@ dWit <- function(t,
       stop("Incompatible dimensions between s and rho, please see ?dWit.")
     }
     ordering.type = "multiple"
+
   } else {
     if (length(rho) != length(t)) {
       stop("Incompatible dimensions between t and rho, please see ?dWit.")
@@ -57,8 +63,16 @@ dWit <- function(t,
   }
 
   # test for the estimator type
-  if (!is.character(estimator.type) || !(estimator.type %in% c("basic", "tv-search", "wit-search", "binomial"))) {
+  if (!is.character(estimator.type) || !(estimator.type %in% c("asymptotic-tv-search",
+                                                               "asymptotic-wit-search",
+                                                               "custom-tv-search",
+                                                               "empirical-tv-search",
+                                                               "binomial",
+                                                               "tv-search"))) {
     stop("Invalid estimator type, please see ?dWit.")
+  }
+  if (estimator.type == "tv-search") {
+    estimator.type == "asymptotic-tv-search"
   }
 
   # test for the type I error level
@@ -66,8 +80,8 @@ dWit <- function(t,
     stop("Invalid type I error level alpha, please see ?dWit.")
   }
 
-  # test for the tv.grid
-  if (!is.numeric(tv.grid) || any(tv.grid > 1) || any(tv.grid < 0) || any(duplicated(tv.grid))) {
+  # test for the tv.seq
+  if (!is.numeric(tv.seq) || any(tv.seq > 1) || any(tv.seq < 0) || any(duplicated(tv.seq))) {
     stop("Invalid grid for tv, please see ?dWit.")
   }
 
@@ -76,8 +90,30 @@ dWit <- function(t,
     stop("Invalid direction, please see ?dWit.")
   }
 
+  # check that with user defined bounding sequence or empirical-tv-seach s should be uni-dim
+  if (estimator.type %in% c("empirical-tv-search", "custom-tv-search")) {
+    if (length(s) != 1) {
+      stop("Incompatible value of s and estimator.type, please see ?dWit.")
+    }
+    if (estimator.type == "custom-tv-search") {
+      if (is.null(custom.bounding.seq)) {
+        stop("Invalid custom.bounding.seq, please see ?dWit.")
+      } else {
+        if (length(custom.bounding.seq) != length(tv.seq)) {
+          stop("Incompatible dimensions between custom.bounding.seq and tv.seq, please see `dWit")
+        }
+      }
+    }
+    if (estimator.type %in% c("empirical-tv-search")) {
+      custom.bounding.seq <- empiricalBF(tv.seq = tv.seq,
+                                         alpha = alpha / 2,
+                                         m = sum(t <= s),
+                                         n = sum(t > s), ...)
+    }
+  }
+
   # sort in increasing order the grid of tv values
-  tv.grid <- sort(tv.grid, decreasing = FALSE)
+  tv.seq <- sort(tv.seq, decreasing = FALSE)
 
   # define the returned values
   lambdahat.Fs <- rep(NA, length(s))
@@ -115,34 +151,9 @@ dWit <- function(t,
     #V_zFs <- sapply(1:nrow(ranks.table), function(z) nrow(ranks.table[t <= s[k] & rank <= z]))
     #V_zGs <- sapply(nrow(ranks.table):1, function(z) nrow(ranks.table[t > s[k] & rank >= z]))
 
-    # branching on estimators
-    if (estimator.type == "basic") {
 
-      # define the beta bounding sequence from the asymptotic result & the standard deviation
-      x_alpha <- -log(-log(1-alpha/2)/2)
-      betaFs <- sqrt(2 * log(log(m))) + (log(log(log(m)))-log(pi)+2*x_alpha) / (2 * sqrt(2 * log(log(m))))
-      betaGs <- sqrt(2 * log(log(n))) + (log(log(log(n)))-log(pi)+2*x_alpha) / (2 * sqrt(2 * log(log(n))))
-
-      sd0 <- sapply(1:nrow(ranks.table), function(z) sqrt(z * (m /(m+n)) * (n /(m+n)) * ((m+n-z)/(m+n-1))))
-
-      # centered stats
-      centered.statFs <- (V_zFs - sapply(1:nrow(ranks.table), function(z) (z*m)/(m+n)))
-      centered.statGs <- (V_zGs - sapply(1:nrow(ranks.table), function(z) (z*n)/(m+n)))
-
-      # estimators construction
-      lambdahat.Fs[k] <- max(max(centered.statFs - betaFs * sd0), 0)
-      lambdahat.Gs[k] <- max(max(centered.statGs - betaGs * sd0), 0)
-
-      tvhat.Fs[k] <- invertBinMeanTest(n.success     = lambdahat.Fs[k],
-                                       n.trial       = m,
-                                       alpha         = alpha/2,
-                                       rule.of.three = FALSE)
-      tvhat.Gs[k] <- invertBinMeanTest(n.success     = lambdahat.Gs[k],
-                                       n.trial       = n,
-                                       alpha         = alpha/2,
-                                       rule.of.three = FALSE)
-
-    } else if (estimator.type == "wit-search") {
+    ## branching on estimators
+    if (estimator.type == "asymptotic-wit-search") {
 
       if (direction[k] == "left") {
 
@@ -219,7 +230,7 @@ dWit <- function(t,
       } else if (direction[k] == "right") {
         lambdahat.Gs[k] <- lambda.left
       }
-    } else if (estimator.type == "tv-search") {
+    } else if (estimator.type == "asymptotic-tv-search") {
 
 
       # recursive search
@@ -228,7 +239,7 @@ dWit <- function(t,
 
       while (max.stat > 0) {
 
-        tv.cur <- tv.grid[step]
+        tv.cur <- tv.seq[step]
         step <- step + 1
 
         lambda.left <- qbinom(p = 1-alpha/3, size = m, prob = tv.cur)
@@ -263,23 +274,46 @@ dWit <- function(t,
         Q <- pmin(Q, m)
 
         max.stat <- max(V_zFs-Q)
+
+        if (verbose.plot && (tv.cur == 0)) {
+          plot(V_zFs-mean0,type="l")
+          lines(betaFs * sd0,col="red")
+        }
+      }
+
+      # return the tv estimate
+      tvhat[k] <- tv.cur
+    } else if (estimator.type %in% c("custom-tv-search", "empirical-tv-search")) {
+
+      # recursive search
+      max.stat <- 1
+      step <- 1
+
+      while (max.stat > 0 & step != length(tv.seq)) {
+
+        tv.cur <- tv.seq[step]
+        max.stat <- max(V_zFs-custom.bounding.seq[[step]])
+        step <- step + 1
+
+        if (verbose.plot && (tv.cur == 0)) {
+          plot(V_zFs,type="l")
+          lines(custom.bounding.seq[[step]],col="red")
+        }
       }
 
       # return the tv estimate
       tvhat[k] <- tv.cur
     } else if (estimator.type == "binomial") {
+
+      # compute the accuracy and build a lower-bound
       obs <- sum((rho > threshold & t == 0) | (rho <= threshold & t == 1))
       phat <- invertBinMeanTest(n.success = obs, n.trial = length(t),
                                 alpha = 1-alpha,
                                 rule.of.three = FALSE)
       tvhat <- max(1-2*phat,0)
+
     }
   }
-
-  #print(lambdahat.Gs)
-  # Reverse the non-NA part in Gs, but don't mix it with the NaN part.
-  #lambdahat.Gs[!is.nan(lambdahat.Gs)]<-rev(lambdahat.Gs[!is.nan(lambdahat.Gs)])
-  #print(lambdahat.Gs)
 
   # return list
   return(list(lambdahat.Fs = lambdahat.Fs,

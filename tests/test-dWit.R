@@ -41,3 +41,21 @@ dsearchWit <- dWit(t = t, rho = rho, s = s, alpha = 0.05, estimator.type = "wit-
 dsearchWit
 
 
+# univariate classification
+set.seed(0)
+n <- 2000
+t <- sample(c(0,1), n, replace = TRUE)
+x <- ifelse(t <= 0, rnorm(n), rnorm(n, 2))
+rho = dnorm(x, 2) / (dnorm(x) + dnorm(x, 2))
+par(mfrow=c(2,1))
+#plot(t, x, pch=19)
+#plot(t, rho, pch=19)
+
+require(distrEx)
+distrEx::TotalVarDist(Norm(mean = 0,sd = 1),Norm(mean = 2, sd = 1))
+
+s <- 0.5
+dsearchTV <- dWit(t = t, rho = rho, s = s, alpha = 0.05, estimator.type = "tv-search")
+dsearchTV
+
+
