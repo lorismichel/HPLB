@@ -1,4 +1,3 @@
-# SIMUlATION_1
 # type: checking power by a loglog plot of sample size against contamination/tv
 #       comparison with missclassification error rate test.
 
@@ -29,32 +28,29 @@ generateInputData <- function(n, lambda) {
 # running simulations on clusters
 # params sims
 nrep <- 10
-grid.gamma <- rep(seq(0.1,  1.2, by = 0.1), nrep)
-grid.n <- rep(10^{seq(2,5,length.out = 10)}, nrep)
-grid <- expand.grid(grid.n, grid.gamma)
+#grid.gamma <- rep(seq(0.1,  1.2, by = 0.1), nrep)
+grid <- rep(10^{seq(2,5,length.out = 10)}, nrep)
+#grid <- expand.grid(grid.n, grid.gamma)
 
 # running simulations
 set.seed(123, "L'Ecuyer")
 res1 <- mcmapply(FUN = function(n, gamma) {
-  lambda <- n^{-gamma}
-  inputs <- generateInputData(n, lambda = lambda)
+  inputs <- generateInputData(n, lambda = 0)
   tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "asymptotic-tv-search")$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
-  tvhat}, grid[,1], grid[,2], mc.cores = 25)
+  tvhat}, grid, mc.cores = 25)
 
 set.seed(123, "L'Ecuyer")
 res2 <- mcmapply(FUN = function(n, gamma) {
-  lambda <- n^{-gamma}
-  inputs <- generateInputData(n, lambda = lambda)
+  inputs <- generateInputData(n, lambda = 0)
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "tv-search")$tvhat
   tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
-  tvhat}, grid[,1], grid[,2], mc.cores = 25)
+  tvhat}, grid, mc.cores = 25)
 
 # gathering data
-power.data <- data.table(logn = log(grid[,1], base = 10),
-			 loglambda = -log(grid[,1], base = 10)*grid[,2],
-			 tv_search = res1, tv_binomial = res2)
-power.table <- power.data[,.(power_search = mean(tv_search>0), power_binomial = mean(tv_binomial>0)),by=c("logn","loglambda")]
+power.data <- data.table(logn = log(grid, base = 10),
+                         tv_search = res1, tv_binomial = res2)
+power.table <- power.data[,.(power_search = mean(tv_search>0), power_binomial = mean(tv_binomial>0)),by=c("logn")]
 
 # saving results of simulations
-save(power.data, power.table, file = paste0(PATH.SAVE, "DATA_SIMULATION_1.Rdata"))
+save(power.data, power.table, file = paste0(PATH.SAVE, "DATA_SIMULATION_0.Rdata"))
