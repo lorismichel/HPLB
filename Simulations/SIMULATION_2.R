@@ -1,4 +1,4 @@
-# SIMUlATION_1
+# SIMULATION_1
 # type: checking power by a loglog plot of sample size against contamination/tv
 #       comparison with missclassification error rate test.
 
@@ -58,8 +58,8 @@ res2 <- mcmapply(FUN = function(m, p) {
   tvhat}, grid[,1], grid[,2], mc.cores = 20)
 
 # gathering data
-power.table <- data.table(m     = grid[,1], 
-			  p     = grid[,2], 
+power.table <- data.table(m     = grid[,1],
+			  p     = grid[,2],
 			  tvhat_search = res1,
                           tvhat_binomial = res2)
 

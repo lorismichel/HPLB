@@ -20,10 +20,6 @@ dataContamination <- function(y, p = 0) {
   y <- as.numeric(levels(y))[y]
   return(factor(ifelse(rbinom(n = length(y), size = 1, p = p) == 0, y, 1-y)))
 }
-dataContamination2 <- function(y, p = 0, preds) {
-  y <- as.numeric(levels(y))[y]
-  return(factor(ifelse(preds<=p, ifelse(rbinom(n = length(y), size = 1, p = 1/2) == 0, y, 1-y),y)))
-}
 
 
 # Prepro
@@ -52,8 +48,8 @@ res1 <- mcmapply(FUN = function(p) {
   rf <- ranger(y~., data = data.frame(y = y.train, Boston.train),classification = TRUE, probability = TRUE)
   y.train <- dataContamination2(y.train, p = 0.78, preds = rf$predictions[,2])
   rho <- predict(rf, data = data.frame(Boston.test))$predictions[,"1"]
-  y.test  <- dataContamination2(y.test, p = 0.78, rho)
-  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "asymptotic-tv-search", verbose.plot = TRUE)$tvhat
+  y.test  <- dataContamination(y.test, p = 0.78)
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "asymptotic-tv-search")$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid, mc.cores = 10)
 
@@ -112,7 +108,7 @@ res1 <- mcmapply(FUN = function(p) {
   y.test  <- dataContamination(y.test, p)
   rf <- ranger(y~., data = data.frame(y = y.train, x.train),classification = TRUE, probability = TRUE)
   rho <- predict(rf, data = data.frame(x.test))$predictions[,"1"]
-  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "tv-search")$tvhat
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "asymptotic-tv-search")$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid, mc.cores = 10)
 

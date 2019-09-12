@@ -30,7 +30,7 @@ generateInputData <- function(n, lambda) {
 # params sims
 nrep <- 10
 grid.gamma <- rep(seq(0.1,  1.2, by = 0.1), nrep)
-grid.n <- rep(10^{2:5}, nrep)
+grid.n <- rep(10^{seq(2,5,length.out = 10)}, nrep)
 grid <- expand.grid(grid.n, grid.gamma)
 
 # running simulations
@@ -38,9 +38,9 @@ set.seed(123, "L'Ecuyer")
 res1 <- mcmapply(FUN = function(n, gamma) {
   lambda <- n^{-gamma}
   inputs <- generateInputData(n, lambda = lambda)
-  tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "tv-search")$tvhat
+  tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "asymptotic-tv-search")$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
-  as.numeric(tvhat > 0)}, grid[,1], grid[,2], mc.cores = 25)
+  tvhat > 0}, grid[,1], grid[,2], mc.cores = 25)
 
 set.seed(123, "L'Ecuyer")
 res2 <- mcmapply(FUN = function(n, gamma) {
@@ -48,13 +48,13 @@ res2 <- mcmapply(FUN = function(n, gamma) {
   inputs <- generateInputData(n, lambda = lambda)
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "tv-search")$tvhat
   tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
-  as.numeric(tvhat > 0)}, grid[,1], grid[,2], mc.cores = 25)
+  tvhat}, grid[,1], grid[,2], mc.cores = 25)
 
 # gathering data
 power.data <- data.table(logn = log(grid[,1], base = 10),
 			 loglambda = -log(grid[,1], base = 10)*grid[,2],
-			 reject_search = res1, reject_binomial = res2)
-power.table <- power.data[,.(power_search = mean(reject_search), power_binomial = mean(reject_binomial)),by=c("logn","loglambda")]
+			 tv_search = res1, tv_binomial = res2)
+power.table <- power.data[,.(power_search = mean(tv_search>0), power_binomial = mean(tv_binomial>0)),by=c("logn","loglambda")]
 
 # saving results of simulations
-save(power.data, power.table, file = paste0(PATH.SAVE, "DATA_SIMULATION_1_new.Rdata"))
+save(power.data, power.table, file = paste0(PATH.SAVE, "DATA_SIMULATION_1.Rdata"))

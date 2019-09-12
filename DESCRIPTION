@@ -9,7 +9,8 @@ Description: R library for algorithms around the notion of distributional witnes
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
-Depends: data.table
+Depends: data.table,
+         distrEx
 Suggests: 
     testthat
 RoxygenNote: 6.1.1
