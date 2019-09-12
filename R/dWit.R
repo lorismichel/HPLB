@@ -153,7 +153,7 @@ dWit <- function(t,
 
 
     ## branching on estimators
-    if (estimator.type == "wit-search") {
+    if (estimator.type == "asymptotic-wit-search") {
 
       if (direction[k] == "left") {
 

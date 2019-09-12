@@ -45,10 +45,10 @@ res1 <- mcmapply(FUN = function(p) {
   x.train <- Boston.train
   y.test <- crim01.test
   x.test <- Boston.test
-  y.train <- dataContamination(y.train, p)
-  y.test  <- dataContamination(y.test, p)
   rf <- ranger(y~., data = data.frame(y = y.train, Boston.train),classification = TRUE, probability = TRUE)
+  y.train <- dataContamination2(y.train, p = 0.78, preds = rf$predictions[,2])
   rho <- predict(rf, data = data.frame(Boston.test))$predictions[,"1"]
+  y.test  <- dataContamination(y.test, p = 0.78)
   tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "asymptotic-tv-search")$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid, mc.cores = 10)
