@@ -27,7 +27,7 @@ generateInputData <- function(n, lambda) {
 
 # running simulations on clusters
 # params sims
-nrep <- 10
+nrep <- 50
 #grid.gamma <- rep(seq(0.1,  1.2, by = 0.1), nrep)
 grid <- rep(10^{seq(2,5,length.out = 10)}, nrep)
 #grid <- expand.grid(grid.n, grid.gamma)
