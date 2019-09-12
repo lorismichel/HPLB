@@ -31,7 +31,7 @@ genMultiVarT <- function(n, R = diag(1, 3), df = 3) {
 # params sims
 cov1 <- diag(1, 3)
 cov2 <- diag(0.5, 3) + matrix(0.5, 3, 3)
-cov3 <- diag(1.5, 3) + matrix(-0.5, 3, 3) 
+cov3 <- diag(1.5, 3) + matrix(-0.5, 3, 3)
 cov4 <- diag(0.9, 3) + matrix(0.1, 3, 3)
 R <- diag(1, 50)
 n <- 700
@@ -48,7 +48,7 @@ res1_1 <- mcmapply(FUN = function(r) {
   x.test <- rbind(genMultiVar(n = n, cov1), genMultiVar(n = n, cov2))
   rf <- ranger(y~., data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
   rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
-  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "tv-search")$tvhat
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "asymptotic-tv-search")$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid, mc.cores = 10)
 
@@ -73,7 +73,7 @@ res3_1 <- mcmapply(FUN = function(r) {
   #rf <- ranger(y~., data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
   #rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
   f <- generateWitnessFunctionGaussianKernel(sample2 = x.train[1:n,], sample1 = x.train[-c(1:n),])
-  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = apply(x.test, 1, function(x) f(x)), s = 0.5, estimator.type = "tv-search")$tvhat
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = apply(x.test, 1, function(x) f(x)), s = 0.5, estimator.type = "asymptotic-tv-search")$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid, mc.cores = 10)
 
@@ -86,7 +86,7 @@ res1_2 <- mcmapply(FUN = function(r) {
   x.test <- rbind(genMultiVar(n = n, cov1), genMultiVar(n = n, cov3))
   rf <- ranger(y~., data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
   rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
-  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "tv-search")$tvhat
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "asymptotic-tv-search")$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid, mc.cores = 10)
 
@@ -111,7 +111,7 @@ res3_2 <- mcmapply(FUN = function(r) {
   #rf <- ranger(y~., data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
   #rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
   f <- generateWitnessFunctionGaussianKernel(sample2 = x.train[1:n,], sample1 = x.train[-c(1:n),])
-  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = apply(x.test, 1, function(x) f(x)), s = 0.5, estimator.type = "tv-search")$tvhat
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = apply(x.test, 1, function(x) f(x)), s = 0.5, estimator.type = "asymptotic-tv-search")$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid, mc.cores = 10)
 
@@ -124,7 +124,7 @@ res1_3 <- mcmapply(FUN = function(r) {
   x.test <- rbind(genMultiVar(n = n, cov1), genMultiVar(n = n, cov4))
   rf <- ranger(y~., data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
   rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
-  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "tv-search")$tvhat
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "asymptotic-tv-search")$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid, mc.cores = 10)
 
@@ -149,7 +149,7 @@ res3_3 <- mcmapply(FUN = function(r) {
   #rf <- ranger(y~., data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
   #rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
   f <- generateWitnessFunctionGaussianKernel(sample2 = x.train[1:n,], sample1 = x.train[-c(1:n),])
-  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = apply(x.test, 1, function(x) f(x)), s = 0.5, estimator.type = "tv-search")$tvhat
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = apply(x.test, 1, function(x) f(x)), s = 0.5, estimator.type = "asymptotic-tv-search")$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid, mc.cores = 10)
 
@@ -168,7 +168,7 @@ res4 <- mcmapply(FUN = function(r) {
   #rf <- ranger(y~., data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
   #rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
   f <- generateWitnessFunctionGaussianKernel(sample2 = x.train[1:n,], sample1 = x.train[-c(1:n),])
-  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = apply(x.test, 1, function(x) f(x)), s = 0.5, estimator.type = "tv-search")$tvhat
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = apply(x.test, 1, function(x) f(x)), s = 0.5, estimator.type = "asymptotic-tv-search")$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid, mc.cores = 10)
 
@@ -182,7 +182,7 @@ res5 <- mcmapply(FUN = function(r) {
   #rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
   rf <- ranger(y~., data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
   rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
-  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "tv-search")$tvhat
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "asymptotic-tv-search")$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid, mc.cores = 10)
 
