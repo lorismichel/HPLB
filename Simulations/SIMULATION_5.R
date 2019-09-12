@@ -49,7 +49,7 @@ res1 <- mcmapply(FUN = function(p) {
   y.test  <- dataContamination(y.test, p)
   rf <- ranger(y~., data = data.frame(y = y.train, Boston.train),classification = TRUE, probability = TRUE)
   rho <- predict(rf, data = data.frame(Boston.test))$predictions[,"1"]
-  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "tv-search")$tvhat
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "asymptotic-tv-search")$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid, mc.cores = 10)
 
@@ -108,7 +108,7 @@ res1 <- mcmapply(FUN = function(p) {
   y.test  <- dataContamination(y.test, p)
   rf <- ranger(y~., data = data.frame(y = y.train, x.train),classification = TRUE, probability = TRUE)
   rho <- predict(rf, data = data.frame(x.test))$predictions[,"1"]
-  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "tv-search")$tvhat
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "asymptotic-tv-search")$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid, mc.cores = 10)
 
