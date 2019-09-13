@@ -38,7 +38,7 @@ set.seed(123, "L'Ecuyer")
 res1 <- mcmapply(FUN = function(n, gamma) {
   lambda <- n^{-gamma}
   inputs <- generateInputData(n, lambda = lambda)
-  tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "asymptotic-tv-search")$tvhat
+  tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "asymptotic-tv-search",tv.seq= seq(from = 0, to = 1, by = 1/n))$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid[,1], grid[,2], mc.cores = 25)
 
