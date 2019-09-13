@@ -34,7 +34,7 @@ cov2 <- diag(0.5, 3) + matrix(0.5, 3, 3)
 cov3 <- diag(1.5, 3) + matrix(-0.5, 3, 3)
 cov4 <- diag(0.9, 3) + matrix(0.1, 3, 3)
 R <- diag(1, 50)
-n <- 700
+n <- 250
 nrep <- 100
 grid <- c(1:nrep)
 
@@ -164,7 +164,7 @@ res4 <- mcmapply(FUN = function(r) {
   y.train <- factor(c(rep(0,n), rep(1,n)))
   x.train <- rbind(genMultiVar(n = n, R), genMultiVarT(n = n, R))
   y.test <- factor(c(rep(0,n), rep(1,n)))
-  ix.test <- rbind(genMultiVar(n = n, R), genMultiVarT(n = n, R))
+  x.test <- rbind(genMultiVar(n = n, R), genMultiVarT(n = n, R))
   #rf <- ranger(y~., data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
   #rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
   f <- generateWitnessFunctionGaussianKernel(sample2 = x.train[1:n,], sample1 = x.train[-c(1:n),])
