@@ -315,8 +315,8 @@ dWit <- function(t,
 
       # Asymptotic version: (maybe employ with crazy large sample sizes)
 
-      lambdatilde= 2*sum((rho <= threshold & t == 0) | (rho > threshold & t == 1))/length(t)-1
-      tvhat <- max(lambdatilde - qnorm(1-alpha)*sqrt((1+lambdatilde)*(1-lambdatilde))/sqrt(length(t)),0)
+      #lambdatilde= 2*sum((rho <= threshold & t == 0) | (rho > threshold & t == 1))/length(t)-1
+      #tvhat <- max(lambdatilde - qnorm(1-alpha)*sqrt((1+lambdatilde)*(1-lambdatilde))/sqrt(length(t)),0)
 
 
     }
