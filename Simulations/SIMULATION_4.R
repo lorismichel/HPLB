@@ -158,17 +158,18 @@ res3_3 <- mcmapply(FUN = function(r) {
 
 
 
-###############################################################
+##################### T copula ##########################################
 set.seed(123, "L'Ecuyer")
 res4 <- mcmapply(FUN = function(r) {
   y.train <- factor(c(rep(0,n), rep(1,n)))
   x.train <- rbind(genMultiVar(n = n, R), genMultiVarT(n = n, R))
   y.test <- factor(c(rep(0,n), rep(1,n)))
-  x.test <- rbind(genMultiVar(n = n, R), genMultiVarT(n = n, R))
+  ix.test <- rbind(genMultiVar(n = n, R), genMultiVarT(n = n, R))
   #rf <- ranger(y~., data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
   #rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
   f <- generateWitnessFunctionGaussianKernel(sample2 = x.train[1:n,], sample1 = x.train[-c(1:n),])
-  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = apply(x.test, 1, function(x) f(x)), s = 0.5, estimator.type = "asymptotic-tv-search")$tvhat
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = apply(x.test, 1, function(x) f(x)), s = 0.5, estimator.type = "empirical-tv-search")$tvhat
+  #tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = apply(x.test, 1, function(x) f(x)), s = 0.5, estimator.type = "asymptotic-tv-search")$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid, mc.cores = 10)
 
@@ -182,7 +183,8 @@ res5 <- mcmapply(FUN = function(r) {
   #rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
   rf <- ranger(y~., data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
   rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
-  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "asymptotic-tv-search")$tvhat
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "empirical-tv-search")$tvhat
+  #tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "asymptotic-tv-search")$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid, mc.cores = 10)
 
