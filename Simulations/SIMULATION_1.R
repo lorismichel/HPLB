@@ -28,9 +28,9 @@ generateInputData <- function(n, lambda) {
 
 # running simulations on clusters
 # params sims
-nrep <- 10
+nrep <- 50
 grid.gamma <- rep(seq(0.1,  1.2, by = 0.1), nrep)
-grid.n <- rep(10^{seq(2,5,length.out = 10)}, nrep)
+grid.n <- rep(10^{seq(2,5,length.out = 4)}, nrep)
 grid <- expand.grid(grid.n, grid.gamma)
 
 # running simulations
@@ -38,7 +38,7 @@ set.seed(123, "L'Ecuyer")
 res1 <- mcmapply(FUN = function(n, gamma) {
   lambda <- n^{-gamma}
   inputs <- generateInputData(n, lambda = lambda)
-  tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "asymptotic-tv-search",tv.seq= seq(from = 0, to = 1, by = 1/n))$tvhat
+  tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "asymptotic-tv-search",tv.seq= seq(from = 0, to = 1, by = lambda/4))$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid[,1], grid[,2], mc.cores = 25)
 
@@ -57,4 +57,4 @@ power.data <- data.table(logn = log(grid[,1], base = 10),
 power.table <- power.data[,.(power_search = mean(tv_search>0), power_binomial = mean(tv_binomial>0)),by=c("logn","loglambda")]
 
 # saving results of simulations
-save(power.data, power.table, file = paste0(PATH.SAVE, "DATA_SIMULATION_1.Rdata"))
+save(power.data, power.table, file = paste0(PATH.SAVE, "DATA_SIMULATION_1_corr.Rdata"))
