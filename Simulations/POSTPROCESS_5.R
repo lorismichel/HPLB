@@ -14,9 +14,11 @@ require(data.table)
 # loglogplot
 png(filename = paste0(PATH.PLOTS,"PLOT_SIMULATION_5.png"))
 par(mfrow=c(3,3))
+
 # Boston
 plot(power.table.boston$p, power.table.boston$tvhat_search, ylim=c(0,1),pch=19, xlab="p", ylab="TV",main="Boston",type="b", cex = 0.7, font.main=3)
 points(power.table.boston$p,pmax(0, power.table.boston$tvhat_binomial), pch=19,col="red",type="b")
+
 # titanic
 plot(power.table.titanic$p, power.table.titanic$tvhat_search, pch=19, ylim=c(0,1), xlab="p", ylab="TV",main="Titanic", type="b", cex = 0.7, font.main=3)
 points(power.table.titanic$p,pmax(0, power.table.titanic$tvhat_binomial), pch=19,col="red", type="b")

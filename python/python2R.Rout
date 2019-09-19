@@ -1,0 +1,43 @@
+
+R version 3.5.2 (2018-12-20) -- "Eggshell Igloo"
+Copyright (C) 2018 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin15.6.0 (64-bit)
+
+R est un logiciel libre livré sans AUCUNE GARANTIE.
+Vous pouvez le redistribuer sous certaines conditions.
+Tapez 'license()' ou 'licence()' pour plus de détails.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Tapez 'demo()' pour des démonstrations, 'help()' pour l'aide
+en ligne ou 'help.start()' pour obtenir l'aide au format HTML.
+Tapez 'q()' pour quitter R.
+
+> ## Load data
+> require(reticulate)
+Le chargement a nécessité le package : reticulate
+> 
+> 
+> py_run_string("
++ import pickle
++ with open('./cifar10/predictions_cifar10.pkl', 'rb') as f:
++     data = pickle.load(f)
++     y = data['labels']
++     preds = data['predictions']")
+Error in py_run_string_impl(code, local, convert) : 
+  ValueError: unsupported pickle protocol: 3
+
+Detailed traceback: 
+  File "<string>", line 4, in <module>
+  File "//anaconda3/envs/rlinsurance/lib/python2.7/pickle.py", line 1384, in load
+    return Unpickler(file).load()
+  File "//anaconda3/envs/rlinsurance/lib/python2.7/pickle.py", line 864, in load
+    dispatch[key](self)
+  File "//anaconda3/envs/rlinsurance/lib/python2.7/pickle.py", line 892, in load_proto
+    raise ValueError, "unsupported pickle protocol: %d" % proto
+Calls: py_run_string -> py_run_string_impl
+Exécution arrêtée
