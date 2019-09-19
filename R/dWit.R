@@ -25,6 +25,7 @@ dWit <- function(t,
                  direction           = rep("left", length(s)),
                  threshold           = 0.5,
                  verbose.plot        = FALSE,
+                 z                   = length(t)/2,
                  ...) {
 
   ## parameters checks
@@ -68,7 +69,8 @@ dWit <- function(t,
                                                                "custom-tv-search",
                                                                "empirical-tv-search",
                                                                "binomial",
-                                                               "tv-search"))) {
+                                                               "tv-search",
+                                                               "hyper-search"))) {
     stop("Invalid estimator type, please see ?dWit.")
   }
   if (estimator.type == "tv-search") {
@@ -319,6 +321,48 @@ dWit <- function(t,
       #tvhat <- max(lambdatilde - qnorm(1-alpha)*sqrt((1+lambdatilde)*(1-lambdatilde))/sqrt(length(t)),0)
 
 
+    } else if (estimator.type == "hyper-search") {
+      # recursive search
+      max.stat <- 1
+      step <- 1
+
+      while (max.stat > 0) {
+
+        tv.cur <- tv.seq[step]
+        step <- step + 1
+
+        lambda.left <- qbinom(p = 1-alpha/3, size = m, prob = tv.cur)
+        lambda.right <- qbinom(p = 1-alpha/3, size = n, prob = tv.cur)
+
+        m0 <- m - lambda.left
+        n0 <- n - lambda.right
+
+        # asymptotic values
+        #x_alpha <- -log(-log(1-alpha/3)/2)
+        #betaFs <- sqrt(2 * log(log(m0))) + (log(log(log(m0)))-log(pi)+2*x_alpha) / (2 * sqrt(2 * log(log(m0))))
+        #betaGs <- sqrt(2 * log(log(n0))) + (log(log(log(n0)))-log(pi)+2*x_alpha) / (2 * sqrt(2 * log(log(n0))))
+
+        # mean and sd under the null
+        #sd0 <- sapply(1:(m0+n0), function(z) sqrt(z * (m0 /(m0+n0)) * (n0 /(m0+n0)) * ((m0+n0-z)/(m0+n0-1))))
+        #mean0 <- sapply(1:(m0+n0), function(z) z * (m0 /(m0+n0)))
+
+        # creating the bands
+        #Q <- rep(0, m + n)
+
+        #if (lambda.left != 0) {
+        #  Q[1:lambda.left] <- 1
+        #  Q <- cumsum(Q)
+        #}
+
+        q.left <- qhyper(p = 1-alpha/3, m0, n0, k = z-lambda.left)
+        q.right <- qhyper(p = 1-alpha/3, m0, n0, k = z-lambda.left)
+
+        Q <- q + (n0-(z-q-lambda.left)) + lambda.left + lambda.right
+        max.stat <- (2*V_zFs[z]+n-z)-Q
+      }
+
+      # return the tv estimate
+      tvhat[k] <- tv.cur
     }
   }
 
