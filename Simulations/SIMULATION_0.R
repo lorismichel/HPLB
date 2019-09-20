@@ -44,22 +44,22 @@ grid <- expand.grid(grid,grid.imbalance.level)
 
 # running simulations
 set.seed(123, "L'Ecuyer")
-res1 <- mcmapply(FUN = function(n, gamma) {
-  inputs <- generateInputData(n, lambda = 0)
+res1 <- mcmapply(FUN = function(n, imb) {
+  inputs <- generateInputData(n, lambda = 0, imb)
   tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "asymptotic-tv-search")$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid[,1], grid[,2], mc.cores = 25)
 
 set.seed(123, "L'Ecuyer")
-res2 <- mcmapply(FUN = function(n, gamma) {
-  inputs <- generateInputData(n, lambda = 0)
+res2 <- mcmapply(FUN = function(n, imb) {
+  inputs <- generateInputData(n, lambda = 0, imb)
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "tv-search")$tvhat
   tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid[,1], grid[,2], mc.cores = 25)
 
 set.seed(123, "L'Ecuyer")
-res3 <- mcmapply(FUN = function(n, gamma) {
-  inputs <- generateInputData(n, lambda = 0)
+res3 <- mcmapply(FUN = function(n, imb) {
+  inputs <- generateInputData(n, lambda = 0, imb)
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "tv-search")$tvhat
   tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "hyper-tv-search", z = n)$tvhat
   tvhat}, grid[,1], grid[,2], mc.cores = 25)
@@ -68,7 +68,7 @@ res3 <- mcmapply(FUN = function(n, gamma) {
 power.data <- data.table(logn = log(grid[,1], base = 10),
 			 imbalance = grid[,2],
                          tv_search = res1, tv_binomial = res2, tv_hyper = res3)
-power.table <- power.data[,.(power_search = mean(tv_search>0), power_binomial = mean(tv_binomial>0)), power_hyper = mean(tv_hyper>0),by=c("logn","imbalance")]
+power.table <- power.data[,.(power_search = mean(tv_search>0), power_binomial = mean(tv_binomial>0), power_hyper = mean(tv_hyper>0)),by=c("logn","imbalance")]
 
 # saving results of simulations
 save(power.data, power.table, file = paste0(PATH.SAVE, "DATA_SIMULATION_0.Rdata"))
