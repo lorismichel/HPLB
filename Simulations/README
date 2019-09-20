@@ -1,7 +1,30 @@
 # SIMULATION DESCRIPTION
 
+SIMULATION_0:
+
+- checking the level
+
 SIMULATION_1:
 
-SIMULATION_4: 
+- Verify the asymptotic regime.
 
-- This simulation setting aims at comparing on real datasets the power of binomial against dWit search under random permutation of classes membership in a two-class setting.
+SIMULATION_2:
+
+- Study of theoretical example
+
+SIMULATION_4:
+
+- Witness function against binomiala and RF
+
+SIMULATION_5:
+
+- 9 datasets tested
+
+SIMULATION_6:
+
+- checking witness observations
+
+SIMULATION_7:
+
+- checking on specific example the behaviour
+
