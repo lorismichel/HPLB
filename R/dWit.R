@@ -70,7 +70,7 @@ dWit <- function(t,
                                                                "empirical-tv-search",
                                                                "binomial",
                                                                "tv-search",
-                                                               "hyper-search"))) {
+                                                               "hyper-tv-search"))) {
     stop("Invalid estimator type, please see ?dWit.")
   }
   if (estimator.type == "tv-search") {
@@ -321,7 +321,7 @@ dWit <- function(t,
       #tvhat <- max(lambdatilde - qnorm(1-alpha)*sqrt((1+lambdatilde)*(1-lambdatilde))/sqrt(length(t)),0)
 
 
-    } else if (estimator.type == "hyper-search") {
+    } else if (estimator.type == "hyper-tv-search") {
       # recursive search
       max.stat <- 1
       step <- 1
