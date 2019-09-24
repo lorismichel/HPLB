@@ -15,7 +15,7 @@ invertBinMeanTest <- function(n.success,
   }
 
   phat <- n.success/n.trial
-  by <- phat/100000
+  by <- phat / max(100000, n.trial)
   p.candidates <- seq(0, 1, by = by)
   q <- sapply(p.candidates, FUN = function(y) qbinom(p = 1-alpha, size = n.trial, prob = y))
 

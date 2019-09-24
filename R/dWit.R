@@ -1,19 +1,22 @@
-#' Lower-bound estimate of the number of distributional witness & total variation distance
-#' for mixture models
+#' Lower Bound Estimate for Total Variation Distance and Distributional Witnesses
+#'
 #' @param t a numeric value corresponding to an ordering of the observations. For two-sample
-#'   test times could be 0-1 numeric values values.
-#' @param rho a numeric value giving an ordering function. This could be
+#'   test 0-1 numeric values values are used.
+#' @param rho a numeric value giving an ordering vector (function). This could be
 #'   a classifier, a regressor, a witness function from an MMD kernel or anything else.
 #' @param s a numeric value giving split points on t.
-#' @param estimator.type either "asymptotic-tv-search", "custom-tv-search", "asymptotic-wit-search", "binomial" or "tv-search"
-#'   for retro-compatibility.
+#' @param estimator.type either "asymptotic-tv-search", "custom-tv-search", "asymptotic-wit-search", "binomial-test",
+#'   "hypergeomtic-test".
 #' @param alpha the overall level of the type 1 error control.
 #' @param tv.seq a sequence of values between 0 and 1 used as the grid of search for the total variation distance.
-#' @param custom.bounding.seq a list of bounding
+#' @param custom.bounding.seq a list of bounding functions respecting the order of tv.seq.
 #' @param direction which witness to estimate.
 #' @param threshold this is the threshold used if missclassification error in used.
-#' @param verbose.plot
+#' @param z this is the z at which the hypergeometric test is applied.
+#' @param verbose.plot boolean for additional plots.
+#'
 #' @import data.table
+#'
 #' @export
 dWit <- function(t,
                  rho,
@@ -65,16 +68,13 @@ dWit <- function(t,
 
   # test for the estimator type
   if (!is.character(estimator.type) || !(estimator.type %in% c("asymptotic-tv-search",
-                                                               "asymptotic-wit-search",
                                                                "custom-tv-search",
                                                                "empirical-tv-search",
-                                                               "binomial",
-                                                               "tv-search",
-                                                               "hyper-tv-search"))) {
+                                                               "binomial-test",
+                                                               "hypergeometric-test",
+                                                               "asymptotic-wit-search"
+                                                               ))) {
     stop("Invalid estimator type, please see ?dWit.")
-  }
-  if (estimator.type == "tv-search") {
-    estimator.type == "asymptotic-tv-search"
   }
 
   # test for the type I error level
@@ -102,15 +102,18 @@ dWit <- function(t,
         stop("Invalid custom.bounding.seq, please see ?dWit.")
       } else {
         if (length(custom.bounding.seq) != length(tv.seq)) {
-          stop("Incompatible dimensions between custom.bounding.seq and tv.seq, please see `dWit")
+          stop("Incompatible dimensions between custom.bounding.seq and tv.seq, please see ?dWit.")
         }
       }
     }
     if (estimator.type %in% c("empirical-tv-search")) {
       custom.bounding.seq <- empiricalBF(tv.seq = tv.seq,
-                                         alpha = alpha / 2,
+                                         alpha = alpha,
                                          m = sum(t <= s),
                                          n = sum(t > s), ...)
+    }
+    if (length(s) != length(k)) {
+      stop("Incompatible dimensions between s, and k, please see ?dWit.")
     }
   }
 
@@ -136,6 +139,7 @@ dWit <- function(t,
 
     # then we cast everything in a data.table object
     ranks.table <- data.table::data.table(rank = ranks, t = t)
+
     # let us order by rank the table
     data.table::setkey(ranks.table, "rank")
 
@@ -150,9 +154,6 @@ dWit <- function(t,
     # define the function function V_z corresponding to m and z
     V_zFs <- cumsum(ranks.table$t <= s[k])
     V_zGs <- cumsum(rev(ranks.table$t > s[k]))
-    #V_zFs <- sapply(1:nrow(ranks.table), function(z) nrow(ranks.table[t <= s[k] & rank <= z]))
-    #V_zGs <- sapply(nrow(ranks.table):1, function(z) nrow(ranks.table[t > s[k] & rank >= z]))
-
 
     ## branching on estimators
     if (estimator.type == "asymptotic-wit-search") {
@@ -232,6 +233,7 @@ dWit <- function(t,
       } else if (direction[k] == "right") {
         lambdahat.Gs[k] <- lambda.left
       }
+
     } else if (estimator.type == "asymptotic-tv-search") {
 
 
@@ -267,7 +269,7 @@ dWit <- function(t,
           Q <- cumsum(Q)
         }
 
-        # hypergeom filling
+        # hypergeometric filling
         ind.hypergeom <- c((lambda.left+1):(m+n-lambda.right))
         Q[ind.hypergeom] <- Q[ind.hypergeom] + mean0 + betaFs * sd0
 
@@ -278,13 +280,14 @@ dWit <- function(t,
         max.stat <- max(V_zFs-Q)
 
         if (verbose.plot && (tv.cur == 0)) {
-          plot(V_zFs-mean0,type="l")
-          lines(betaFs * sd0,col="red")
+          plot(V_zFs-mean0, type="l", xlab="z", ylab="Vm_z")
+          lines(betaFs * sd0, col="red")
         }
       }
 
       # return the tv estimate
       tvhat[k] <- tv.cur
+
     } else if (estimator.type %in% c("custom-tv-search", "empirical-tv-search")) {
 
       # recursive search
@@ -298,30 +301,26 @@ dWit <- function(t,
         step <- step + 1
 
         if (verbose.plot && (tv.cur == 0)) {
-          plot(V_zFs,type="l")
-          lines(custom.bounding.seq[[step]],col="red")
+            plot(V_zFs, type="l", xlab="z", ylab="Vm_z")
+            lines(custom.bounding.seq[[step]], col="red")
         }
       }
 
       # return the tv estimate
       tvhat[k] <- tv.cur
-    } else if (estimator.type == "binomial") {
+
+    } else if (estimator.type == "binomial-test") {
 
       # compute the accuracy and build a lower-bound
       obs <- sum((rho > threshold & t == 0) | (rho <= threshold & t == 1))
-      phat <- invertBinMeanTest(n.success = obs, n.trial = length(t),
+      phat <- invertBinMeanTest(n.success = obs,
+                                n.trial = length(t),
                                 alpha = 1-alpha,
                                 rule.of.three = FALSE)
-      tvhat <- max(1-2*phat,0)
+      tvhat <- max(1-2*phat, 0)
 
+    } else if (estimator.type == "hypergeometric-test") {
 
-      # Asymptotic version: (maybe employ with crazy large sample sizes)
-
-      #lambdatilde= 2*sum((rho <= threshold & t == 0) | (rho > threshold & t == 1))/length(t)-1
-      #tvhat <- max(lambdatilde - qnorm(1-alpha)*sqrt((1+lambdatilde)*(1-lambdatilde))/sqrt(length(t)),0)
-
-
-    } else if (estimator.type == "hyper-tv-search") {
       # recursive search
       max.stat <- 1
       step <- 1
@@ -331,34 +330,21 @@ dWit <- function(t,
         tv.cur <- tv.seq[step]
         step <- step + 1
 
-        lambda.left <- qbinom(p = 1-alpha/3, size = m, prob = tv.cur)
-        lambda.right <- qbinom(p = 1-alpha/3, size = n, prob = tv.cur)
+        # constructing witness overestimations
+        lambda.left <- stats::qbinom(p = 1-alpha/3, size = m, prob = tv.cur)
+        lambda.right <- stats::qbinom(p = 1-alpha/3, size = n, prob = tv.cur)
 
         m0 <- m - lambda.left
         n0 <- n - lambda.right
 
-        # asymptotic values
-        #x_alpha <- -log(-log(1-alpha/3)/2)
-        #betaFs <- sqrt(2 * log(log(m0))) + (log(log(log(m0)))-log(pi)+2*x_alpha) / (2 * sqrt(2 * log(log(m0))))
-        #betaGs <- sqrt(2 * log(log(n0))) + (log(log(log(n0)))-log(pi)+2*x_alpha) / (2 * sqrt(2 * log(log(n0))))
+        # constructing hypergeometric overestimation
+        q.left <- stats::qhyper(p = 1-alpha/3, m = m0, n = n0, k = z[k]-lambda.left)
 
-        # mean and sd under the null
-        #sd0 <- sapply(1:(m0+n0), function(z) sqrt(z * (m0 /(m0+n0)) * (n0 /(m0+n0)) * ((m0+n0-z)/(m0+n0-1))))
-        #mean0 <- sapply(1:(m0+n0), function(z) z * (m0 /(m0+n0)))
+        # overestimation
+        Q <- lambda.left + q.left
 
-        # creating the bands
-        #Q <- rep(0, m + n)
-
-        #if (lambda.left != 0) {
-        #  Q[1:lambda.left] <- 1
-        #  Q <- cumsum(Q)
-        #}
-
-        q.left <- qhyper(p = 1-alpha/3, m0, n0, k = z-lambda.left)
-        q.right <- qhyper(p = 1-alpha/3, m0, n0, k = z-lambda.left)
-
-        Q <- q + (n0-(z-q-lambda.left)) + lambda.left + lambda.right
-        max.stat <- (2*V_zFs[z]+n-z)-Q
+        # new observed statistic
+        max.stat <- V_zFs[z[k]] - Q
       }
 
       # return the tv estimate
