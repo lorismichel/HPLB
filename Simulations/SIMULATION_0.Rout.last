@@ -1,0 +1,168 @@
+
+R version 3.6.1 (2019-07-05) -- "Action of the Toes"
+Copyright (C) 2019 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> # SIMULATION 0
+> 
+> ## saving paths
+> PATH.SAVE = "../Data/"
+> 
+> ## requirements
+> require(dWit)
+Loading required package: dWit
+Loading required package: data.table
+
+Attaching package: ‘data.table’
+
+The following object is masked from ‘package:sfsmisc’:
+
+    last
+
+Loading required package: distrEx
+Loading required package: distr
+Loading required package: startupmsg
+:startupmsg>  Utilities for Start-Up Messages (version 0.9.6)
+:startupmsg> 
+:startupmsg>  For more information see ?"startupmsg",
+:startupmsg>  NEWS("startupmsg")
+
+:distr>  Object Oriented Implementation of Distributions (version
+:distr>  2.8.0)
+:distr> 
+:distr>  Attention: Arithmetics on distribution objects are
+:distr>  understood as operations on corresponding random variables
+:distr>  (r.v.s); see distrARITH().
+:distr> 
+:distr>  Some functions from package 'stats' are intentionally masked
+:distr>  ---see distrMASK().
+:distr> 
+:distr>  Note that global options are controlled by distroptions()
+:distr>  ---c.f. ?"distroptions".
+:distr> 
+:distr>  For more information see ?"distr", NEWS("distr"), as well as
+:distr>    http://distr.r-forge.r-project.org/
+:distr>  Package "distrDoc" provides a vignette to this package as
+:distr>  well as to several extension packages; try
+:distr>  vignette("distr").
+
+
+Attaching package: ‘distr’
+
+The following objects are masked from ‘package:stats’:
+
+    df, qqplot, sd
+
+:distrEx>  Extensions of Package 'distr' (version 2.8.0)
+:distrEx> 
+:distrEx>  Note: Packages "e1071", "moments", "fBasics" should be
+:distrEx>  attached /before/ package "distrEx". See
+:distrEx>  distrExMASK().Note: Extreme value distribution
+:distrEx>  functionality has been moved to
+:distrEx> 
+:distrEx>        package "RobExtremes". See distrExMOVED().
+:distrEx> 
+:distrEx>  For more information see ?"distrEx", NEWS("distrEx"), as
+:distrEx>  well as
+:distrEx>    http://distr.r-forge.r-project.org/
+:distrEx>  Package "distrDoc" provides a vignette to this package
+:distrEx>  as well as to several related packages; try
+:distrEx>  vignette("distr").
+
+
+Attaching package: ‘distrEx’
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, median, var
+
+> require(parallel)
+Loading required package: parallel
+> require(data.table)
+> 
+> ## data generation & bayes ratio
+> sampleExpContamination <- function(n, lambda) {
++   return(ifelse(sample(c(0,1), prob = c(lambda,1-lambda), size = n, replace = TRUE)==0, -rexp(n), rexp(n)))
++ }
+> bayesRatio <- function(x, lambda) { dexp(x) / (lambda*dexp(-x)+(1-lambda)*dexp(x) + dexp(x))}
+> 
+> generateInputData <- function(n, lambda, imbalance.level = 0) {
++   if (imbalance.level == 0) {
++     rho1 <- bayesRatio(sampleExpContamination(n = n, lambda = 0), lambda = lambda)
++     rho2 <- bayesRatio(sampleExpContamination(n = n, lambda = lambda), lambda = lambda)
++   } else if (imbalance.level == 1) {
++    rho1 <- bayesRatio(sampleExpContamination(n = n, lambda = 0), lambda = lambda)
++    rho2 <- bayesRatio(sampleExpContamination(n = n-sqrt(n), lambda = lambda), lambda = lambda)
++   } else {
++    rho1 <- bayesRatio(sampleExpContamination(n = n, lambda = 0), lambda = lambda)
++    rho2 <- bayesRatio(sampleExpContamination(n = n-(n/2), lambda = lambda), lambda = lambda)
++   }
++   t = c(rep(1, length(rho1)), rep(0, length(rho2)))
++   rho <- c(rho1, rho2)
++   return(list(t = t, rho = rho))
++ }
+> 
+> 
+> 
+> # running simulations on clusters
+> # params sims
+> nrep <- 50
+> grid <- rep(10^{seq(2,5,length.out = 10)}, nrep)
+> grid.imbalance.level <- c(0,1,2)
+> grid <- expand.grid(grid,grid.imbalance.level)
+> 
+> 
+> # running simulations
+> set.seed(123, "L'Ecuyer")
+> res1 <- mcmapply(FUN = function(n, imb) {
++   inputs <- generateInputData(n, lambda = 0, imb)
++   tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "asymptotic-tv-search")$tvhat
++   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
++   tvhat}, grid[,1], grid[,2], mc.cores = 25)
+> 
+> set.seed(123, "L'Ecuyer")
+> res2 <- mcmapply(FUN = function(n, imb) {
++   inputs <- generateInputData(n, lambda = 0, imb)
++   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "tv-search")$tvhat
++   tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial-test")$tvhat
++   tvhat}, grid[,1], grid[,2], mc.cores = 25)
+Warning message:
+In mclapply(seq_len(n), do_one, mc.preschedule = mc.preschedule,  :
+  all scheduled cores encountered errors in user code
+> 
+> set.seed(123, "L'Ecuyer")
+> res3 <- mcmapply(FUN = function(n, imb) {
++   inputs <- generateInputData(n, lambda = 0, imb)
++   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "tv-search")$tvhat
++   tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "hypergeometric-test", z = n)$tvhat
++   tvhat}, grid[,1], grid[,2], mc.cores = 25)
+Warning message:
+In mclapply(seq_len(n), do_one, mc.preschedule = mc.preschedule,  :
+  all scheduled cores encountered errors in user code
+> 
+> # gathering data
+> power.data <- data.table(logn = log(grid[,1], base = 10),
++ 			 imbalance = grid[,2],
++                          tv_search = res1, tv_binomial = res2, tv_hyper = res3)
+> power.table <- power.data[,.(power_search = mean(tv_search>0), power_binomial = mean(tv_binomial>0), power_hyper = mean(tv_hyper>0)),by=c("logn","imbalance")]
+> 
+> # saving results of simulations
+> save(power.data, power.table, file = paste0(PATH.SAVE, "DATA_SIMULATION_0.Rdata"))
+> 
+> proc.time()
+   user  system elapsed 
+186.230   5.914  22.127 
