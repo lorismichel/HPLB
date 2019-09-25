@@ -187,7 +187,7 @@ dWit <- function(t,
         step <- step + 1
 
         # 3) take a high quantile of binomial with tv
-        lambda.right <- qbinom(p = 1-alpha/3, size = n, prob = tv.cur)
+        lambda.right <- stats::qbinom(p = 1-alpha/3, size = n, prob = tv.cur)
 
         # define mo and no
         m0 <- m - lambda.left
@@ -246,8 +246,8 @@ dWit <- function(t,
         tv.cur <- tv.seq[step]
         step <- step + 1
 
-        lambda.left <- qbinom(p = 1-alpha/3, size = m, prob = tv.cur)
-        lambda.right <- qbinom(p = 1-alpha/3, size = n, prob = tv.cur)
+        lambda.left <- stats::qbinom(p = 1-alpha/3, size = m, prob = tv.cur)
+        lambda.right <- stats::qbinom(p = 1-alpha/3, size = n, prob = tv.cur)
 
         m0 <- m - lambda.left
         n0 <- n - lambda.right
