@@ -27,12 +27,14 @@ tvhat1 <- dWit(t = t, rho = rho1, s = 0.5, estimator.type = "hypergeometric-test
 tvhatB1 <- dWit(t = t, rho = rho1, s = 0.5, estimator.type = "binomial-test")$tvhat
 
 # 2) Using wrongly specified Bayes
-bayesRatio <- function(x, lambda) { dnorm(x, mean=1) / (dnorm(x, mean=1) + dnorm(x))} # (wrongly) assuming s=1/2
+## Check this again!
+bayesRatio <- function(x) {0.8* dnorm(x, mean=1) / (0.8*dnorm(x, mean=1) + 0.2 *dnorm(x))} # (wrongly) assuming s=1/2
 rho21 <- bayesRatio(Y)
 rho22 <- bayesRatio(X)
 rho2<-c(rho21, rho22)
 
 tvhat2 <- dWit(t = t, rho = rho2, s = 0.5, estimator.type = "hypergeometric-test")$tvhat
+tvhat2 <- dWit(t = t, rho = rho2, s = 0.5, estimator.type = "asymptotic-tv-search")$tvhat
 tvhatB2 <- dWit(t = t, rho = rho2, s = 0.5, estimator.type = "binomial-test")$tvhat
 
 
