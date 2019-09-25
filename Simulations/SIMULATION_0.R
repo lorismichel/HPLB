@@ -1,5 +1,4 @@
-# type: checking power by a loglog plot of sample size against contamination/tv
-#       comparison with missclassification error rate test.
+# SIMULATION 0
 
 ## saving paths
 PATH.SAVE = "../Data/"
@@ -36,11 +35,10 @@ generateInputData <- function(n, lambda, imbalance.level = 0) {
 # running simulations on clusters
 # params sims
 nrep <- 50
-#grid.gamma <- rep(seq(0.1,  1.2, by = 0.1), nrep)
 grid <- rep(10^{seq(2,5,length.out = 10)}, nrep)
 grid.imbalance.level <- c(0,1,2)
 grid <- expand.grid(grid,grid.imbalance.level)
-#grid <- expand.grid(grid.n, grid.gamma)
+
 
 # running simulations
 set.seed(123, "L'Ecuyer")
@@ -54,14 +52,14 @@ set.seed(123, "L'Ecuyer")
 res2 <- mcmapply(FUN = function(n, imb) {
   inputs <- generateInputData(n, lambda = 0, imb)
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "tv-search")$tvhat
-  tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
+  tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial-test")$tvhat
   tvhat}, grid[,1], grid[,2], mc.cores = 25)
 
 set.seed(123, "L'Ecuyer")
 res3 <- mcmapply(FUN = function(n, imb) {
   inputs <- generateInputData(n, lambda = 0, imb)
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "tv-search")$tvhat
-  tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "hyper-tv-search", z = n)$tvhat
+  tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "hypergeometric-test", z = n)$tvhat
   tvhat}, grid[,1], grid[,2], mc.cores = 25)
 
 # gathering data
