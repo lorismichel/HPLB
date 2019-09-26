@@ -60,7 +60,7 @@ res2_1 <- mcmapply(FUN = function(r) {
   x.test <- rbind(genMultiVar(n = n, cov1), genMultiVar(n = n, cov2))
   rf <- ranger(y~., data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
   rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
-  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "binomial")$tvhat
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "binomial-test")$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid, mc.cores = 10)
 
@@ -98,8 +98,8 @@ res2_2 <- mcmapply(FUN = function(r) {
   x.test <- rbind(genMultiVar(n = n, cov1), genMultiVar(n = n, cov3))
   rf <- ranger(y~., data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
   rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
-  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "binomial")$tvhat
-  #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "binomial-test")$tvhat
+  #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial-test")$tvhat
   tvhat}, grid, mc.cores = 10)
 
 set.seed(123, "L'Ecuyer")
@@ -136,7 +136,7 @@ res2_3 <- mcmapply(FUN = function(r) {
   x.test <- rbind(genMultiVar(n = n, cov1), genMultiVar(n = n, cov4))
   rf <- ranger(y~., data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
   rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
-  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "binomial")$tvhat
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "binomial-test")$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid, mc.cores = 10)
 
@@ -198,7 +198,7 @@ res6 <- mcmapply(FUN = function(r) {
   #rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
   rf <- ranger(y~., data = data.frame(y = y.train, x = x.train),classification = TRUE, probability = TRUE)
   rho <- predict(rf, data = data.frame(x = x.test))$predictions[,"1"]
-  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "binomial")$tvhat
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho, s = 0.5, estimator.type = "binomial-test")$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid, mc.cores = 10)
 
