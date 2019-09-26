@@ -2,7 +2,7 @@
 # type: producing plots for the loglog scatter plot of sample size against tv
 
 # PATHS
-PATH.DATA <- "./Data/"
+PATH.DATA <- "../Data/"
 PATH.PLOTS <- "../Plots/"
 load(paste0(PATH.DATA, "DATA_SIMULATION_5.Rdata"))
 #load("C:/Users/jeffr/Dropbox/tvForest/SimulationsData/DATA_SIMULATION_5.Rdata")
