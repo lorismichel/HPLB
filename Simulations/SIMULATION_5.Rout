@@ -1,11 +1,11 @@
 
-R version 3.5.2 (2018-12-20) -- "Eggshell Igloo"
-Copyright (C) 2018 The R Foundation for Statistical Computing
-Platform: x86_64-apple-darwin15.6.0 (64-bit)
+R version 3.6.1 (2019-07-05) -- "Action of the Toes"
+Copyright (C) 2019 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
 
-R est un logiciel libre livré sans AUCUNE GARANTIE.
-Vous pouvez le redistribuer sous certaines conditions.
-Tapez 'license()' ou 'licence()' pour plus de détails.
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
 
   Natural language support but running in an English locale
 
@@ -13,11 +13,9 @@ R is a collaborative project with many contributors.
 Type 'contributors()' for more information and
 'citation()' on how to cite R or R packages in publications.
 
-Tapez 'demo()' pour des démonstrations, 'help()' pour l'aide
-en ligne ou 'help.start()' pour obtenir l'aide au format HTML.
-Tapez 'q()' pour quitter R.
-
-[Sauvegarde de la session précédente restaurée]
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
 
 > # SIMUlATION_5
 > # type: checking power by a loglog plot of sample size against contamination/tv
@@ -28,26 +26,25 @@ Tapez 'q()' pour quitter R.
 > 
 > ## requirements
 > require(dWit)
-Le chargement a nécessité le package : dWit
-Le chargement a nécessité le package : data.table
-Le chargement a nécessité le package : distrEx
-Le chargement a nécessité le package : distr
-Le chargement a nécessité le package : startupmsg
-:startupmsg>  Utilities for Start-Up Messages (version 0.9.5)
+Loading required package: dWit
+Loading required package: data.table
+
+Attaching package: ‘data.table’
+
+The following object is masked from ‘package:sfsmisc’:
+
+    last
+
+Loading required package: distrEx
+Loading required package: distr
+Loading required package: startupmsg
+:startupmsg>  Utilities for Start-Up Messages (version 0.9.6)
 :startupmsg> 
 :startupmsg>  For more information see ?"startupmsg",
 :startupmsg>  NEWS("startupmsg")
 
-Le chargement a nécessité le package : sfsmisc
-
-Attachement du package : ‘sfsmisc’
-
-The following object is masked from ‘package:data.table’:
-
-    last
-
 :distr>  Object Oriented Implementation of Distributions (version
-:distr>  2.7.0)
+:distr>  2.8.0)
 :distr> 
 :distr>  Attention: Arithmetics on distribution objects are
 :distr>  understood as operations on corresponding random variables
@@ -66,13 +63,13 @@ The following object is masked from ‘package:data.table’:
 :distr>  vignette("distr").
 
 
-Attachement du package : ‘distr’
+Attaching package: ‘distr’
 
 The following objects are masked from ‘package:stats’:
 
     df, qqplot, sd
 
-:distrEx>  Extensions of Package 'distr' (version 2.7.0)
+:distrEx>  Extensions of Package 'distr' (version 2.8.0)
 :distrEx> 
 :distrEx>  Note: Packages "e1071", "moments", "fBasics" should be
 :distrEx>  attached /before/ package "distrEx". See
@@ -89,22 +86,24 @@ The following objects are masked from ‘package:stats’:
 :distrEx>  vignette("distr").
 
 
-Attachement du package : ‘distrEx’
+Attaching package: ‘distrEx’
 
 The following objects are masked from ‘package:stats’:
 
     IQR, mad, median, var
 
+dWit 0.2.0
+Type dWitNews() to see new features/changes/bug fixes.
 > require(parallel)
-Le chargement a nécessité le package : parallel
+Loading required package: parallel
 > require(data.table)
 > require(stats)
 > require(ranger)
-Le chargement a nécessité le package : ranger
+Loading required package: ranger
 > require(MASS)
-Le chargement a nécessité le package : MASS
+Loading required package: MASS
 > require(mlbench)
-Le chargement a nécessité le package : mlbench
+Loading required package: mlbench
 > 
 > 
 > ## data generation & bayes ratio
@@ -219,6 +218,9 @@ Le chargement a nécessité le package : mlbench
 +   tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5, estimator.type = "hyper-search", z = sum(y.test==0),  threshold = mean(rho.perm))$tvhat
 +   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
 +   tvhat}, grid, mc.cores = 10)
+Warning message:
+In mclapply(seq_len(n), do_one, mc.preschedule = mc.preschedule,  :
+  all scheduled cores encountered errors in user code
 > 
 > # gathering data
 > power.table.boston <- data.table(p     = grid,
@@ -307,6 +309,9 @@ Le chargement a nécessité le package : mlbench
 +   tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5, estimator.type = "hyper-search", z = sum(y.test==0),  threshold = mean(rho.perm))$tvhat
 +   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
 +   tvhat}, grid, mc.cores = 10)
+Warning message:
+In mclapply(seq_len(n), do_one, mc.preschedule = mc.preschedule,  :
+  all scheduled cores encountered errors in user code
 > 
 > # gathering data
 > power.table.titanic <- data.table(p     = grid,
@@ -395,6 +400,9 @@ Le chargement a nécessité le package : mlbench
 +   tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5,z = sum(y.test==0),estimator.type = "hyper-search",  threshold = mean(rho.perm))$tvhat
 +   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
 +   tvhat}, grid, mc.cores = 10)
+Warning message:
+In mclapply(seq_len(n), do_one, mc.preschedule = mc.preschedule,  :
+  all scheduled cores encountered errors in user code
 > 
 > # gathering data
 > power.table.breast <- data.table(p     = grid,
@@ -480,6 +488,9 @@ Le chargement a nécessité le package : mlbench
 +   tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5, estimator.type = "hyper-search", z = sum(y.test==0),  threshold = mean(rho.perm))$tvhat
 +   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
 +   tvhat}, grid, mc.cores = 10)
+Warning message:
+In mclapply(seq_len(n), do_one, mc.preschedule = mc.preschedule,  :
+  all scheduled cores encountered errors in user code
 > 
 > # gathering data
 > power.table.iono <- data.table(p     = grid,
@@ -571,6 +582,9 @@ Le chargement a nécessité le package : mlbench
 +   tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5, estimator.type = "hyper-search", z = sum(y.test==0),  threshold = mean(rho.perm))$tvhat
 +   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
 +   tvhat}, grid, mc.cores = 10)
+Warning message:
+In mclapply(seq_len(n), do_one, mc.preschedule = mc.preschedule,  :
+  all scheduled cores encountered errors in user code
 > 
 > # gathering data
 > power.table.abalone <- data.table(p     = grid,
@@ -652,6 +666,9 @@ Le chargement a nécessité le package : mlbench
 +   tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5, estimator.type = "hyper-search", z = sum(y.test==0),  threshold = mean(rho.perm))$tvhat
 +   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
 +   tvhat}, grid, mc.cores = 10)
+Warning message:
+In mclapply(seq_len(n), do_one, mc.preschedule = mc.preschedule,  :
+  all scheduled cores encountered errors in user code
 > 
 > # gathering data
 > power.table.adult <- data.table(p     = grid,
@@ -735,6 +752,9 @@ Le chargement a nécessité le package : mlbench
 +   tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5, estimator.type = "hyper-search", z = sum(y.test==0),  threshold = mean(rho.perm))$tvhat
 +   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
 +   tvhat}, grid, mc.cores = 10)
+Warning message:
+In mclapply(seq_len(n), do_one, mc.preschedule = mc.preschedule,  :
+  all scheduled cores encountered errors in user code
 > 
 > # gathering data
 > power.table.banknotes <- data.table(p     = grid,
@@ -813,6 +833,9 @@ Le chargement a nécessité le package : mlbench
 +   tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5, estimator.type = "hyper-search", z = sum(y.test==0), threshold = mean(rho.perm))$tvhat
 +   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
 +   tvhat}, grid, mc.cores = 10)
+Warning message:
+In mclapply(seq_len(n), do_one, mc.preschedule = mc.preschedule,  :
+  all scheduled cores encountered errors in user code
 > 
 > # gathering data
 > power.table.default <- data.table(p    = grid,
@@ -889,6 +912,9 @@ Le chargement a nécessité le package : mlbench
 +   tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5, estimator.type = "hyper-search",z = sum(y.test==0), threshold = mean(rho.perm))$tvhat
 +   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
 +   tvhat}, grid, mc.cores = 10)
+Warning message:
+In mclapply(seq_len(n), do_one, mc.preschedule = mc.preschedule,  :
+  all scheduled cores encountered errors in user code
 > 
 > # gathering data
 > power.table.credit <- data.table(p    = grid,
@@ -907,5 +933,5 @@ Le chargement a nécessité le package : mlbench
 +      file = paste0(PATH.SAVE, "DATA_SIMULATION_5.Rdata"))
 > 
 > proc.time()
-utilisateur     système      écoulé 
-   3880.652      90.084     561.201 
+    user   system  elapsed 
+3586.172   82.100 2464.977 

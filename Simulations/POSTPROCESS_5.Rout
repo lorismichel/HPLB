@@ -1,11 +1,11 @@
 
-R version 3.5.2 (2018-12-20) -- "Eggshell Igloo"
-Copyright (C) 2018 The R Foundation for Statistical Computing
-Platform: x86_64-apple-darwin15.6.0 (64-bit)
+R version 3.6.1 (2019-07-05) -- "Action of the Toes"
+Copyright (C) 2019 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
 
-R est un logiciel libre livré sans AUCUNE GARANTIE.
-Vous pouvez le redistribuer sous certaines conditions.
-Tapez 'license()' ou 'licence()' pour plus de détails.
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
 
   Natural language support but running in an English locale
 
@@ -13,11 +13,9 @@ R is a collaborative project with many contributors.
 Type 'contributors()' for more information and
 'citation()' on how to cite R or R packages in publications.
 
-Tapez 'demo()' pour des démonstrations, 'help()' pour l'aide
-en ligne ou 'help.start()' pour obtenir l'aide au format HTML.
-Tapez 'q()' pour quitter R.
-
-[Sauvegarde de la session précédente restaurée]
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
 
 > # POSTPROCESS 5
 > # type: producing plots for the loglog scatter plot of sample size against tv
@@ -26,10 +24,9 @@ Tapez 'q()' pour quitter R.
 > PATH.DATA <- "./Data/"
 > PATH.PLOTS <- "../Plots/"
 > load(paste0(PATH.DATA, "DATA_SIMULATION_5.Rdata"))
-Error in readChar(con, 5L, useBytes = TRUE) : 
-  impossible d'ouvrir la connexion
+Error in readChar(con, 5L, useBytes = TRUE) : cannot open the connection
 Calls: load -> readChar
-De plus : Warning message:
+In addition: Warning message:
 In readChar(con, 5L, useBytes = TRUE) :
-  impossible d'ouvrir le fichier compressé './Data/DATA_SIMULATION_5.Rdata', cause probable : 'No such file or directory'
-Exécution arrêtée
+  cannot open compressed file './Data/DATA_SIMULATION_5.Rdata', probable reason 'No such file or directory'
+Execution halted
