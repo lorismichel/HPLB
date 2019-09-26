@@ -124,7 +124,7 @@ res2 <- mcmapply(FUN = function(p) {
   #rf <- ranger(y~., data = data.frame(y = y.train, x.train),classification = TRUE, probability = TRUE)
   rho.perm <- permuteRho(rho = rho, u = uq, d = dq)
   # 5) evaluate
-  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5, estimator.type = "hyper-search", z = sum(y.test==0),  threshold = mean(rho.perm))$tvhat
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5, estimator.type = "hypergeometric-test", z = sum(y.test==0),  threshold = mean(rho.perm))$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid, mc.cores = 10)
 
@@ -212,7 +212,7 @@ res2 <- mcmapply(FUN = function(p) {
   #rf <- ranger(y~., data = data.frame(y = y.train, x.train),classification = TRUE, probability = TRUE)
   rho.perm <- permuteRho(rho = rho, u = uq, d = dq)
   # 5) evaluate
-  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5, estimator.type = "hyper-search", z = sum(y.test==0),  threshold = mean(rho.perm))$tvhat
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5, estimator.type = "hypergeometric-test", z = sum(y.test==0),  threshold = mean(rho.perm))$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid, mc.cores = 10)
 
@@ -300,7 +300,7 @@ res2 <- mcmapply(FUN = function(p) {
   #rf <- ranger(y~., data = data.frame(y = y.train, x.train),classification = TRUE, probability = TRUE)
   rho.perm <- permuteRho(rho = rho, u = uq, d = dq)
   # 5) evaluate
-  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5,z = sum(y.test==0),estimator.type = "hyper-search",  threshold = mean(rho.perm))$tvhat
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5,z = sum(y.test==0),estimator.type = "hypergeometric-test",  threshold = mean(rho.perm))$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid, mc.cores = 10)
 
@@ -385,7 +385,7 @@ res2 <- mcmapply(FUN = function(p) {
   #rf <- ranger(y~., data = data.frame(y = y.train, x.train),classification = TRUE, probability = TRUE)
   rho.perm <- permuteRho(rho = rho, u = uq, d = dq)
   # 5) evaluate
-  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5, estimator.type = "hyper-search", z = sum(y.test==0),  threshold = mean(rho.perm))$tvhat
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5, estimator.type = "hypergeometric-test", z = sum(y.test==0),  threshold = mean(rho.perm))$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid, mc.cores = 10)
 
@@ -476,7 +476,7 @@ res2 <- mcmapply(FUN = function(p) {
   #rf <- ranger(y~., data = data.frame(y = y.train, x.train),classification = TRUE, probability = TRUE)
   rho.perm <- permuteRho(rho = rho, u = uq, d = dq)
   # 5) evaluate
-  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5, estimator.type = "hyper-search", z = sum(y.test==0),  threshold = mean(rho.perm))$tvhat
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5, estimator.type = "hypergeometric-test", z = sum(y.test==0),  threshold = mean(rho.perm))$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid, mc.cores = 10)
 
@@ -557,7 +557,7 @@ res2 <- mcmapply(FUN = function(p) {
   #rf <- ranger(y~., data = data.frame(y = y.train, x.train),classification = TRUE, probability = TRUE)
   rho.perm <- permuteRho(rho = rho, u = uq, d = dq)
   # 5) evaluate
-  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5, estimator.type = "hyper-search", z = sum(y.test==0),  threshold = mean(rho.perm))$tvhat
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5, estimator.type = "hypergeometric-test", z = sum(y.test==0),  threshold = mean(rho.perm))$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid, mc.cores = 10)
 
@@ -640,7 +640,7 @@ res2 <- mcmapply(FUN = function(p) {
   #rf <- ranger(y~., data = data.frame(y = y.train, x.train),classification = TRUE, probability = TRUE)
   rho.perm <- permuteRho(rho = rho, u = uq, d = dq)
   # 5) evaluate
-  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5, estimator.type = "hyper-search", z = sum(y.test==0),  threshold = mean(rho.perm))$tvhat
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5, estimator.type = "hypergeometric-test", z = sum(y.test==0),  threshold = mean(rho.perm))$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid, mc.cores = 10)
 
@@ -718,7 +718,7 @@ res2 <- mcmapply(FUN = function(p) {
   #rf <- ranger(y~., data = data.frame(y = y.train, x.train),classification = TRUE, probability = TRUE)
   rho.perm <- permuteRho(rho = rho, u = uq, d = dq)
   # 5) evaluate
-  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5, estimator.type = "hyper-search", z = sum(y.test==0), threshold = mean(rho.perm))$tvhat
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5, estimator.type = "hypergeometric-test", z = sum(y.test==0), threshold = mean(rho.perm))$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid, mc.cores = 10)
 
@@ -794,7 +794,7 @@ res2 <- mcmapply(FUN = function(p) {
   #rf <- ranger(y~., data = data.frame(y = y.train, x.train),classification = TRUE, probability = TRUE)
   rho.perm <- permuteRho(rho = rho, u = uq, d = dq)
   # 5) evaluate
-  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5, estimator.type = "hyper-search",z = sum(y.test==0), threshold = mean(rho.perm))$tvhat
+  tvhat <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5, estimator.type = "hypergeometric-test",z = sum(y.test==0), threshold = mean(rho.perm))$tvhat
   #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
   tvhat}, grid, mc.cores = 10)
 
