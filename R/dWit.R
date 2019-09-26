@@ -312,7 +312,10 @@ dWit <- function(t,
     } else if (estimator.type == "binomial-test") {
 
       # compute the accuracy and build a lower-bound
-      obs <- sum((rho > threshold & t == 0) | (rho <= threshold & t == 1))
+      decision <- ifelse(rho == 0.5,
+                          sample(c(TRUE, FALSE), size = length(rho), replace = TRUE),
+                          rho > threshold)
+      obs <- sum((decision & t == 0) | (!(decision) & t == 1))
       phat <- invertBinMeanTest(n.success = obs,
                                 n.trial = length(t),
                                 alpha = 1-alpha,
