@@ -61,7 +61,7 @@ runPermAnalysis <- function(dataset="Boston") {
     # 5) evaluate
     tvhat1 <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5,estimator.type = "asymptotic-tv-search")$tvhat
     tvhat2 <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho.perm, s = 0.5, estimator.type = "hypergeometric-test", z = sum(y.test==0),  threshold = mean(rho.perm))$tvhat
-    c(tvhat1, tvhat2)}, grid, mc.cores = 3)
+    c(tvhat1, tvhat2)}, grid, mc.cores = 10)
 
 
 # gathering data
