@@ -14,18 +14,25 @@ require(ranger)
 require(MASS)
 require(mlbench)
 require(pROC)
-
+require(e1071)
+require(rpart)
+require(class)
 
 
 # summary function
 rhoSummaries <- function(y.train, x.train, y.test, x.test) {
 
-  # 1) fit models
-  rf <- ranger(y~., data = data.frame(y = y.train, x.train),classification = TRUE, probability = TRUE)
+  # fit models
+  rf <- ranger::ranger(y~., data = data.frame(y = y.train, x.train),classification = TRUE, probability = TRUE)
   ld <- MASS::lda(y~., data.frame(y = y.train, x.train))
+  gl <- glm(formula = y~., data =  data.frame(y = y.train, x.train), family = "binomial")
+  #sv <- svm(formula = factor(y)~.,  data = data.frame(y = y.train, x.train), probability = TRUE)
+  rp <- rpart(formula = y~., data =  data.frame(y = y.train, x.train))
+
 
   # summaries
-  mat.metrics <- matrix(ncol=4,nrow=3)
+  mat.metrics <- matrix(ncol=4,nrow=6)
+
 
   # RF
   rho_rf <- predict(rf, data = data.frame(x.test))$predictions[,"1"]
@@ -48,8 +55,38 @@ rhoSummaries <- function(y.train, x.train, y.test, x.test) {
   mat.metrics[3,3] <- ModelMetrics::fScore(actual = as.numeric(y.test)-1, predicted = as.numeric(rho_lda>0.5))
   mat.metrics[3,4] <- sum(diag(tab <- table(as.numeric(y.test)-1, as.numeric(rho_lda>0.5))))/sum(tab)
 
-  colnames(mat.metrics) <- c("AUC","TV","Fscore","Accuracy")
-  rownames(mat.metrics) <- c("RF", "H0","LDA")
+  # GLM
+  rho_glm <- predict(gl, newdata = data.frame(x.test), type = "response")
+  mat.metrics[4,1] <- auc(y.test, rho_glm)
+  mat.metrics[4,2] <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho_glm, s = 0.5, estimator.type = "asymptotic-tv-search", tv.seq = seq(from = 0, to = 1, by = 0.001))$tvhat
+  mat.metrics[4,3] <- ModelMetrics::fScore(actual = as.numeric(y.test)-1, predicted = as.numeric(rho_glm>0.5))
+  mat.metrics[4,4] <- sum(diag(tab <- table(as.numeric(y.test)-1, as.numeric(rho_glm>0.5))))/sum(tab)
+
+  # # SVM
+  # rho_svm <- predict(sv, data = data.frame(x.test), probability = TRUE)
+  # mat.metrics[4,1] <- auc(y.test, rho_sv)
+  # mat.metrics[4,2] <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho_sv, s = 0.5, estimator.type = "asymptotic-tv-search", tv.seq = seq(from = 0, to = 1, by = 0.001))$tvhat
+  # mat.metrics[4,3] <- ModelMetrics::fScore(actual = as.numeric(y.test)-1, predicted = as.numeric(rho_sv>0.5))
+  # mat.metrics[4,4] <- sum(diag(tab <- table(as.numeric(y.test)-1, as.numeric(rho_sv>0.5))))/sum(tab)
+
+  # RPART
+  rho_rp <- predict(rp, newdata = data.frame(x.test))[,"1"]
+  mat.metrics[5,1] <- auc(y.test, rho_rp)
+  mat.metrics[5,2] <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho_rp, s = 0.5, estimator.type = "asymptotic-tv-search", tv.seq = seq(from = 0, to = 1, by = 0.001))$tvhat
+  mat.metrics[5,3] <- ModelMetrics::fScore(actual = as.numeric(y.test)-1, predicted = as.numeric(rho_rp>0.5))
+  mat.metrics[5,4] <- sum(diag(tab <- table(as.numeric(y.test)-1, as.numeric(rho_rp>0.5))))/sum(tab)
+
+  # KNN
+  kn <- knn(train = x.train, cl = y.train, test = x.test, k = 5, prob = TRUE)
+  rho_knn <- ifelse(kn == 1, attr(kn, "prob"), 1-attr(kn, "prob"))
+  mat.metrics[6,1] <- auc(y.test, rho_knn)
+  mat.metrics[6,2] <- dWit(t = as.numeric(levels(y.test))[y.test], rho = rho_knn, s = 0.5, estimator.type = "asymptotic-tv-search", tv.seq = seq(from = 0, to = 1, by = 0.001))$tvhat
+  mat.metrics[6,3] <- ModelMetrics::fScore(actual = as.numeric(y.test)-1, predicted = as.numeric(rho_knn>0.5))
+  mat.metrics[6,4] <- sum(diag(tab <- table(as.numeric(y.test)-1, as.numeric(rho_knn>0.5))))/sum(tab)
+
+
+  colnames(mat.metrics) <- c("AUC", "TV", "Fscore", "Accuracy")
+  rownames(mat.metrics) <- c("RF", "H0", "LDA", "GLM", "RPART", "KNN")
 
   return(mat.metrics)
 }
@@ -285,6 +322,60 @@ x.test <- credit.test
 
 mat.metrics.credit <- rhoSummaries(y.train = response.train, x.train = credit.train,
                                      y.test = response.test, x.test = credit.test)
+
+
+
+
+## synthetic
+set.seed(1)
+
+# H0
+x.train <- matrix(rnorm(500*10),nrow=500,ncol=10)
+x.train <- matrix(rnorm(500*10),nrow=500,ncol=10)
+y.train <- factor(c(rep(0, 250),rep(1, 250)))
+y.test <-  factor(c(rep(0, 250),rep(1, 250)))
+
+mat.metrics.synth.H0 <- rhoSummaries(y.train = y.train, x.train = x.train,
+                                     y.test = y.test, x.test = x.test)
+
+
+# GLM
+x.train <- matrix(rnorm(500*3),nrow=500,ncol=3)
+x.test <- matrix(rnorm(500*3),nrow=500,ncol=3)
+y.train <- factor(apply(x.train, 1, function(x) {p <- exp(1*x[1]-2*x[2])/(1+exp(1*x[1]-2*x[2]));
+                                                                     sample(c(0,1), prob = c(1-p,p), size = 1, replace = FALSE)}))
+y.test <- factor(apply(x.test, 1, function(x) {p <- exp(1*x[1]-2*x[2])/(1+exp(1*x[1]-2*x[2]));
+sample(c(0,1), prob = c(1-p,p), size = 1, replace = FALSE)}))
+
+mat.metrics.synth.glm <- rhoSummaries(y.train = y.train, x.train = x.train,
+                                     y.test = y.test, x.test = x.test)
+
+
+# RPART
+x.train <- matrix(rnorm(500*3),nrow=500,ncol=3)
+x.test <- matrix(rnorm(500*3),nrow=500,ncol=3)
+y.train <- factor(ifelse(x.train[,1]>0.5 & x.train[,3]<0.3, 1, 0))
+y.test <- factor(ifelse(x.test[,1]>0.5 & x.test[,3]<0.3, 1, 0))
+
+mat.metrics.synth.rpart <- rhoSummaries(y.train = y.train, x.train = x.train,
+                                      y.test = y.test, x.test = x.test)
+
+
+
+x.pool <- matrix(rnorm(20000*2),nrow=20000,ncol=2)
+y.pool <- factor(sample(c(0,1), size = nrow(x.pool), replace = TRUE))
+x.train <- matrix(rnorm(500*2),nrow=500,ncol=2)
+x.test <- matrix(rnorm(500*2),nrow=500,ncol=2)
+y.train <- knn(train = x.pool, test = x.train, cl = y.pool, k=300)
+y.test <- knn(train = x.pool, test = x.test, cl = y.pool, k=300)
+
+
+
+mat.metrics.synth.knn <- rhoSummaries(y.train = y.train, x.train = x.train,
+                                        y.test = y.test, x.test = x.test)
+
+
+
 
 
 save(mat.metrics.Boston,
