@@ -20,7 +20,13 @@ require(class)
 
 
 # summary function
-rhoSummaries <- function(y.train, x.train, y.test, x.test) {
+rhoSummaries <- function(dataset = "Boston") {
+
+  d <- getDataset(dataset = dataset)
+  y.train <- d$y.train
+  x.train <- d$x.train
+  y.test  <- d$y.test
+  x.test  <- d$x.test
 
   # fit models
   rf <- ranger::ranger(y~., data = data.frame(y = y.train, x.train),classification = TRUE, probability = TRUE)
@@ -91,302 +97,19 @@ rhoSummaries <- function(y.train, x.train, y.test, x.test) {
   return(mat.metrics)
 }
 
-
-# repro
-set.seed(1)
-
-# Prepro
-crime01 = rep(0, length(Boston$crim))
-crime01[Boston$crim > median(Boston$crim)] = 1
-Boston = data.frame(Boston)
-Boston <- Boston[sample(1:nrow(Boston), size = nrow(Boston), replace = FALSE),]
-
-train = 1:(dim(Boston)[1]*(1/2))
-test = setdiff(1:dim(Boston)[1], train)
-Boston.train = Boston[train, -c(1)]
-Boston.test = Boston[test, -c(1)]
-crim01.test = crime01[test]
-crim01.train = crime01[train]
-
-Boston.train <- Boston.train[rep(1:nrow(Boston.train), each=1),]
-Boston.test <- Boston.test[rep(1:nrow(Boston.test), each=1),]
-#response.test = factor(response[test])
-crim01.test = factor(rep(crim01.test,each=1))
-#response.test = factor(response[test])
-crim01.train = factor(rep(crim01.train,each=1))
-
-
-mat.metrics.Boston <- rhoSummaries(y.train = crim01.train, x.train = Boston.train,
-                                    y.test = crim01.test, x.test = Boston.test)
-
-####################### titanic dataset
-
-# PrePro
-titanic <- read.csv(url("https://web.stanford.edu/class/archive/cs/cs109/cs109.1166/stuff/titanic.csv"),
-                    header = T)
-
-survived = titanic$Survived
-titanic = data.frame(titanic)
-titanic <- titanic[sample(1:nrow(titanic), replace = FALSE, size = nrow(titanic)),]
-titanic$Sex <- ifelse(titanic$Sex=="male",0,1)
-titanic <- titanic[,-c(3)]
-
-train = 1:(dim(titanic)[1]*(1/2))
-test = setdiff(1:dim(titanic)[1], train)
-titanic.train = titanic[train, -c(1)]
-titanic.test = titanic[test, -c(1)]
-survived.test = factor(survived[test])
-survived.train = factor(survived[train])
-
-
-mat.metrics.titanic <- rhoSummaries(y.train = survived.train, x.train = titanic.train,
-                                    y.test = survived.test, x.test = titanic.test)
-
-
-####################### breast cancer dataset
-
-# PrePro
-data("BreastCancer")
-breast <- na.omit(BreastCancer)
-breast <- breast[sample(1:nrow(breast), replace = FALSE, size = nrow(breast)),]
-
-response <- factor(breast$Class)
-levels(response) <- c(0,1)
-
-train = 1:(dim(breast)[1]*(1/2))
-test = setdiff(1:dim(breast)[1], train)
-breast.train = breast[train, -c(1,11)]
-breast.test = breast[test, -c(1,11)]
-#response.test = factor(response[test])
-#response.train = factor(response[train])
-
-#breast.train <- breast.train[rep(1:nrow(breast.train), each=10),]
-#breast.test <- breast.test[rep(1:nrow(breast.test), each=10),]
-response.train = factor(response[train])
-#response.test = factor(rep(response[test],each=10))
-response.test = factor(response[test])
-#response.train = factor(rep(response[train],each=10))
-#
-
-mat.metrics.breast <- rhoSummaries(y.train = response.train, x.train = breast.train,
-                                     y.test = response.test, x.test = breast.test)
-
-
-
-####################### ionosphere dataset
-
-# PrePro
-data("Ionosphere")
-iono <- na.omit(Ionosphere)
-
-response <- factor(iono$Class)
-levels(response) <- c(0,1)
-iono <- iono[sample(1:nrow(iono), replace = FALSE, size = nrow(iono)),]
-
-
-train = 1:(dim(iono)[1]*(1/2))
-test = setdiff(1:dim(iono)[1], train)
-iono.train = iono[train, -c(2,35)]
-iono.test = iono[test, -c(2,35)]
-#iono.train <- iono.train[rep(1:nrow(iono.train), each=10),]
-#iono.test <- iono.test[rep(1:nrow(iono.test), each=10),]
-#response.test = factor(response[test])
-#response.test = factor(rep(response[test],each=10))
-response.test = factor(response[test])
-#response.train = factor(rep(response[train],each=10))
-response.train = factor(response[train])
-
-mat.metrics.iono <- rhoSummaries(y.train = response.train, x.train = iono.train,
-                                    y.test = response.test, x.test = iono.test)
-
-
-
-
-abalone.cols = c("sex", "length", "diameter", "height", "whole.wt",
-                 "shucked.wt", "viscera.wt", "shell.wt", "rings")
-
-url <- 'http://archive.ics.uci.edu/ml/machine-learning-databases/abalone/abalone.data'
-abalone <- read.table(url, sep=",", row.names=NULL, col.names=abalone.cols,
-                      nrows=4177)
-colnames(abalone) <- abalone.cols
-abalone <- abalone[sample(1:nrow(abalone), replace = FALSE, size = nrow(abalone)),]
-
-
-train = 1:(dim(abalone)[1]*(1/2))
-test = setdiff(1:dim(abalone)[1], train)
-abalone.train = abalone[train, -c(9)]
-abalone.test = abalone[test, -c(9)]
-
-# young and adult vs old
-response <- ifelse(abalone$rings <=5, 0, ifelse(abalone$rings <= 13, 0, 1))
-#response.test = factor(response[test])
-response.test = factor(response[test])
-response.train = factor(response[train])
-
-mat.metrics.abalone <- rhoSummaries(y.train = response.train, x.train = abalone.train,
-                                    y.test = response.test, x.test = abalone.test)
-
-# # adult
-# adult <- read.table('https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data',
-#                     sep = ',', fill = F, strip.white = T)
-# colnames(adult) <- c('age', 'workclass', 'fnlwgt', 'educatoin',
-#                      'educatoin_num', 'marital_status', 'occupation', 'relationship', 'race', 'sex',
-#                      'capital_gain', 'capital_loss', 'hours_per_week', 'native_country', 'income')
-# levels(adult$income) <- c(0,1)
-# adult <- adult[sample(1:nrow(adult), replace = FALSE, size = nrow(adult)),]
-#
-#
-# train = 1:(dim(adult)[1]*(1/2))
-# test = setdiff(1:dim(adult)[1], train)
-# adult.train = adult[train, -c(15)]
-# adult.test = adult[test, -c(15)]
-#
-# # young and adult vs old
-# response <- adult$income
-# #response.test = factor(response[test])
-# response.test = factor(response[test])
-# response.train = factor(response[train])
-#
-# mat.metrics.adult <- rhoSummaries(y.train = response.train, x.train = adult.train,
-#                                      y.test = response.test, x.test = adult.test)
-
-
-# bank notes
-banknotes <- read.table('https://archive.ics.uci.edu/ml/machine-learning-databases/00267/data_banknote_authentication.txt',
-                        sep = ',', fill = F, strip.white = T)
-banknotes <- banknotes[sample(1:nrow(banknotes)),]
-colnames(banknotes) <- c("X1","X2","X3","X4","y")
-banknotes <- banknotes[sample(1:nrow(banknotes), replace = FALSE, size = nrow(banknotes)),]
-
-
-train = 1:(dim(banknotes)[1]*(1/2))
-test = setdiff(1:dim(banknotes)[1], train)
-banknotes.train = banknotes[train, -c(5)]
-banknotes.test = banknotes[test, -c(5)]
-
-# young and adult vs old
-response <- banknotes$y
-#response.test = factor(response[test])
-response.test = factor(response[test])
-response.train = factor(response[train])
-
-mat.metrics.banknotes <- rhoSummaries(y.train = response.train, x.train = banknotes.train,
-                                     y.test = response.test, x.test = banknotes.test)
-
-# Default
-default <- ISLR::Default
-default <- default[sample(1:nrow(default), replace = FALSE, size = nrow(default)),]
-
-train = 1:(dim(default)[1]*(1/2))
-test = setdiff(1:dim(default)[1], train)
-default.train = default[train, -c(1)]
-default.test = default[test, -c(1)]
-
-# young and adult vs old
-response <- ifelse(default$default=="Yes",1,0)
-#response.test = factor(response[test])
-response.test = factor(response[test])
-response.train = factor(response[train])
-
-y.train <- response.train
-x.train <- default.train
-y.test <- response.test
-x.test <- default.test
-
-
-mat.metrics.default <- rhoSummaries(y.train = response.train, x.train = default.train,
-                                       y.test = response.test, x.test = default.test)
-
-
-
-# credit
-url="http://freakonometrics.free.fr/german_credit.csv"
-credit=read.csv(url, header = TRUE, sep = ",")
-credit <- credit[sample(1:nrow(credit), replace = FALSE, size = nrow(credit)),]
-
-train = 1:(dim(credit)[1]*(1/2))
-test = setdiff(1:dim(credit)[1], train)
-credit.train = credit[train, -c(1)]
-credit.test = credit[test, -c(1)]
-
-# young and adult vs old
-response <- credit$Creditability
-#response.test = factor(response[test])
-response.test = factor(response[test])
-response.train = factor(response[train])
-
-y.train <- response.train
-x.train <- credit.train
-y.test <- response.test
-x.test <- credit.test
-
-mat.metrics.credit <- rhoSummaries(y.train = response.train, x.train = credit.train,
-                                     y.test = response.test, x.test = credit.test)
-
-
-
-
-## synthetic
-set.seed(1)
-
-# H0
-x.train <- matrix(rnorm(500*10),nrow=500,ncol=10)
-x.train <- matrix(rnorm(500*10),nrow=500,ncol=10)
-y.train <- factor(c(rep(0, 250),rep(1, 250)))
-y.test <-  factor(c(rep(0, 250),rep(1, 250)))
-
-mat.metrics.synth.H0 <- rhoSummaries(y.train = y.train, x.train = x.train,
-                                     y.test = y.test, x.test = x.test)
-
-
-# GLM
-x.train <- matrix(rnorm(500*3),nrow=500,ncol=3)
-x.test <- matrix(rnorm(500*3),nrow=500,ncol=3)
-y.train <- factor(apply(x.train, 1, function(x) {p <- exp(1*x[1]-2*x[2])/(1+exp(1*x[1]-2*x[2]));
-                                                                     sample(c(0,1), prob = c(1-p,p), size = 1, replace = FALSE)}))
-y.test <- factor(apply(x.test, 1, function(x) {p <- exp(1*x[1]-2*x[2])/(1+exp(1*x[1]-2*x[2]));
-sample(c(0,1), prob = c(1-p,p), size = 1, replace = FALSE)}))
-
-mat.metrics.synth.glm <- rhoSummaries(y.train = y.train, x.train = x.train,
-                                     y.test = y.test, x.test = x.test)
-
-
-# RPART
-x.train <- matrix(rnorm(500*3),nrow=500,ncol=3)
-x.test <- matrix(rnorm(500*3),nrow=500,ncol=3)
-y.train <- factor(ifelse(x.train[,1]>0.5 & x.train[,3]<0.3, 1, 0))
-y.test <- factor(ifelse(x.test[,1]>0.5 & x.test[,3]<0.3, 1, 0))
-
-mat.metrics.synth.rpart <- rhoSummaries(y.train = y.train, x.train = x.train,
-                                      y.test = y.test, x.test = x.test)
-
-
-
-x.pool <- matrix(rnorm(20000*2),nrow=20000,ncol=2)
-y.pool <- factor(sample(c(0,1), size = nrow(x.pool), replace = TRUE))
-x.train <- matrix(rnorm(500*2),nrow=500,ncol=2)
-x.test <- matrix(rnorm(500*2),nrow=500,ncol=2)
-y.train <- knn(train = x.pool, test = x.train, cl = y.pool, k=300)
-y.test <- knn(train = x.pool, test = x.test, cl = y.pool, k=300)
-
-
-
-mat.metrics.synth.knn <- rhoSummaries(y.train = y.train, x.train = x.train,
-                                        y.test = y.test, x.test = x.test)
-
-
-
-
-
-save(mat.metrics.Boston,
-     mat.metrics.titanic,
-     mat.metrics.breast,
-     mat.metrics.iono,
-     mat.metrics.abalone,
-   #  mat.metrics.adult,
-     mat.metrics.banknotes,
-     mat.metrics.default,
-     mat.metrics.credit,
+# dataset names
+dataset.names <- c("Boston", "titanic", "BreastCancer", "Ionosphere", "abalone",
+                   "banknotes", "Default", "credit")
+
+# running the sims
+res <- list()
+for (n in dataset.names) {
+  res$n <- rhoSummaries(dataset = n)
+  print(n)
+}
+
+
+save(res,
      file = paste0(PATH.SAVE, "DATA_SIMULATION_9.Rdata"))
 
 

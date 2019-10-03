@@ -72,8 +72,8 @@ runPermAnalysis <- function(dataset="Boston") {
 }
 
 # dataset names
-dataset.names <- c("Boston", "titanic", "breast", "IonoSphere", "abalone", "adult",
-                   "banknotes", "default", "credit")
+dataset.names <- c("Boston", "titanic", "BreastCancer", "Ionosphere", "abalone", "adult",
+                   "banknotes", "Default", "credit")
 
 # running the sims
 res <- data.table()
