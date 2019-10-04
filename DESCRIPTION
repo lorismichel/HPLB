@@ -1,7 +1,7 @@
 Package: dWit
 Type: Package
 Title: Distributional Witness algorithms
-Version: 0.1.0
+Version: 0.2.0
 Author: Loris Michel, Jeffrey Naef
 Maintainer: Loris Michel <michel@stat.math.ethz.ch>
 Description: R library for algorithms around the notion of distributional witnesses
