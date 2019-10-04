@@ -1,67 +1,3 @@
-# climatic data (real analysis)
-
-# libs
-library(sf)
-library(ncdf4)
-library(raster)
-library(rasterVis)
-library(RColorBrewer)
-
-
-
-# PATH of data
-ncpath <- "~/Downloads/reanalysis_jeff_loris/"
-
-
-# loading the data (4 signals)
-air_raster <- brick(paste(ncpath, "NCEP2.air.2m.day", ".nc", sep=""), varname="air")
-mslp_raster <- brick(paste(ncpath, "NCEP2.mslp.2m.day", ".nc", sep=""), varname="mslp")
-prate_raster <- brick(paste(ncpath, "NCEP2.prate.2m.day", ".nc", sep=""), varname="prate")
-shum_raster <- brick(paste(ncpath, "NCEP2.shum.2m.day", ".nc", sep=""), varname="shum")
-
-
-
-########### preprocessing
-
-# transform to date
-toDate <- function(x) {
-  return(sub(sub(substr(x, start = 2, stop = 11), pattern = "\\.", replacement = "-"), pattern = "\\.", replacement = "-"))
-}
-
-# times
-t_air <- as.Date(sapply(colnames(air_raster[1,1]), toDate))
-t_mslp <- as.Date(sapply(colnames(mslp_raster[1,1]), toDate))
-t_prate <- as.Date(sapply(colnames(prate_raster[1,1]), toDate))
-t_shum <- as.Date(sapply(colnames(shum_raster[1,1]), toDate))
-
-# subset to smaller time step
-air <- getValues(air_raster)[,1:14641]
-mslp <- getValues(mslp_raster)[,1:14641]
-prate <- getValues(prate_raster)[,1:14641]
-shum <- getValues(shum_raster)[,1:14641]
-
-
-fake.series <- matrix(nrow=nrow(air),ncol=ncol(air))
-for (i in 1:nrow(fake.series)) {
-  fake.series[i,] <- rnorm(n=14641, mean = (10^-4)*1:14641)
-}
-
-########### analysis
-# here we intend to start with a certain block size and decrease it more and more
-# this can be done in regression or classification task
-
-# build indicator of 10 years in a row
-time <- t_air
-tenyears.ind <- cut(time, breaks = as.Date(c("1979-01-01",
-                                             "1989-01-01",
-                                             "1999-01-01",
-                                             "2009-01-01",
-                                             "2019-02-01")), labels=FALSE)
-
-
-
-
-
 # filtering of time
 
 
@@ -182,9 +118,9 @@ decendingBlocksBinClass <- function(signals = c("air"),
 
 ## function that makes the block size analysis
 decendingBlocksBinClassMix <- function(signals = c("air"),
-                                    max.p = 9, min.p = 1, filter = 1:length(time),
-                                    prob = 0, locations = c(1:nrow(air)),
-                                    use.lda = FALSE) {
+                                       max.p = 9, min.p = 1, filter = 1:length(time),
+                                       prob = 0, locations = c(1:nrow(air)),
+                                       use.lda = FALSE) {
   if (signals == "fake") {
     x <- t(fake.series[locations,filter])
   } else if (signals == "air") {
@@ -240,9 +176,9 @@ decendingBlocksBinClassMix <- function(signals = c("air"),
                                        replace = TRUE,
                                        size = length(class.ind.train))==1, 1-class.ind.train, class.ind.train)
       class.ind.test <- ifelse(sample(c(0,1),
-                                       prob = c(1-prob, prob),
-                                       replace = TRUE,
-                                       size = length(class.ind.test))==1, 1-class.ind.test, class.ind.test)
+                                      prob = c(1-prob, prob),
+                                      replace = TRUE,
+                                      size = length(class.ind.test))==1, 1-class.ind.test, class.ind.test)
 
 
 
@@ -296,10 +232,10 @@ decendingBlocksBinClassMix <- function(signals = c("air"),
 
 ## function that makes the block size analysis
 runClimateAnalysis <- function(signals = c("air"),
-                                       max.p = 9, min.p = 1, filter = 1:length(time),
-                                       prob = 0, locations = c(1:nrow(air)),
-                                       use.lda = FALSE,
-                                       spatial.centering = TRUE) {
+                               max.p = 9, min.p = 1, filter = 1:length(time),
+                               prob = 0, locations = c(1:nrow(air)),
+                               use.lda = FALSE,
+                               spatial.centering = TRUE) {
   if (signals == "fake") {
     x <- t(fake.series[locations,filter])
   } else if (signals == "air") {
@@ -447,25 +383,25 @@ lines(log(length(time)/2^{1:max.p}/365),lapply(res3$mean.local.tv.bin,quantile,0
 
 par(mfrow=c(3,1))
 for (prob in c(0,0.1,0.3)) {
-max.p <- 5
-filter <- months(time)%in%c("February")
-res3 <- decendingBlocksBinClassMix(signals = c("mslp"),
-                                   max.p = max.p,
-                                   filter = filter,
-                                   prob = prob,
-                                   odd.even.split = TRUE)
-plot(log(length(time[filter])/2^{1:max.p}/365),lapply(res3$mean.local.tv.search,quantile,0.95) , ylim=c(0,1), type="l", col="black",pch=19,lty=2,xlab="block size in log(years)",ylab="TV")
-lines(log(length(time[filter])/2^{1:max.p}/365),lapply(res3$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time[filter])/2^{1:max.p}/365),lapply(res3$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time[filter])/2^{1:max.p}/365),lapply(res3$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time[filter])/2^{1:max.p}/365),lapply(res3$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time[filter])/2^{1:max.p}/365),lapply(res3$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+  max.p <- 5
+  filter <- months(time)%in%c("February")
+  res3 <- decendingBlocksBinClassMix(signals = c("mslp"),
+                                     max.p = max.p,
+                                     filter = filter,
+                                     prob = prob,
+                                     odd.even.split = TRUE)
+  plot(log(length(time[filter])/2^{1:max.p}/365),lapply(res3$mean.local.tv.search,quantile,0.95) , ylim=c(0,1), type="l", col="black",pch=19,lty=2,xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time[filter])/2^{1:max.p}/365),lapply(res3$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time[filter])/2^{1:max.p}/365),lapply(res3$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time[filter])/2^{1:max.p}/365),lapply(res3$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time[filter])/2^{1:max.p}/365),lapply(res3$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time[filter])/2^{1:max.p}/365),lapply(res3$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
 }
 require(distrEx)
 TotalVarDist(Norm(mean=(10^-4)*5), Norm(mean=(10^-4)*))
 TotalVarDist(
-UnivarMixingDistribution(lapply(1:30, FUN = function(i) Norm(mean=10^{-4}*i))),
-UnivarMixingDistribution(lapply(31:60, FUN = function(i) Norm(mean=10^{-4}*i))))
+  UnivarMixingDistribution(lapply(1:30, FUN = function(i) Norm(mean=10^{-4}*i))),
+  UnivarMixingDistribution(lapply(31:60, FUN = function(i) Norm(mean=10^{-4}*i))))
 block.size <- 30
 TotalVarDist(do.call(what = "UnivarMixingDistribution", lapply(1:block.size, FUN = function(i) Norm(mean=10^{-4}*i))),
              do.call(what = "UnivarMixingDistribution", lapply((block.size+1):(2*block.size), FUN = function(i) Norm(mean=10^{-4}*i))))
@@ -504,8 +440,8 @@ lines(log(length(time)/2^{1:max.p}/365),lapply(res2$mean.local.tv.bin,quantile,0
 block.size.vec <- round(length(time)/2^{1:max.p})
 tv.vec <- c()
 for (block.size in block.size.vec[-c(1:4)]) {
-tv.vec <- c(tv.vec, TotalVarDist(do.call(what = "UnivarMixingDistribution", lapply(1:block.size, FUN = function(i) Norm(mean=10^{-4}*i))),
-             do.call(what = "UnivarMixingDistribution", lapply((block.size+1):(2*block.size), FUN = function(i) Norm(mean=10^{-4}*i)))))
+  tv.vec <- c(tv.vec, TotalVarDist(do.call(what = "UnivarMixingDistribution", lapply(1:block.size, FUN = function(i) Norm(mean=10^{-4}*i))),
+                                   do.call(what = "UnivarMixingDistribution", lapply((block.size+1):(2*block.size), FUN = function(i) Norm(mean=10^{-4}*i)))))
 }
 lines(log(length(time)/2^{1:max.p}/365), c(rep(-1,4), tv.vec),type="b",col="blue",pch=19)
 
@@ -803,103 +739,103 @@ load("./Data/climate_res_mslp_odd.Rdata")
 {
 
   par(mfrow=c(3,1))
-plot(mslp[1,],type="l",main="mslp, 40years")
-plot(mslp[1,1:(5*365)],type="l",main="mslp, 5years")
-plot(mslp[1,1:(1*365)],type="l",main="mslp, 1years")
+  plot(mslp[1,],type="l",main="mslp, 40years")
+  plot(mslp[1,1:(5*365)],type="l",main="mslp, 5years")
+  plot(mslp[1,1:(1*365)],type="l",main="mslp, 1years")
 
-#par(mfrow=c(3,1))
-#plot(main="mslp, block, prob=0",log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_0$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-#lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_0$mean.local.tv.search,mean), type="b", col="black",pch=19)
-#lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_0$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-#lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_0$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-#lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_0$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-#lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_0$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
-par(mfrow=c(1,1))
-plot(main="mslp, middle, prob=0",log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_0$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_odd_0$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_odd_0$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_odd_0$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_odd_0$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_odd_0$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+  #par(mfrow=c(3,1))
+  #plot(main="mslp, block, prob=0",log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_0$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  #lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_0$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  #lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_0$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  #lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_0$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  #lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_0$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  #lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_0$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+  par(mfrow=c(1,1))
+  plot(main="mslp, middle, prob=0",log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_0$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_odd_0$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_odd_0$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_odd_0$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_odd_0$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_odd_0$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
 
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_odd_0$mean.local.tv.empirical,mean), type="b", col="blue",pch=19)
-#lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_odd_0$mean.local.tv.empirical,quantile,0.95) , type="l", col="blue",pch=19,lty=2)
-#lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_odd_0$mean.local.tv.empirical,quantile,0.05) , type="l", col="blue",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_odd_0$mean.local.tv.empirical,mean), type="b", col="blue",pch=19)
+  #lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_odd_0$mean.local.tv.empirical,quantile,0.95) , type="l", col="blue",pch=19,lty=2)
+  #lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_odd_0$mean.local.tv.empirical,quantile,0.05) , type="l", col="blue",pch=19,lty=2)
 
-#plot(main="mslp, block, prob=0.1",log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_01$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-#lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_01$mean.local.tv.search,mean), type="b", col="black",pch=19)
-#lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_01$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-#lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_01$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-#lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_01$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-#lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_01$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+  #plot(main="mslp, block, prob=0.1",log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_01$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  #lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_01$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  #lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_01$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  #lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_01$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  #lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_01$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  #lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_01$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
 
-#plot(main="mslp, odd-even, prob=0.1",log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_01$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-#lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_odd_01$mean.local.tv.search,mean), type="b", col="black",pch=19)
-#lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_odd_01$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-#lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_odd_01$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-#lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_odd_01$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-#lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_odd_01$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
-
-
-plot(main="mslp, block, prob=0.3", log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_03$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_03$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_03$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_03$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_03$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_03$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
-
-plot(main="mslp, odd-even, prob=0.3", log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_03$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_03$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_03$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_03$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_03$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_03$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
-
-# air
-par(mfrow=c(3,2))
-plot(main="air, block, prob=0",log(length(time)/2^{1:max.p}/365),lapply(res_air_block_0$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_0$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_0$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_0$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_0$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_0$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
-
-plot(main="air, odd-even, prob=0",log(length(time)/2^{1:max.p}/365),lapply(res_air_block_0$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_0$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_0$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_0$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_0$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_0$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+  #plot(main="mslp, odd-even, prob=0.1",log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_01$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  #lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_odd_01$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  #lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_odd_01$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  #lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_odd_01$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  #lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_odd_01$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  #lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_odd_01$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
 
 
-plot(main="air, block, prob=0.1",log(length(time)/2^{1:max.p}/365),lapply(res_air_block_01$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_01$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_01$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_01$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_01$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_01$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+  plot(main="mslp, block, prob=0.3", log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_03$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_03$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_03$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_03$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_03$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_03$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
 
-plot(main="air, odd-even, prob=0.1",log(length(time)/2^{1:max.p}/365),lapply(res_air_block_01$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_01$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_01$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_01$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_01$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_01$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+  plot(main="mslp, odd-even, prob=0.3", log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_03$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_03$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_03$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_03$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_03$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_mslp_block_03$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+
+  # air
+  par(mfrow=c(3,2))
+  plot(main="air, block, prob=0",log(length(time)/2^{1:max.p}/365),lapply(res_air_block_0$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_0$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_0$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_0$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_0$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_0$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+
+  plot(main="air, odd-even, prob=0",log(length(time)/2^{1:max.p}/365),lapply(res_air_block_0$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_0$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_0$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_0$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_0$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_0$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
 
 
-plot(main="air, block, prob=0.3", log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+  plot(main="air, block, prob=0.1",log(length(time)/2^{1:max.p}/365),lapply(res_air_block_01$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_01$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_01$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_01$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_01$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_01$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
 
-plot(main="air, odd-even, prob=0.3", log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+  plot(main="air, odd-even, prob=0.1",log(length(time)/2^{1:max.p}/365),lapply(res_air_block_01$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_01$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_01$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_01$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_01$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_01$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+
+
+  plot(main="air, block, prob=0.3", log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+
+  plot(main="air, odd-even, prob=0.3", log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
 }##
 
 # prate
@@ -920,50 +856,50 @@ load("./Data/climate_res_prate_odd.Rdata")
   res$mean.local.tv.search
   res$mean.local.tv.bin
 
-par(mfrow=c(3,2))
-plot(main="prate, block, prob=0",log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_0$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_0$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_0$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_0$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_0$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_0$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+  par(mfrow=c(3,2))
+  plot(main="prate, block, prob=0",log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_0$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_0$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_0$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_0$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_0$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_0$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
 
-plot(main="prate, odd-even, prob=0",log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_0$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_odd_0$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_odd_0$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_odd_0$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_odd_0$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_odd_0$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
-
-
-plot(main="prate, block, prob=0.1",log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_01$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_01$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_01$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_01$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_01$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_01$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
-
-plot(main="prate, odd-even, prob=0.1",log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_01$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_odd_01$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_odd_01$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_odd_01$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_odd_01$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_odd_01$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+  plot(main="prate, odd-even, prob=0",log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_0$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_odd_0$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_odd_0$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_odd_0$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_odd_0$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_odd_0$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
 
 
-plot(main="prate, block, prob=0.3", log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_03$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_03$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_03$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_03$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_03$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_03$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+  plot(main="prate, block, prob=0.1",log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_01$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_01$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_01$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_01$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_01$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_01$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
 
-plot(main="prate, odd-even, prob=0.3", log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_03$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_03$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_03$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_03$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_03$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_03$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+  plot(main="prate, odd-even, prob=0.1",log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_01$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_odd_01$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_odd_01$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_odd_01$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_odd_01$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_odd_01$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+
+
+  plot(main="prate, block, prob=0.3", log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_03$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_03$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_03$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_03$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_03$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_03$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+
+  plot(main="prate, odd-even, prob=0.3", log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_03$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_03$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_03$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_03$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_03$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_prate_block_03$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
 }##
 
 # shum
@@ -971,56 +907,56 @@ max.p <- 9
 load("./Data/climate_res_shum_block.Rdata")
 load("./Data/climate_res_shum_odd.Rdata")
 {
-par(mfrow=c(3,1))
-plot(shum[1,],type="l",main="shum, 40years")
-plot(shum[1,1:(5*365)],type="l",main="shum, 5years")
-plot(shum[1,1:(1*365)],type="l",main="shum, 1years")
+  par(mfrow=c(3,1))
+  plot(shum[1,],type="l",main="shum, 40years")
+  plot(shum[1,1:(5*365)],type="l",main="shum, 5years")
+  plot(shum[1,1:(1*365)],type="l",main="shum, 1years")
 
 
-par(mfrow=c(3,2))
-plot(main="shum, block, prob=0",log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_0$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_0$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_0$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_0$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_0$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_0$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+  par(mfrow=c(3,2))
+  plot(main="shum, block, prob=0",log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_0$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_0$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_0$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_0$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_0$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_0$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
 
-plot(main="shum, odd-even, prob=0",log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_0$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_odd_0$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_odd_0$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_odd_0$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_odd_0$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_odd_0$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
-
-
-plot(main="shum, block, prob=0.1",log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_01$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_01$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_01$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_01$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_01$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_01$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
-
-plot(main="shum, odd-even, prob=0.1",log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_01$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_odd_01$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_odd_01$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_odd_01$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_odd_01$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_odd_01$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+  plot(main="shum, odd-even, prob=0",log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_0$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_odd_0$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_odd_0$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_odd_0$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_odd_0$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_odd_0$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
 
 
-plot(main="shum, block, prob=0.3", log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_03$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_03$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_03$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_03$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_03$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_03$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+  plot(main="shum, block, prob=0.1",log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_01$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_01$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_01$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_01$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_01$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_01$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
 
-plot(main="shum, odd-even, prob=0.3", log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_03$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_03$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_03$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_03$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_03$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_03$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+  plot(main="shum, odd-even, prob=0.1",log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_01$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_odd_01$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_odd_01$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_odd_01$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_odd_01$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_odd_01$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+
+
+  plot(main="shum, block, prob=0.3", log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_03$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_03$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_03$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_03$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_03$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_03$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+
+  plot(main="shum, odd-even, prob=0.3", log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_03$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_03$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_03$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_03$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_03$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_shum_block_03$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
 }##
 
 # air
@@ -1028,63 +964,63 @@ max.p <- 9
 load("./Data/climate_res_air_block.Rdata")
 load("./Data/climate_res_air_odd.Rdata")
 {
-par(mfrow=c(3,1))
-plot(air[1,],type="l",main="air, 40years")
-plot(air[1,1:(5*365)],type="l",main="air, 5years")
-plot(air[1,1:(1*365)],type="l",main="air, 1years")
+  par(mfrow=c(3,1))
+  plot(air[1,],type="l",main="air, 40years")
+  plot(air[1,1:(5*365)],type="l",main="air, 5years")
+  plot(air[1,1:(1*365)],type="l",main="air, 1years")
 
-par(mfrow=c(1,1))
-#plot(air[1,],type="l",main="air, 40years")
-plot(air[1,c(57:(57+55))],type="l",main="air, 5years")
-res <- decendingBlocksBinClassMix(signals = "air", max.p = 1, odd.even.split = FALSE, prob = 0, filter = 1:nrow(air)%in%c(57:(57+55)))
-res$mean.local.tv.search
-res$mean.local.tv.bin
-#plot(air[1,1:(1*365)],type="l",main="air, 1years")
+  par(mfrow=c(1,1))
+  #plot(air[1,],type="l",main="air, 40years")
+  plot(air[1,c(57:(57+55))],type="l",main="air, 5years")
+  res <- decendingBlocksBinClassMix(signals = "air", max.p = 1, odd.even.split = FALSE, prob = 0, filter = 1:nrow(air)%in%c(57:(57+55)))
+  res$mean.local.tv.search
+  res$mean.local.tv.bin
+  #plot(air[1,1:(1*365)],type="l",main="air, 1years")
 
-par(mfrow=c(3,2))
-plot(main="air, block, prob=0",log(length(time)/2^{1:max.p}/365),lapply(res_air_block_0$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_0$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_0$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_0$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_0$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_0$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+  par(mfrow=c(3,2))
+  plot(main="air, block, prob=0",log(length(time)/2^{1:max.p}/365),lapply(res_air_block_0$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_0$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_0$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_0$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_0$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_0$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
 
-plot(main="air, odd-even, prob=0",log(length(time)/2^{1:max.p}/365),lapply(res_air_block_0$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_0$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_0$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_0$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_0$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_0$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
-
-
-plot(main="air, block, prob=0.1",log(length(time)/2^{1:max.p}/365),lapply(res_air_block_01$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_01$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_01$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_01$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_01$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_01$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
-
-plot(main="air, odd-even, prob=0.1",log(length(time)/2^{1:max.p}/365),lapply(res_air_block_01$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_01$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_01$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_01$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_01$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_01$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+  plot(main="air, odd-even, prob=0",log(length(time)/2^{1:max.p}/365),lapply(res_air_block_0$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_0$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_0$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_0$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_0$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_0$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
 
 
-plot(main="air, block, prob=0.3", log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+  plot(main="air, block, prob=0.1",log(length(time)/2^{1:max.p}/365),lapply(res_air_block_01$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_01$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_01$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_01$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_01$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_01$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
 
-plot(main="air, odd-even, prob=0.3", log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+  plot(main="air, odd-even, prob=0.1",log(length(time)/2^{1:max.p}/365),lapply(res_air_block_01$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_01$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_01$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_01$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_01$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_odd_01$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+
+
+  plot(main="air, block, prob=0.3", log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+
+  plot(main="air, odd-even, prob=0.3", log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_air_block_03$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
 }##
 
 # fake
@@ -1092,55 +1028,55 @@ max.p <- 9
 load("./Data/climate_res_fake_block.Rdata")
 load("./Data/climate_res_fake_odd.Rdata")
 {
-par(mfrow=c(3,1))
-plot(fake.series[1,],type="l",main="air, 40years")
-plot(fake.series[1,1:(5*365)],type="l",main="air, 5years")
-plot(fake.series[1,1:(1*365)],type="l",main="air, 1years")
+  par(mfrow=c(3,1))
+  plot(fake.series[1,],type="l",main="air, 40years")
+  plot(fake.series[1,1:(5*365)],type="l",main="air, 5years")
+  plot(fake.series[1,1:(1*365)],type="l",main="air, 1years")
 
-par(mfrow=c(3,2))
-plot(main="fake, block, prob=0",log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_0$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_0$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_0$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_0$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_0$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_0$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+  par(mfrow=c(3,2))
+  plot(main="fake, block, prob=0",log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_0$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_0$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_0$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_0$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_0$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_0$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
 
-plot(main="fake, odd-even, prob=0",log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_0$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_odd_0$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_odd_0$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_odd_0$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_odd_0$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_odd_0$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
-
-
-plot(main="fake, block, prob=0.1",log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_01$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_01$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_01$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_01$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_01$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_01$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
-
-plot(main="fake, odd-even, prob=0.1",log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_01$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_odd_01$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_odd_01$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_odd_01$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_odd_01$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_odd_01$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+  plot(main="fake, odd-even, prob=0",log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_0$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_odd_0$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_odd_0$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_odd_0$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_odd_0$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_odd_0$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
 
 
-plot(main="fake, block, prob=0.3", log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_03$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_03$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_03$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_03$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_03$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_03$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+  plot(main="fake, block, prob=0.1",log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_01$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_01$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_01$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_01$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_01$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_01$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
 
-plot(main="fake, odd-even, prob=0.3", log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_03$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_03$mean.local.tv.search,mean), type="b", col="black",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_03$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_03$mean.local.tv.bin,mean), type="b", col="red",pch=19)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_03$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
-lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_03$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+  plot(main="fake, odd-even, prob=0.1",log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_01$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_odd_01$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_odd_01$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_odd_01$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_odd_01$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_odd_01$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+
+
+  plot(main="fake, block, prob=0.3", log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_03$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_03$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_03$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_03$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_03$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_03$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
+
+  plot(main="fake, odd-even, prob=0.3", log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_03$mean.local.tv.search,quantile,0.95) , type="l", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_03$mean.local.tv.search,mean), type="b", col="black",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_03$mean.local.tv.search,quantile,0.05) , type="l", col="black",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_03$mean.local.tv.bin,mean), type="b", col="red",pch=19)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_03$mean.local.tv.bin,quantile,0.95) , type="l", col="red",pch=19,lty=2)
+  lines(log(length(time)/2^{1:max.p}/365),lapply(res_fake_block_03$mean.local.tv.bin,quantile,0.05) , type="l", col="red",pch=19,lty=2)
 }##
 
 # air (Feb only)
@@ -1592,177 +1528,3 @@ lines(log(length(time)/2^{min.p:max.p}/365),lapply(final_prate_rf_500$mean.local
 plot(main="rainfall, 10 locations, RF",log(length(time)/2^{min.p:max.p}/365),lapply(final_prate_rf_10$mean.local.tv.search,mean), type="b", col="black",pch=19,lty=2,ylim=c(0,1),xlab="block size in log(years)",ylab="TV")
 lines(log(length(time)/2^{min.p:max.p}/365),lapply(final_prate_rf_10$mean.local.tv.bin,mean), type="b", col="red",pch=19)
 lines(log(length(time)/2^{min.p:max.p}/365),lapply(final_prate_rf_10$mean.local.tv.empirical,mean), type="b", col="blue", pch=19)
-
-
-
-
-
-# final analysis
-## final function
-runClimateAnalysis <- function(signals = c("air"),
-                               max.p = 9, min.p = 1, filter = 1:length(time),
-                               prob = 0, locations = c(1:nrow(air)),
-                               use.lda = FALSE,
-                               spatial.centering = TRUE,
-                               x = NULL) {
-  if (is.null(x)) {
-    if (signals == "fake") {
-      x <- t(fake.series[locations,filter])
-    } else if (signals == "air") {
-      x <- t(air[locations,filter])
-    } else if (signals == "mslp") {
-      x <- t(mslp[locations,filter])
-    } else if (signals == "prate") {
-      x <- t(prate[locations,filter])
-    } else if (signals == "shum") {
-      x <- t(shum[locations,filter])
-    } else {
-      x <- cbind(t(air[locations,filter]),t(mslp[locations,filter]),t(prate[locations,filter]),t(shum[locations,filter]))
-    }
-  }
-
-  if (spatial.centering) {
-    x <- apply(x, 2, function(xx) xx-mean(xx,na.rm=T))
-  }
-
-  mean.local.tv.search <- list()
-  mean.local.tv.bin <- list()
-  mean.local.tv.empirical <- list()
-  for (p in min.p:max.p) {
-    ind.time <- cut(as.numeric(time[filter]), breaks = 2^p, labels = FALSE)
-    dat <- data.frame(time = as.numeric(time[filter]), class=ind.time, x = x)
-
-    ind.train <- unlist(lapply(lapply(unique(ind.time), function(i) which(ind.time==i)), function(l) l[l > quantile(l,0.25) & l <= quantile(l,0.75)]))
-    ind.test <- unlist(lapply(lapply(unique(ind.time), function(i) which(ind.time==i)), function(l) l[l <= quantile(l,0.25) | l > quantile(l,0.75)]))
-
-    dat.train <- dat[ind.train,]
-    dat.test <- dat[ind.test,]
-
-
-    tv.bin <- c()
-    tv.search <- c()
-    tv.empirical <- c()
-
-    if (p >= 5) {
-      vals <- unique(table(ind.time[ind.test]))
-
-      e11 <- empiricalBF(tv.seq = seq(from = 0, to = 1, by = 0.01), nrep = 1000, m = vals[1], n = vals[1])
-
-      if (length(vals)>1) {
-        e12 <- empiricalBF(tv.seq = seq(from = 0, to = 1, by = 0.01), nrep = 1000, m = vals[1], n = vals[2])
-        e21 <- empiricalBF(tv.seq = seq(from = 0, to = 1, by = 0.01), nrep = 1000, m = vals[2], n = vals[1])
-        e22 <- empiricalBF(tv.seq = seq(from = 0, to = 1, by = 0.01), nrep = 1000, m = vals[2], n = vals[2])
-      }
-    }
-
-
-    for (i in 1:c(length(unique(ind.time))-1)) {
-
-      class.ind.train <- as.numeric(dat.train$class==(i+1))[dat.train$class%in%c(i,i+1)]
-      class.ind.test <- as.numeric(dat.test$class==(i+1))[dat.test$class%in%c(i,i+1)]
-
-      class.ind.train <- ifelse(sample(c(0,1),
-                                       prob = c(1-prob, prob),
-                                       replace = TRUE,
-                                       size = length(class.ind.train))==1, 1-class.ind.train, class.ind.train)
-      class.ind.test <- ifelse(sample(c(0,1),
-                                      prob = c(1-prob, prob),
-                                      replace = TRUE,
-                                      size = length(class.ind.test))==1, 1-class.ind.test, class.ind.test)
-
-
-
-      if (use.lda) {
-        require(MASS)
-        bcLDA <- lda(class.ind.train~.-class-time, data = dat.train[dat.train$class%in%c(i,i+1),])
-        preds <- predict(bcLDA, dat.test[dat.test$class%in%c(i,i+1),])$posterior[,"1"]
-      } else {
-        bcRF <- ranger::ranger(class.ind.train~.-class-time, data = dat.train[dat.train$class%in%c(i,i+1),], seed = 23, probability = TRUE)
-        preds <- predict(bcRF, dat.test[dat.test$class%in%c(i,i+1),])$predictions
-      }
-
-      tv.bin <- c(tv.bin , dWit(t = class.ind.test, rho = if (use.lda) preds else preds[,2], estimator.type = "binomial-test")$tvhat)
-      tv.search <- c(tv.search ,dWit(t = class.ind.test, rho = if (use.lda) preds else preds[,2], estimator.type = "asymptotic-tv-search")$tvhat)
-
-      if (p >= 5) {
-        b <- if (sum(class.ind.test) == vals[1]) {
-          if (sum(1-class.ind.test) == vals[1]) {
-            e11
-          } else {
-            e21
-          }
-        } else {
-          if (sum(1-class.ind.test) == vals[1]) {
-            e12
-          } else {
-            e22
-          }
-        }
-
-        tv.empirical <- c(tv.empirical, dWit(t = class.ind.test, rho = if (use.lda) preds else preds[,2], estimator.type = "custom-tv-search",
-                                             custom.bounding.seq = b)$tvhat)
-      } else {
-        tv.empirical <- c(tv.empirical, NA)
-      }
-      print(i)
-    }
-    print(paste("p done."))
-    mean.local.tv.bin[[p]] <- tv.bin
-    mean.local.tv.search[[p]] <- tv.search
-    mean.local.tv.empirical[[p]] <- tv.empirical
-
-  }
-  return(list(mean.local.tv.search = mean.local.tv.search,
-              mean.local.tv.bin = mean.local.tv.bin,
-              mean.local.tv.empirical = mean.local.tv.empirical))
-}
-
-
-
-b <- c(90,0)
-lon.pts <- c(0,90)
-lat.pts <- c(90,180)
-
-lon.center <- c(8.2275)
-lat.center <- c(46.8182)
-
-genCoordXY <- function(deltaX = 1, deltaY = 1, nb.steps = 0) {
-  return(expand.grid(lon.center+seq(-nb.steps*deltaX, nb.steps*deltaX, deltaX), lat.center+seq(-nb.steps*deltaY, nb.steps*deltaY, deltaY)))
-}
-
-# for (nb in 1:20) {
-#   xy.coords <- genCoordXY(nb.steps = nb)
-#   print(dim(e <- extract(air_raster, xy.coords,method="bilinear")))
-# }
-# xy.center <- cbind(lon.center,lat.center)
-# e <- extract(air_raster, xy.coords,method="bilinear")
-# dim(e)
-
-
-
-
-# loop over increasing sizes
-runC.list <- list()
-nb.loc.list <- list()
-for (nb in 1:10) {
-
-  # get the locations
-  xy.coords <- genCoordXY(nb.steps = nb)
-
-  # get the series
-  x <- extract(air_raster, xy.coords,method="bilinear")
-  x <- x[,1:14641]
-  ind <- apply(x,1,function(xx) any(is.na(xx)))
-  x <- x[which(!ind),]
-  nb.loc.list[[i]] <- nrow(x)
-  runC.list[[nb]] <- runClimateAnalysis(x = t(x), max.p = 1, min.p = 1, use.lda = TRUE)
-  print(nb)
-}
-
-search <- unlist(lapply(runC.list, function(l) l$mean.local.tv.search))
-bin <- unlist(lapply(runC.list, function(l) l$mean.local.tv.bin))
-
-par(mfrow=c(1,1))
-plot(search,type="b",ylim=c(0,1))
-lines(bin,col="red")
-
