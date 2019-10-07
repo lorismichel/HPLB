@@ -40,7 +40,7 @@ runPermAnalysis <- function(dataset="Boston") {
   set.seed(123, "L'Ecuyer")
   res <- mcmapply(FUN = function(p) {
 
-    d <- getDataset(dataset = dataset)
+    d <- getDataset(dataset = dataset, PATH.UCI.DATA = "../Data/")
     y.train <- d$y.train
     x.train <- d$x.train
     y.test  <- d$y.test
@@ -77,22 +77,23 @@ runPermAnalysis <- function(dataset="Boston") {
 }
 
 # dataset names
-dataset.names <- c("Boston", "titanic", "BreastCancer", "Ionosphere", "abalone",# "adult",
-                   "banknotes", "Default", "credit")
+#dataset.names <- c("Boston", "titanic", "BreastCancer", "Ionosphere", "abalone",# "adult",
+#                   "banknotes", "Default", "credit")
 
-two.classes.datasets <- c("acute-inflammation", "acute-nephritis", "balloons", "bank", "blood",
+dataset.names <- c("Boston", "acute-inflammation", "acute-nephritis", "balloons", "bank", "blood",
                           "breast-cancer", "breast-cancer-wisc", "breast-cancer-wisc-diag", "breast-cancer-wisc-prog", "chess-krvkp", "congressional-voting",
                           "conn-bench-sonar-mines-rocks", "connect-4", "credit-approval", "cylinder-bands", "echocardiogram", "fertility", "haberman-survival",
                           "heart-hungarian", "heart-switzerland", "hepatitis", "hill-valley", "horse-colic", "ilpd-indian-liver", "ionosphere",
                           "magic", "mammographic", "miniboone", "molec-biol-promoter", "monks-1", "monks-2", "monks-3", "mushroom", "musk-1", "musk-2",
                           "oocytes_merluccius_nucleus_4d", "oocytes_merluccius_states_2f", "ozone", "parkinsons", "pima", "pittsburg-bridges-T-OR-D",
                           "planning", "ringnorm", "spambase", "spect", "spectf", "statlog-australian-credit", "statlog-german-credit", "statlog-heart",
-                          "tic-tac-toe", "titanic", "trains", "twonorm", "vc-2classes")
+                          "tic-tac-toe", "titanic", "twonorm", "vc-2classes")
+# trains too small
 
 # running the sims
 res <- data.table()
-for (n in two.classes.datasets) {
-  res <- rbind(res, runPermAnalysis(dataset = n))
+for (n in dataset.names) {
+  res <- rbind(res, tryCatch(expr = runPermAnalysis(dataset = n), error = function(e) data.table()))
   print(n)
 }
 

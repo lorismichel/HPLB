@@ -273,11 +273,11 @@ getClassDataset <- function(dataset="Boston",
 
 
 
-two.classes.datasets <- c("acute-inflammation", "acute-nephritis", "balloons", "bank", "blood",
-                            "breast-cancer", "breast-cancer-wisc", "breast-cancer-wisc-diag", "breast-cancer-wisc-prog", "chess-krvkp", "congressional-voting",
-                            "conn-bench-sonar-mines-rocks", "connect-4", "credit-approval", "cylinder-bands", "echocardiogram", "fertility", "haberman-survival",
-                            "heart-hungarian", "heart-switzerland", "hepatitis", "hill-valley", "horse-colic", "ilpd-indian-liver", "ionosphere",
-                            "magic", "mammographic", "miniboone", "molec-biol-promoter", "monks-1", "monks-2", "monks-3", "mushroom", "musk-1", "musk-2",
-                            "oocytes_merluccius_nucleus_4d", "oocytes_merluccius_states_2f", "ozone", "parkinsons", "pima", "pittsburg-bridges-T-OR-D",
-                            "planning", "ringnorm", "spambase", "spect", "spectf", "statlog-australian-credit", "statlog-german-credit", "statlog-heart",
-                            "tic-tac-toe", "titanic", "trains", "twonorm", "vc-2classes")
+# two.classes.datasets <- c("acute-inflammation", "acute-nephritis", "balloons", "bank", "blood",
+#                             "breast-cancer", "breast-cancer-wisc", "breast-cancer-wisc-diag", "breast-cancer-wisc-prog", "chess-krvkp", "congressional-voting",
+#                             "conn-bench-sonar-mines-rocks", "connect-4", "credit-approval", "cylinder-bands", "echocardiogram", "fertility", "haberman-survival",
+#                             "heart-hungarian", "heart-switzerland", "hepatitis", "hill-valley", "horse-colic", "ilpd-indian-liver", "ionosphere",
+#                             "magic", "mammographic", "miniboone", "molec-biol-promoter", "monks-1", "monks-2", "monks-3", "mushroom", "musk-1", "musk-2",
+#                             "oocytes_merluccius_nucleus_4d", "oocytes_merluccius_states_2f", "ozone", "parkinsons", "pima", "pittsburg-bridges-T-OR-D",
+#                             "planning", "ringnorm", "spambase", "spect", "spectf", "statlog-australian-credit", "statlog-german-credit", "statlog-heart",
+#                             "tic-tac-toe", "titanic", "trains", "twonorm", "vc-2classes")
