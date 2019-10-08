@@ -40,7 +40,7 @@ runPermAnalysis <- function(dataset="Boston", PATH.UCI.DATA = "../Data/") {
   set.seed(123, "L'Ecuyer")
   res <- mcmapply(FUN = function(p) {
 
-    d <- getDataset(dataset = dataset, 0.5, PATH.UCI.DATA)
+    d <- getClassDataset(dataset = dataset, 0.5, PATH.UCI.DATA)
     y.train <- d$y.train
     x.train <- d$x.train
     y.test  <- d$y.test
@@ -89,11 +89,10 @@ dataset.names <- c("Boston", "acute-inflammation", "acute-nephritis", "balloons"
                           "planning", "ringnorm", "spambase", "spect", "spectf", "statlog-australian-credit", "statlog-german-credit", "statlog-heart",
                           "tic-tac-toe", "titanic", "twonorm", "vc-2classes")
 # trains too small
-
 # running the sims
 res <- data.table()
 for (n in dataset.names) {
-  res <- rbind(res, tryCatch(runPermAnalysis(dataset = n, PATH.UCI.DATA = "~/Downloads/data 2/"), error = function(e) data.table()))
+  res <- rbind(res, tryCatch(runPermAnalysis(dataset = n, PATH.UCI.DATA = "../Data/"), error = function(e) data.table()))
   print(n)
 }
 
