@@ -1,4 +1,10 @@
-#' Bounding operation
+#' Bounding Operation
+#' @param v a a numeric value giving an ordering permutation of 1 to m+n
+#' @param left a numeric value giving the number of witnesses left
+#' @param left a numeric value giving the number of witnesses right
+#' @param m a numeric value, the number of observations left
+#' @param n a numeric value, the number of observations right
+#' @return a cumulative counting function represented as a numeric vector
 boundingOperation <- function(v, left, right, m, n) {
   l <- length(v)
   if (left != 0) {
@@ -12,13 +18,29 @@ boundingOperation <- function(v, left, right, m, n) {
 
 
 
-#'obtain empirical bounding functions
-empiricalBF <- function(tv.seq, nrep = 1000, m = 100, n = 100, alpha = 0.05) {
+#' Empirical Bounding Functions
+#'
+#' @param tv.seq a vector of total variation values between 0 and 1
+#' @param nrep a numeric value giving the number of repetitions
+#' @param m a numeric value, the number of observations left
+#' @param n a numeric value, the number of observations right
+#' @param alpha the type I error level
+#' @return a list of empirical bounding functions indexed by the tv.seq (in the same order)
+#'
+#' @export
+empiricalBF <- function(tv.seq,
+                        nrep = 1000,
+                        m = 100,
+                        n = 100,
+                        alpha = 0.05) {
 
 
   l <- lapply(1:nrep, function(i) {v <- sample(1:(m+n)); lapply(tv.seq, function(tv) boundingOperation(v = v,
-                                                                     left = qbinom(prob = tv, size = m, p = 1-alpha/2),
-                                                                     right = qbinom(prob = tv, size = n, p = 1-alpha/2),
+                                                                     left = stats::qbinom(prob = tv, size = m, p = 1-alpha/2),
+                                                                     right = stats::qbinom(prob = tv, size = n, p = 1-alpha/2),
                                                                      m = m, n = n))})
-  ll <- Reduce(x = l, f = function(x, y) mapply(x,y,FUN = function(xx,yy) pmax(xx,yy), SIMPLIFY = FALSE))
+
+  ll <- Reduce(x = l, f = function(x, y) mapply(x, y, FUN = function(xx,yy) pmax(xx,yy), SIMPLIFY = FALSE))
+
+  return(ll)
 }
