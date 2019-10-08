@@ -28,7 +28,7 @@ permuteRho <- function(rho, u, d) {
 }
 
 # core analysis
-runPermAnalysis <- function(dataset="Boston") {
+runPermAnalysis <- function(dataset="Boston", PATH.UCI.DATA = "../Data/") {
 
 
   # running simulations on clusters, params
@@ -40,7 +40,7 @@ runPermAnalysis <- function(dataset="Boston") {
   set.seed(123, "L'Ecuyer")
   res <- mcmapply(FUN = function(p) {
 
-    d <- getDataset(dataset = dataset, PATH.UCI.DATA = "../Data/")
+    d <- getDataset(dataset = dataset, 0.5, PATH.UCI.DATA)
     y.train <- d$y.train
     x.train <- d$x.train
     y.test  <- d$y.test
@@ -93,7 +93,7 @@ dataset.names <- c("Boston", "acute-inflammation", "acute-nephritis", "balloons"
 # running the sims
 res <- data.table()
 for (n in dataset.names) {
-  res <- rbind(res, tryCatch(expr = runPermAnalysis(dataset = n), error = function(e) data.table()))
+  res <- rbind(res, tryCatch(runPermAnalysis(dataset = n, PATH.UCI.DATA = "~/Downloads/data 2/"), error = function(e) data.table()))
   print(n)
 }
 
