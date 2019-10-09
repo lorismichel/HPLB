@@ -140,6 +140,11 @@ dWit <- function(t,
     # then we cast everything in a data.table object
     ranks.table <- data.table::data.table(rank = ranks, t = t)
 
+
+
+
+
+
     # let us order by rank the table
     data.table::setkey(ranks.table, "rank")
 
@@ -251,6 +256,11 @@ dWit <- function(t,
 
         m0 <- m - lambda.left
         n0 <- n - lambda.right
+
+        if ((m0 <= 2) | (n0 <= 2)) {
+          warning("m0 or n0 smaller or equal to 1, asymtotic regime may not hold, see ?dWit.")
+          break
+        }
 
         # asymptotic values
         x_alpha <- -log(-log(1-alpha/3)/2)
