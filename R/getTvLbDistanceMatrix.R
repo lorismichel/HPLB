@@ -51,13 +51,16 @@ getTvLbDistanceMatrix <- function(labels,
     for (i in 0:(nclass-2)) {
       for (j in (i+1):(nclass-1)) {
 
-        ind.pairs <- which(labels %in% c(i,j))
+        if (sum(labels==i)<=1 | sum(labels==j)<=1) {
+          warning("at least one class has less than one representative, lower-bound set to 0 by default.")
+          dist.mat[i+1, j+1] <- 0
+        } else {
+          ind.pairs <- which(labels %in% c(i,j))
 
-
-        dist.mat[i+1, j+1] <- dWit(t = as.numeric(labels == j)[ind.pairs],
-                                    rho = ordering.array[i+1,j+1,ind.pairs],
-                                    s = 0.5, ...)$tvhat
-
+          dist.mat[i+1, j+1] <- dWit(t = as.numeric(labels == j)[ind.pairs],
+                                     rho = ordering.array[i+1,j+1,ind.pairs],
+                                     s = 0.5)$tvhat
+        }
       }
     }
 

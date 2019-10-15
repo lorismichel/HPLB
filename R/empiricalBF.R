@@ -21,7 +21,7 @@ boundingOperation <- function(v, left, right, m, n) {
 #' Empirical Bounding Functions
 #'
 #' @param tv.seq a vector of total variation values between 0 and 1
-#' @param nrep a numeric value giving the number of repetitions
+#' @param nsim a numeric value giving the number of repetitions
 #' @param m a numeric value, the number of observations left
 #' @param n a numeric value, the number of observations right
 #' @param alpha the type I error level
@@ -29,13 +29,13 @@ boundingOperation <- function(v, left, right, m, n) {
 #'
 #' @export
 empiricalBF <- function(tv.seq,
-                        nrep = 1000,
+                        nsim = 1000,
                         m = 100,
                         n = 100,
                         alpha = 0.05) {
 
 
-  l <- lapply(1:nrep, function(i) {v <- sample(1:(m+n)); lapply(tv.seq, function(tv) boundingOperation(v = v,
+  l <- lapply(1:nsim, function(i) {v <- sample(1:(m+n)); lapply(tv.seq, function(tv) boundingOperation(v = v,
                                                                      left = stats::qbinom(prob = tv, size = m, p = 1-alpha/2),
                                                                      right = stats::qbinom(prob = tv, size = n, p = 1-alpha/2),
                                                                      m = m, n = n))})
