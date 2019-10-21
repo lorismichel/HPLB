@@ -5,8 +5,8 @@
 #' @param rho a numeric value giving an ordering vector (function). This could be
 #'   a classifier, a regressor, a witness function from an MMD kernel or anything else.
 #' @param s a numeric value giving split points on t.
-#' @param estimator.type either "asymptotic-tv-search", "custom-tv-search", "asymptotic-wit-search", "binomial-test",
-#'   "hypergeomtic-test".
+#' @param estimator.type either "asymptotic-tv-search", "custom-tv-search", "empirical-tv-search", "asymptotic-wit-search", "binomial-test",
+#'   "hypergeometic-test", "confusion-table-test".
 #' @param alpha the overall level of the type 1 error control.
 #' @param tv.seq a sequence of values between 0 and 1 used as the grid of search for the total variation distance.
 #' @param custom.bounding.seq a list of bounding functions respecting the order of tv.seq.
@@ -72,7 +72,8 @@ dWit <- function(t,
                                                                "empirical-tv-search",
                                                                "binomial-test",
                                                                "hypergeometric-test",
-                                                               "asymptotic-wit-search"
+                                                               "asymptotic-wit-search",
+                                                               "confusion-table-test"
                                                                ))) {
     stop("Invalid estimator type, please see ?dWit.")
   }
@@ -362,13 +363,42 @@ dWit <- function(t,
 
       # return the tv estimate
       tvhat[k] <- tv.cur
+    } else if (estimator.type == "confusion-table-test") {
+
+      # set to be a default value there
+      params <- list(...)
+      if (!is.null(params$nsim)) {
+        nsim <- params$nsim
+      } else {
+        nsim <- 1000
+      }
+
+      tab <- table(truth = as.numeric(t > s[k]),
+                   pred = as.numeric(rho > threshold[k]))
+
+      stat <- sum(diag(tab))
+      stat.sim <- numeric(nsim)
+
+      indr = c( rep(0, sum(tab[1,])), rep(1, sum(tab[2,])))
+      indc = c( rep(0, sum(tab[,1])), rep(1, sum(tab[,2])))
+
+      for (sim in 1:nsim) {
+
+        sampr <- sample( indr, length(indr))
+        sampc <- sample(indc, length(indc))
+        tab.sim <- table(sampr, sampc)
+        stat.sim[sim] <- sum(diag(tab.sim))
+      }
+
+      tvhat[k] <- invertBinMeanTest(n.success = max(0, stat - stats::quantile(stat.sim, 1-alpha/2)),
+                                    n.trial = sum(tab), alpha = alpha/2)
     }
   }
 
   # return list
-  return(list(lambdahat.Fs = lambdahat.Fs,
+  return(Filter(x = list(lambdahat.Fs = lambdahat.Fs,
               lambdahat.Gs = lambdahat.Gs,
               tvhat.Fs     = tvhat.Fs,
               tvhat.Gs     = tvhat.Gs,
-              tvhat        = tvhat))
+              tvhat        = tvhat), f = function(ll) !is.na(ll)))
 }

@@ -7,13 +7,13 @@ getClassDataset <- function(dataset="Boston",
     # libs
     require(MASS)
 
-    # define the labels
-    crime01 = rep(0, length(Boston$crim))
-    crime01[Boston$crim > median(Boston$crim)] = 1
-
     # sample
     Boston = data.frame(Boston)
     Boston <- Boston[sample(1:nrow(Boston), size = nrow(Boston), replace = FALSE),]
+
+    # define the labels
+    crime01 = rep(0, length(Boston$crim))
+    crime01[Boston$crim > median(Boston$crim)] = 1
 
     # half train set size
     train = 1:(dim(Boston)[1]*p.train)
@@ -37,12 +37,12 @@ getClassDataset <- function(dataset="Boston",
     titanic <- read.csv(url("https://web.stanford.edu/class/archive/cs/cs109/cs109.1166/stuff/titanic.csv"),
                         header = T)
 
-    # labels
-    survived = titanic$Survived
-
     # sample
     titanic = data.frame(titanic)
     titanic <- titanic[sample(1:nrow(titanic), replace = FALSE, size = nrow(titanic)),]
+
+    # labels
+    survived = titanic$Survived
 
     # preprocess the labels
     titanic$Sex <- ifelse(titanic$Sex=="male",0,1)
@@ -252,7 +252,7 @@ getClassDataset <- function(dataset="Boston",
     return(list(x.train = d$x[1:5000,], x.test = d$x[5001:10000,],
                 y.train = d$labels[1:5000,], y.test = d$labels[5001:10000,]))
 
-  } else if (dataset %in% c("annealing")) {
+  } else if (dataset %in% c("annealing", "audiology-std", "conn-bench-vowel-deterding")) {
 
     d.train <- read.table(file = paste0(PATH.UCI.DATA, dataset, "/", dataset, "_train_R.dat"))
     d.test <- read.table(file = paste0(PATH.UCI.DATA, dataset, "/", dataset, "_test_R.dat"))
