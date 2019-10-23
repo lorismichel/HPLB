@@ -322,16 +322,30 @@ dWit <- function(t,
 
     } else if (estimator.type == "binomial-test") {
 
-      # compute the accuracy and build a lower-bound
-      decision <- ifelse(rho == 0.5,
-                          sample(c(TRUE, FALSE), size = length(rho), replace = TRUE),
-                          rho > threshold)
+      # # compute the accuracy and build a lower-bound
+       decision <- ifelse(rho == 0.5,
+                           sample(c(TRUE, FALSE), size = length(rho), replace = TRUE),
+                           rho > threshold)
       obs <- sum((decision & t == 0) | (!(decision) & t == 1))
       phat <- invertBinMeanTest(n.success = obs,
                                 n.trial = length(t),
                                 alpha = 1-alpha,
                                 rule.of.three = FALSE)
       tvhat <- max(1-2*phat, 0)
+
+
+      # Simplified asymptotic version:
+      # Version 1: Based on the supposed distribution of accuracy (Binomial(A, length(t)))
+      Ahat <- sum((decision & t == 1) | (!(decision) & t == 0))/length(t) # Estimate of accuracy
+      Ahatlb <- Ahat - qnorm(1-alpha)*sqrt(Ahat*(1-Ahat)/length(t)) # lower bound of accuracy
+      #Ahatlb <- 2*Ahat-1 - qnorm(1-alpha)*sqrt(4*Ahat*(1-Ahat)/length(t)) # lower bound of accuracy
+      tvhat <- max(2*Ahatlb-1, 0)
+
+      # Version 2: Based on finding the witnesses
+      Ahat <- sum((decision & t == 1) | (!(decision) & t == 0))/length(t) # Estimate of accuracy
+      Witlb <- length(t)*(Ahat -1/2) - qnorm(1-alpha/2)*1/2*sqrt(length(t)) # lower bound on number of wit
+      tvhat <- max(Witlb/length(t) - qnorm(1-alpha/2)*sqrt((Witlb/length(t))*(1-Witlb/length(t))/length(t)),0)
+
 
     } else if (estimator.type == "hypergeometric-test") {
 
