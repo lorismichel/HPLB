@@ -5,10 +5,10 @@ lambda <- 0.15
 
 TotalVarDist(Norm(mean = 0), distr::UnivarMixingDistribution(Norm(mean=0), Norm(mean=M), mixCoeff = c(1-lambda, lambda)))
 
-m <- 4000
-n <- 4000
-m.test <- 4000
-n.test <- 4000
+m <- 3500
+n <- 3500
+m.test <- 3500
+n.test <- 3500
 t <-c(rep(0,n), rep(1, m))
 x <- c(rnorm(n,mean=0),ifelse(runif(m)<=lambda, rnorm(m,mean=M), rnorm(m, mean=0)))
 t.test <-c(rep(0,n.test), rep(1, m.test))
