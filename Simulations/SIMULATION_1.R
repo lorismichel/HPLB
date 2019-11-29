@@ -17,7 +17,7 @@ generateUnifMixturesData <- function(n, boundaries = matrix(c(-10,-9, -1, 0, 0, 
   force(weights)
 
   # generate data
-  ind.mix <- sample(c(1,2,3),size = n, prob = weights, replace = TRUE)
+  ind.mix <- sample(1:nrow(boundaries), size = n, prob = weights, replace = TRUE)
   x <- runif(n = n, min = boundaries[ind.mix, 1], max = boundaries[ind.mix, 2])
 
   return(x)
@@ -51,14 +51,13 @@ set.seed(123, "L'Ecuyer")
 res_tv_search_1 <- mcmapply(FUN = function(n, gamma) {
 
   p1 <- n^{-gamma}
-  p2 <- 0.5
-  weights <- c(p1, p2)
+  weights <- c(0.5-p1, 0.5+p1)
 
-  x1 <- generateUnifMixturesData(n=n, boundaries = matrix(c(-2, -1, 1, 2) , ncol=2, byrow = TRUE), weights = weights)
-  x2 <- generateUnifMixturesData(n=n, boundaries = matrix(c(9,10, 1, 2, -2, -1), ncol=2, byrow = TRUE), weights = weights)
+  x1 <- generateUnifMixturesData(n=n, boundaries = matrix(c(-2, -1, 1, 2), ncol=2, byrow = TRUE), weights = weights)
+  x2 <- generateUnifMixturesData(n=n, boundaries = matrix(c(-2, -1, 1, 2), ncol=2, byrow = TRUE), weights = weights)
 
-  d.left <- generateUnifMixturesDensities(boundaries = matrix(c(-10,-9, -2, -1, 1, 2), ncol=2, byrow = TRUE), weights = weights)
-  d.right <- generateUnifMixturesDensities(boundaries = matrix(c(9,10, 1, 2, -2, -1), ncol=2, byrow = TRUE), weights = weights)
+  d.left <- generateUnifMixturesDensities(boundaries = matrix(c(-2, -1, 1, 2), ncol=2, byrow = TRUE), weights = weights)
+  d.right <- generateUnifMixturesDensities(boundaries = matrix(c(-2, -1, 1, 2), ncol=2, byrow = TRUE), weights = weights)
 
   bayesRatio <- function(x) d.right(x) / (d.left(x) + d.right(x))
 
@@ -70,14 +69,13 @@ set.seed(123, "L'Ecuyer")
 res_binomial_1 <- mcmapply(FUN = function(n, gamma) {
 
   p1 <- n^{-gamma}
-  p2 <- 0.5
-  weights <- c(p1, p2)
+  weights <- c(0.5-p1, 0.5+p1)
 
-  x1 <- generateUnifMixturesData(n=n, boundaries = matrix(c(-2, -1, 1, 2) , ncol=2, byrow = TRUE), weights = weights)
-  x2 <- generateUnifMixturesData(n=n, boundaries = matrix(c(9,10, 1, 2, -2, -1), ncol=2, byrow = TRUE), weights = weights)
+  x1 <- generateUnifMixturesData(n=n, boundaries = matrix(c(-2, -1, 1, 2), ncol=2, byrow = TRUE), weights = weights)
+  x2 <- generateUnifMixturesData(n=n, boundaries = matrix(c(-2, -1, 1, 2), ncol=2, byrow = TRUE), weights = weights)
 
-  d.left <- generateUnifMixturesDensities(boundaries = matrix(c(-10,-9, -2, -1, 1, 2), ncol=2, byrow = TRUE), weights = weights)
-  d.right <- generateUnifMixturesDensities(boundaries = matrix(c(9,10, 1, 2, -2, -1), ncol=2, byrow = TRUE), weights = weights)
+  d.left <- generateUnifMixturesDensities(boundaries = matrix(c(-2, -1, 1, 2), ncol=2, byrow = TRUE), weights = weights)
+  d.right <- generateUnifMixturesDensities(boundaries = matrix(c(-2, -1, 1, 2), ncol=2, byrow = TRUE), weights = weights)
 
   dWit(t = rep(0:1, each = n), rho = sapply(c(x1,x2), function(x) bayesRatio(x)), estimator.type = "binomial-test")
 
