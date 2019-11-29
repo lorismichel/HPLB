@@ -11,50 +11,85 @@ require(parallel)
 require(data.table)
 
 ## data generation & bayes ratio
-sampleExpContamination <- function(n, lambda) {
-  return(ifelse(sample(c(0,1), prob = c(lambda,1-lambda), size = n, replace = TRUE)==0, -rexp(n), rexp(n)))
+generateUnifMixturesData <- function(n, boundaries = matrix(c(-10,-9, -1, 0, 0, 1),ncol=2, byrow = TRUE), weights = c(0.1, 0.4, 0.5)) {
+
+  force(boundaries)
+  force(weights)
+
+  # generate data
+  ind.mix <- sample(c(1,2,3),size = n, prob = weights, replace = TRUE)
+  x <- runif(n = n, min = boundaries[ind.mix, 1], max = boundaries[ind.mix, 2])
+
+  return(x)
 }
-bayesRatio <- function(x, lambda) { dexp(x) / (lambda*dexp(-x)+(1-lambda)*dexp(x) + dexp(x))}
 
-generateInputData <- function(n, lambda) {
-  rho1 <- bayesRatio(sampleExpContamination(n = n, lambda = 0), lambda = lambda)
-  rho2 <- bayesRatio(sampleExpContamination(n = n, lambda = lambda), lambda = lambda)
-  t = c(rep(1, length(rho1)), rep(0, length(rho2)))
-  rho <- c(rho1, rho2)
-  return(list(t = t, rho = rho))
+generateUnifMixturesDensities<- function(boundaries = matrix(c(-10,-9, -1, 0, 0, 1),ncol=2, byrow = TRUE), weights = c(0.1, 0.4, 0.5)) {
+
+  force(boundaries)
+  force(weights)
+
+  # generate density function
+  d <- function(y) sum(weights * sapply(1:length(weights), function(i) dunif(x = y, min = boundaries[i,1], max = boundaries[i,2])))
+
+  return(d)
 }
-
-
 
 # running simulations on clusters
+
+
 # params sims
 nrep <- 50
 grid.gamma <- rep(seq(0.1,  1.2, by = 0.1), nrep)
-grid.n <- rep(10^{seq(2,6,length.out = 10)}, nrep)
+grid.n <- rep(10^{seq(2,5,length.out = 10)}, nrep)
 grid <- expand.grid(grid.n, grid.gamma)
+
+
+# scenario 1: bad for both methods
 
 # running simulations
 set.seed(123, "L'Ecuyer")
-res1 <- mcmapply(FUN = function(n, gamma) {
-  lambda <- n^{-gamma}
-  inputs <- generateInputData(n, lambda = lambda)
-  tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "asymptotic-tv-search",tv.seq= seq(from = 0, to = 1, by = lambda/5))$tvhat
-  #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
+res_tv_search_1 <- mcmapply(FUN = function(n, gamma) {
+
+  p1 <- n^{-gamma}
+  p2 <- 0.5
+  weights <- c(p1, p2)
+
+  x1 <- generateUnifMixturesData(n=n, boundaries = matrix(c(-2, -1, 1, 2) , ncol=2, byrow = TRUE), weights = weights)
+  x2 <- generateUnifMixturesData(n=n, boundaries = matrix(c(9,10, 1, 2, -2, -1), ncol=2, byrow = TRUE), weights = weights)
+
+  d.left <- generateUnifMixturesDensities(boundaries = matrix(c(-10,-9, -2, -1, 1, 2), ncol=2, byrow = TRUE), weights = weights)
+  d.right <- generateUnifMixturesDensities(boundaries = matrix(c(9,10, 1, 2, -2, -1), ncol=2, byrow = TRUE), weights = weights)
+
+  bayesRatio <- function(x) d.right(x) / (d.left(x) + d.right(x))
+
+  dWit(t = rep(0:1, each = n), rho = sapply(c(x1,x2), function(x) bayesRatio(x)), estimator.type = "asymptotic-tv-search")
+
   tvhat}, grid[,1], grid[,2], mc.cores = 25)
 
 set.seed(123, "L'Ecuyer")
-res2 <- mcmapply(FUN = function(n, gamma) {
-  lambda <- n^{-gamma}
-  inputs <- generateInputData(n, lambda = lambda)
-  #tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "tv-search")$tvhat
-  tvhat <- dWit(t = inputs$t, rho = inputs$rho, s = 0.5, estimator.type = "binomial")$tvhat
+res_binomial_1 <- mcmapply(FUN = function(n, gamma) {
+
+  p1 <- n^{-gamma}
+  p2 <- 0.5
+  weights <- c(p1, p2)
+
+  x1 <- generateUnifMixturesData(n=n, boundaries = matrix(c(-2, -1, 1, 2) , ncol=2, byrow = TRUE), weights = weights)
+  x2 <- generateUnifMixturesData(n=n, boundaries = matrix(c(9,10, 1, 2, -2, -1), ncol=2, byrow = TRUE), weights = weights)
+
+  d.left <- generateUnifMixturesDensities(boundaries = matrix(c(-10,-9, -2, -1, 1, 2), ncol=2, byrow = TRUE), weights = weights)
+  d.right <- generateUnifMixturesDensities(boundaries = matrix(c(9,10, 1, 2, -2, -1), ncol=2, byrow = TRUE), weights = weights)
+
+  dWit(t = rep(0:1, each = n), rho = sapply(c(x1,x2), function(x) bayesRatio(x)), estimator.type = "binomial-test")
+
   tvhat}, grid[,1], grid[,2], mc.cores = 25)
+
 
 # gathering data
 power.data <- data.table(logn = log(grid[,1], base = 10),
-			 loglambda = -log(grid[,1], base = 10)*grid[,2],
-			 tv_search = res1, tv_binomial = res2)
+                         loglambda = -log(grid[,1], base = 10)*grid[,2],
+                         tv_search = res_tv_search_1, tv_binomial = res_binomial_1)
 power.table <- power.data[,.(power_search = mean(tv_search>0), power_binomial = mean(tv_binomial>0)),by=c("logn","loglambda")]
 
 # saving results of simulations
-save(power.data, power.table, file = paste0(PATH.SAVE, "DATA_SIMULATION_1.Rdata"))
+save(power.data, power.table, file = paste0(PATH.SAVE, "DATA_SIMULATION_1_sc1.Rdata"))
+

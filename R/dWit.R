@@ -6,7 +6,7 @@
 #'   a classifier, a regressor, a witness function from a MMD kernel or anything else that would witness a distributional difference.
 #' @param s a numeric vector value giving split points on t.
 #' @param estimator.type a character value indicating which estimator to use.
-#'        For total variation lower-bounds can be either "binomial-test", "missclassification-test",
+#'        For total variation lower-bounds can be either "binomial-test",
 #'        "asymptotic-tv-search", "empirical-tv-search", "custom-tv-search" or "hypergeometic-test".
 #'        For distributional witness estimation "asymptotic-dwit-search".
 #' @param alpha a numeric value giving the overall type-I error control level.
@@ -23,7 +23,16 @@
 #' @import data.table
 #'
 #' @examples
-#' # TV lower bound based on two samples (binomial-test)
+#'
+#' ## libs
+#' library(dWit)
+#' library(ranger)
+#' library(distrEx)
+#'
+#' ## reproducibility
+#' set.seed(0)
+#'
+#' # TV lower bound based on two samples (binomial-test), Gaussian mean-shift example
 #'
 #' n <- 1000
 #' means <- rep(c(0,2), each = n / 2)
@@ -33,6 +42,58 @@
 #' bayesRate <- function(x) return(stats::dnorm(x, mean = 2) / (stats::dnorm(x, mean = 2) + stats::dnorm(x, mean = 0)))
 #'
 #' tvhat <- dWit(t = t, rho = bayesRate(x), estimator.type = "binomial-test")
+#'
+#' # optimal mixture detection (asymptotic-tv-search), Gaussian mean-shift example
+#'
+#' n <- 1000
+#' mean.shift <- 2
+#' t.train <- runif(n, 0 ,1)
+#' x.train <- ifelse(t.train>0.5, stats::rnorm(n, mean.shift), stats::rnorm(n))
+#' rf <- ranger::ranger(t~x, data.frame(t=t.train,x=x.train))
+#'
+#' n <- 1000
+#' t.test <- runif(n, 0 ,1)
+#'x.test <- ifelse(t.test>0.5, stats::rnorm(n, mean.shift), stats::rnorm(n))
+#' rho <- predict(rf, data.frame(t=t.test,x=x.test))$predictions
+
+#' ## out-of-sample
+#' tv.oos <- dWit(t = t.test, rho = rho, s = seq(0.1,0.9,0.1), estimator.type = "asymptotic-tv-search")
+#'
+#' # oob
+#' tv.oob <- dWit(t = t, rho = rf$predictions, s = seq(0.1,0.9,0.1), estimator.type = "asymptotic-tv-search")
+#'
+#'
+#'
+#' ## total variation values
+#' tv <- c()
+#' for (s in seq(0.1,0.9,0.1)) {
+#'
+#'  if (s<=0.5) {
+#'
+#'    D.left <- Norm(0,1)
+#'  } else {
+#'
+#'    D.left <- UnivarMixingDistribution(Dlist = list(Norm(0,1),Norm(mean.shift,1)),
+#'                mixCoeff = c(ifelse(s<=0.5, 1, 0.5/s), ifelse(s<=0.5, 0, (s-0.5)/s)))
+#'  }
+#'  if (s<0.5) {
+#'
+#'    D.right <- UnivarMixingDistribution(Dlist = list(Norm(0,1),Norm(mean.shift,1)),
+#'                mixCoeff = c(ifelse(s<=0.5, (0.5-s)/(1-s), 0), ifelse(s<=0.5, (0.5/(1-s)), 1)))
+#'  } else {
+#'
+#'    D.right <- Norm(mean.shift,1)
+#'  }
+#' tv <- c(tv, TotalVarDist(e1 = D.left, e2 = D.right))
+#' }
+#'
+#' ## plot
+#' par(mfrow=c(2,1))
+#' plot(t.test,x.test,pch=19,xlab="t",ylab="x")
+#' plot(seq(0.1,0.9,0.1), tv.oos$tvhat,type="l",ylim=c(0,1),xlab="t", ylab="TV")
+#' lines(seq(0.1,0.9,0.1), tv.oob$tvhat,type="l",col="blue")
+#' lines(seq(0.1,0.9,0.1), tv, col="red",type="l")
+
 #'
 #' @export
 dWit <- function(t,
@@ -52,13 +113,24 @@ dWit <- function(t,
   ## parameters checks
 
   # seed check
-  if (!is.numeric(seed) | length(seed)!=1) {
+  if (!is.numeric(seed) || any(!is.finite(seed))  || length(seed) != 1) {
     stop("Invalid seed, please see ?dWit.")
   }
 
   # setting seed for reproducility
   if (!is.null(seed)) {
     set.seed(seed)
+  }
+
+  # estimator.type check
+  if (!is.character(estimator.type) || !(estimator.type %in% c("asymptotic-tv-search",
+                                                               "custom-tv-search",
+                                                               "empirical-tv-search",
+                                                               "binomial-test",
+                                                               "hypergeometric-test",
+                                                               "asymptotic-dwit-search"
+  ))) {
+    stop("Invalid estimator type, please see ?dWit.")
   }
 
   # t check
@@ -69,6 +141,11 @@ dWit <- function(t,
   # s check
   if (!is.numeric(s) || any(!is.finite(s)) || any(s > max(t)) || any(s < min(t)) || is.matrix(s)) {
     stop("Invalid values or type for s, please see ?dWit.")
+  }
+
+  # z check
+  if ((estimator.type == "hypergeometric-test") && (!is.numeric(z) || any(!is.finite(z)) || (length(s) != length(z)) || any(z < 0) || any(z > length(t)))) {
+    stop("Invalid values or type for z, please check ?dWit.")
   }
 
   # rho check
@@ -94,21 +171,8 @@ dWit <- function(t,
     ordering.type = "single"
   }
 
-
-
-  # estimator.type check
-  if (!is.character(estimator.type) || !(estimator.type %in% c("asymptotic-tv-search",
-                                                               "custom-tv-search",
-                                                               "empirical-tv-search",
-                                                               "binomial-test",
-                                                               "hypergeometric-test",
-                                                               "asymptotic-dwit-search"
-                                                               ))) {
-    stop("Invalid estimator type, please see ?dWit.")
-  }
-
   # ordering.type check
-  if (estimator.type == "binomial-test" & ordering.type == "multiple") {
+  if (estimator.type == "binomial-test" && ordering.type == "multiple") {
     stop("Invalid ordering type for binomial-test estimator, please see ?dWit.")
   }
 
@@ -123,7 +187,7 @@ dWit <- function(t,
   }
 
   # direction check
-  if ((estimator.type != "asymptotic-dwit-search") || any(!is.finite(direction)) || !is.character(direction) || !(direction %in% c("left", "right")) || (length(s) != length(direction))) {
+  if ((estimator.type == "asymptotic-dwit-search") && (!is.character(direction) || !(direction %in% c("left", "right")) || (length(s) != length(direction)))) {
     stop("Invalid direction, please see ?dWit.")
   }
 
@@ -149,7 +213,7 @@ dWit <- function(t,
                                          n = sum(t > s), ...)
     }
 
-    # dimensions of s, k and tresholds
+    # dimensions of s, k and tresholds check
     if (length(s) != length(k)) {
       stop("Incompatible dimensions between s, and k, please see ?dWit.")
     }
@@ -255,7 +319,7 @@ dWit <- function(t,
         n0 <- n - dWit.right
 
         if ((m0 <= 2) | (n0 <= 2)) {
-          warning("m0 or n0 smaller or equal to 2, asymtotic regime may not hold, see ?dWit.")
+          warning(paste0("m0 or n0 smaller or equal to 2 for split: ", s[k], ", asymtotic regime may not hold, see ?dWit."))
           break
         }
 
@@ -322,7 +386,7 @@ dWit <- function(t,
 
       # recursive search
       max.stat <- 1
-      step <- 1
+      step     <- 1
 
       while (max.stat > 0) {
 
@@ -339,7 +403,7 @@ dWit <- function(t,
         n0 <- n - lambda.right
 
         # constructing hypergeometric overestimation
-        q.left <- stats::qhyper(p = 1 - (alpha / 3), m = m0, n = n0, k = z[k]-dwit.left)
+        q.left <- stats::qhyper(p = 1 - (alpha / 3), m = m0, n = n0, k = z[k] - dwit.left)
 
         # overestimation
         Q <- dwit.left + q.left
@@ -442,5 +506,5 @@ dWit <- function(t,
                          tvhat.left    = tvhat.left,
                          tvhat.right   = tvhat.right,
                          tvhat         = tvhat),
-                f = function(ll) !is.na(ll)))
+                f = function(ll) !any(is.na(ll))))
 }
