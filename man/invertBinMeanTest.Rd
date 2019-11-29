@@ -4,7 +4,8 @@
 \alias{invertBinMeanTest}
 \title{Inverting a Binomial Test}
 \usage{
-invertBinMeanTest(n.success, n.trial, alpha, rule.of.three = TRUE)
+invertBinMeanTest(n.success, n.trial, alpha, rule.of.three = TRUE,
+  binom.)
 }
 \arguments{
 \item{n.success}{number of successes.}

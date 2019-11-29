@@ -2,31 +2,119 @@
 % Please edit documentation in R/dWit.R
 \name{dWit}
 \alias{dWit}
-\title{Lower-bound estimate of the number of distributional witness & total variation distance
-for mixture models}
+\title{Lower Bounds for Total Variation Distance (and Distributional Witnesses) Based on Samples}
 \usage{
-dWit(t, rho, s, alpha = 0.05, estimator.type = "basic",
-  tv.grid = seq(from = 0, to = 1, by = 0.01), direction = rep("left",
-  length(s)))
+dWit(t, rho, s = 0.5, estimator.type = "asymptotic-tv-search",
+  alpha = 0.05, tv.seq = seq(from = 0, to = 1, by = 0.01),
+  custom.bounding.seq = NULL, direction = rep("left", length(s)),
+  threshold = 0.5, verbose.plot = FALSE, z = length(t)/2, seed = 0,
+  ...)
 }
 \arguments{
-\item{t}{a numeric value corresponding to an ordering of the observations. For two-sample
-test times could be 0-1 numeric values values.}
+\item{t}{a numeric vector value corresponding to an ordering of the observations. For a two-sample
+test 0-1 numeric values values should be provided.}
 
-\item{rho}{a numeric value giving an ordering function. This could be
-a classifier, a regressor, a witness function from an MMD kernel or anything else.}
+\item{rho}{a numeric vetor value giving an ordering. This could be
+a classifier, a regressor, a witness function from a MMD kernel or anything else that would witness a distributional difference.}
 
-\item{s}{a numeric value giving split points on t.}
+\item{s}{a numeric vector value giving split points on t.}
 
-\item{alpha}{the level of the type 1 error control.}
+\item{estimator.type}{a character value indicating which estimator to use.
+For total variation lower-bounds can be either "binomial-test",
+"asymptotic-tv-search", "empirical-tv-search", "custom-tv-search" or "hypergeometic-test".
+For distributional witness estimation "asymptotic-dwit-search".}
 
-\item{estimator.type}{either "basic", "tv-search" or "wit-search"}
+\item{alpha}{a numeric value giving the overall type-I error control level.}
 
-\item{tv.grid}{a grid of values for the search.}
+\item{tv.seq}{a sequence of values between 0 and 1 used as the grid search for the total variation distance in case of tv-search.}
 
-\item{direction}{which witness to estimatw.}
+\item{custom.bounding.seq}{a list of bounding functions respecting the order of tv.seq used in case of estimator.type "custom-tv-search".}
+
+\item{direction}{a character vector value made of "left" or "right" giving which distribution witness count to estimate (t<=s or t>s?).}
+
+\item{threshold}{a numeric value. This is the threshold used if misclassification error in used.}
+
+\item{verbose.plot}{a boolean value for additional plots.}
+
+\item{z}{an integer value. This is the z at which the "hypergeometric-test" is applied.}
+
+\item{seed}{an integer value. The seed for reproducility.}
+}
+\value{
+a list containing the relevant lower-bounds estimates.
 }
 \description{
-Lower-bound estimate of the number of distributional witness & total variation distance
-for mixture models
+Lower Bounds for Total Variation Distance (and Distributional Witnesses) Based on Samples
+}
+\examples{
+
+## libs
+library(dWit)
+library(ranger)
+library(distrEx)
+
+## reproducibility
+set.seed(0)
+
+# TV lower bound based on two samples (binomial-test), Gaussian mean-shift example
+
+n <- 1000
+means <- rep(c(0,2), each = n / 2)
+x <- stats::rnorm(n, mean = means)
+t <- rep(c(0,1), each = n / 2)
+
+bayesRate <- function(x) return(stats::dnorm(x, mean = 2) / (stats::dnorm(x, mean = 2) + stats::dnorm(x, mean = 0)))
+
+tvhat <- dWit(t = t, rho = bayesRate(x), estimator.type = "binomial-test")
+
+# optimal mixture detection (asymptotic-tv-search), Gaussian mean-shift example
+
+n <- 1000
+mean.shift <- 2
+t.train <- runif(n, 0 ,1)
+x.train <- ifelse(t.train>0.5, stats::rnorm(n, mean.shift), stats::rnorm(n))
+rf <- ranger::ranger(t~x, data.frame(t=t.train,x=x.train))
+
+n <- 1000
+t.test <- runif(n, 0 ,1)
+x.test <- ifelse(t.test>0.5, stats::rnorm(n, mean.shift), stats::rnorm(n))
+rho <- predict(rf, data.frame(t=t.test,x=x.test))$predictions
+## out-of-sample
+tv.oos <- dWit(t = t.test, rho = rho, s = seq(0.1,0.9,0.1), estimator.type = "asymptotic-tv-search")
+
+# oob
+tv.oob <- dWit(t = t, rho = rf$predictions, s = seq(0.1,0.9,0.1), estimator.type = "asymptotic-tv-search")
+
+
+
+## total variation values
+tv <- c()
+for (s in seq(0.1,0.9,0.1)) {
+
+ if (s<=0.5) {
+
+   D.left <- Norm(0,1)
+ } else {
+
+   D.left <- UnivarMixingDistribution(Dlist = list(Norm(0,1),Norm(mean.shift,1)),
+               mixCoeff = c(ifelse(s<=0.5, 1, 0.5/s), ifelse(s<=0.5, 0, (s-0.5)/s)))
+ }
+ if (s<0.5) {
+
+   D.right <- UnivarMixingDistribution(Dlist = list(Norm(0,1),Norm(mean.shift,1)),
+               mixCoeff = c(ifelse(s<=0.5, (0.5-s)/(1-s), 0), ifelse(s<=0.5, (0.5/(1-s)), 1)))
+ } else {
+
+   D.right <- Norm(mean.shift,1)
+ }
+tv <- c(tv, TotalVarDist(e1 = D.left, e2 = D.right))
+}
+
+## plot
+par(mfrow=c(2,1))
+plot(t.test,x.test,pch=19,xlab="t",ylab="x")
+plot(seq(0.1,0.9,0.1), tv.oos$tvhat,type="l",ylim=c(0,1),xlab="t", ylab="TV")
+lines(seq(0.1,0.9,0.1), tv.oob$tvhat,type="l",col="blue")
+lines(seq(0.1,0.9,0.1), tv, col="red",type="l")
+
 }
