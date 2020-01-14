@@ -3,7 +3,7 @@
 #       comparison with missclassification error rate test.
 
 ## simulations to run
-RUN_SC_1 <- FALSE
+RUN_SC_1 <- TRUE
 RUN_SC_2 <- TRUE
 RUN_SC_3 <- TRUE
 
@@ -28,7 +28,7 @@ generateUnifMixturesData <- function(n, boundaries = matrix(c(-10,-9, -1, 0, 0, 
   return(x)
 }
 
-generateUnifMixturesDensities<- function(boundaries = matrix(c(-10,-9, -1, 0, 0, 1),ncol=2, byrow = TRUE), weights = c(0.1, 0.4, 0.5)) {
+generateUnifMixturesDensities <- function(boundaries = matrix(c(-10,-9, -1, 0, 0, 1),ncol=2, byrow = TRUE), weights = c(0.1, 0.4, 0.5)) {
 
   force(boundaries)
   force(weights)
@@ -68,7 +68,7 @@ if (RUN_SC_1) {
     bayesRatio <- function(x) d.right(x) / (d.left(x) + d.right(x))
 
     dWit(t = rep(0:1, each = n), rho = sapply(c(x1,x2), function(x) bayesRatio(x)), estimator.type = "asymptotic-tv-search")$tvhat
-    }, grid[,1], grid[,2], mc.cores = 5)
+    }, grid[,1], grid[,2], mc.cores = 25)
 
   set.seed(123, "L'Ecuyer")
   res_binomial_1 <- mcmapply(FUN = function(n, gamma) {
