@@ -159,3 +159,18 @@ par(mfrow=c(1,1))
 plot(search,type="b",ylim=c(0,1))
 lines(bin,col="red")
 
+
+
+
+# change
+par(mfrow=c(2,2))
+plot(d$prate[1,],type="l",xlim=c(0,10000))
+plot(d$air[1,],type="l",xlim=c(0,10000))
+plot(d$mslp[1,],type="l",xlim=c(0,10000))
+plot(d$shum[1,],type="l",xlim=c(0,10000))
+
+
+# do that per signals
+rf <- ranger::ranger(y~., data = data.frame(x=d$mslp[1,1:length(d$time)%%2==0],y=(1:length(d$time))[1:length(d$time)%%2==0]))
+rho <- predict(rf, data = data.frame(x=d$mslp[1,1:length(d$time)%%2==1]))$predictions
+dWit(t = (1:length(d$time))[1:length(d$time)%%2==1], rho = rho, s = quantile((1:length(d$time))[1:length(d$time)%%2==1], seq(0.1,0.9,0.1)))
