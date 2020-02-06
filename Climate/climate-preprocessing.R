@@ -8,12 +8,13 @@ library(rasterVis)
 library(RColorBrewer)
 
 
-climatePrePro <- function(path = "~/Downloads/reanalysis_jeff_loris/") {
+climatePrePro <- function(path = "~/Downloads/reanalysis_jeff_loris/", path2 = "~/Downloads/") {
 # loading the data (4 signals)
 air_raster <- brick(paste(path, "NCEP2.air.2m.day", ".nc", sep=""), varname="air")
 mslp_raster <- brick(paste(path, "NCEP2.mslp.2m.day", ".nc", sep=""), varname="mslp")
 prate_raster <- brick(paste(path, "NCEP2.prate.2m.day", ".nc", sep=""), varname="prate")
 shum_raster <- brick(paste(path, "NCEP2.shum.2m.day", ".nc", sep=""), varname="shum")
+#tg_raster <- brick(paste(path2, "group", ".nc", sep=""), varname="tg")
 
 
 
@@ -29,12 +30,14 @@ t_air <- as.Date(sapply(colnames(air_raster[1,1]), toDate))
 t_mslp <- as.Date(sapply(colnames(mslp_raster[1,1]), toDate))
 t_prate <- as.Date(sapply(colnames(prate_raster[1,1]), toDate))
 t_shum <- as.Date(sapply(colnames(shum_raster[1,1]), toDate))
+#t_tg <- as.Date(sapply(colnames(tg_raster[1,1]), toDate))
 
 # subset to smaller time step
 air <- getValues(air_raster)[,1:14641]
 mslp <- getValues(mslp_raster)[,1:14641]
 prate <- getValues(prate_raster)[,1:14641]
 shum <- getValues(shum_raster)[,1:14641]
+#tg <- getValues(tg_raster)[,1:14641]
 
 
 fake.series <- matrix(nrow=nrow(air),ncol=ncol(air))
