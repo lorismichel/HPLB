@@ -42,7 +42,8 @@ n <- ncol(data$air)-1
 resmat <- matrix(nrow=p,ncol=2)
 tvseq <- sort(unique(c(seq(0,1,by=0.01),seq(0,0.1,by=0.001),seq(0,0.2,by=0.005),c(0,0.0001,0.001,0.002,0.005,0.01,0.015,0.02))))
 
-for (k in sample(1:p,p)){
+#sample(1:p,p)
+for (k in 283:p){
 #for (k in 1:20) {
   X <- apply(cbind( data$air[k,], data$mslp[k,], data$prate[k,], data$shum[k,]),2,diff)
 
@@ -60,7 +61,9 @@ for (k in sample(1:p,p)){
   tvhat_search <- dWit( t=as.numeric(Y[test])-1, rho=pred, tv.seq  = tvseq, estimator.type = "asymptotic-tv-search")$tvhat
 
   resmat[k,] <- c(tvhat_bin, tvhat_search)
+  if (k%%10==0){
   print(k)
+  }
 }
 
 
