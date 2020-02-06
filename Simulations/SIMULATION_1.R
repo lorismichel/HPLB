@@ -155,10 +155,10 @@ if (RUN_SC_3) {
     p1 <- (1/2)*n^{-gamma}
     weights <- c(p1, 1-p1)
 
-    x1 <- generateUnifMixturesData(n=n, boundaries = matrix(c(-1, -2, 1 , 2), ncol=2, byrow = TRUE), weights = weights)
+    x1 <- generateUnifMixturesData(n=n, boundaries = matrix(c(-2, -1, 1 , 2), ncol=2, byrow = TRUE), weights = weights)
     x2 <- generateUnifMixturesData(n=n, boundaries = matrix(c(1, 2), ncol=2, byrow = TRUE), weights = c(1))
 
-    d.left <- generateUnifMixturesDensities(boundaries = matrix(c(-1, -2, 1 , 2), ncol=2, byrow = TRUE), weights = weights)
+    d.left <- generateUnifMixturesDensities(boundaries = matrix(c(-2, -1, 1 , 2), ncol=2, byrow = TRUE), weights = weights)
     d.right <- generateUnifMixturesDensities(boundaries = matrix(c(1, 2), ncol=2, byrow = TRUE), weights = c(1))
 
     bayesRatio <- function(x) d.right(x) / (d.left(x) + d.right(x))
@@ -172,10 +172,10 @@ if (RUN_SC_3) {
     p1 <- (1/2)*n^{-gamma}
     weights <- c(p1, 1-p1)
 
-    x1 <- generateUnifMixturesData(n=n, boundaries = matrix(c(-1, -2, 1 , 2), ncol=2, byrow = TRUE), weights = weights)
+    x1 <- generateUnifMixturesData(n=n, boundaries = matrix(c(-2, -1, 1 , 2), ncol=2, byrow = TRUE), weights = weights)
     x2 <- generateUnifMixturesData(n=n, boundaries = matrix(c(1, 2), ncol=2, byrow = TRUE), weights = c(1))
 
-    d.left <- generateUnifMixturesDensities(boundaries = matrix(c(-1, -2, 1 , 2), ncol=2, byrow = TRUE), weights = weights)
+    d.left <- generateUnifMixturesDensities(boundaries = matrix(c(-2, -1, 1 , 2), ncol=2, byrow = TRUE), weights = weights)
     d.right <- generateUnifMixturesDensities(boundaries = matrix(c(1, 2), ncol=2, byrow = TRUE), weights = c(1))
 
     bayesRatio <- function(x) d.right(x) / (d.left(x) + d.right(x))
