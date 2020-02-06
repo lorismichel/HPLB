@@ -43,7 +43,7 @@ generateUnifMixturesDensities <- function(boundaries = matrix(c(-10,-9, -1, 0, 0
 
 
 # params sims
-nrep <- 1
+nrep <- 20
 grid.gamma <- rep(seq(0.1,  1.2, by = 0.1), nrep)
 grid.n <- rep(10^{seq(2,4,length.out = 10)}, nrep)
 grid <- expand.grid(grid.n, grid.gamma)
