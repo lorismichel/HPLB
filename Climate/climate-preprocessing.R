@@ -7,8 +7,9 @@ library(raster)
 library(rasterVis)
 library(RColorBrewer)
 
+# "C:/Users/Jeff/Downloads/reanalysis_jeff_loris/"
 
-climatePrePro <- function(path = "~/Downloads/reanalysis_jeff_loris/", path2 = "~/Downloads/") {
+climatePrePro <- function(path ="~/Downloads/reanalysis_jeff_loris/" , path2 = "~/Downloads/") {
 # loading the data (4 signals)
 air_raster <- brick(paste(path, "NCEP2.air.2m.day", ".nc", sep=""), varname="air")
 mslp_raster <- brick(paste(path, "NCEP2.mslp.2m.day", ".nc", sep=""), varname="mslp")
