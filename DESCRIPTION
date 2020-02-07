@@ -13,5 +13,6 @@ Depends: data.table,
          ranger,
          distrEx
 Suggests: 
-    testthat
+    testthat,
+    fields
 RoxygenNote: 6.1.1
