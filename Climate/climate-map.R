@@ -77,7 +77,11 @@ for (i in 1:nrow(d$shum)) {
 # saving the data
 save(resmat, file = "Data/DATA_CLIMATE_MAP.Rdata")
 
-# # producing plots
+
+
+# producing plots
+info <- load("Data/DATA_CLIMATE_MAP.Rdata")
+
 # pdf(file="results_differenced.pdf",width=12,height=6)
 # par(mfrow=c(1,3))
 # plot(resmat[1:k,1],resmat[1:k,2],xlab="TV-bound (conf table)",ylab="TV-bound")
@@ -90,21 +94,34 @@ save(resmat, file = "Data/DATA_CLIMATE_MAP.Rdata")
 # dev.off()
 #
 #
-# #Now Layer the cities on top
-# library("ggmap")
-# library(maptools)
-# library(maps)
+#Now Layer the cities on top
+library("ggmap")
+library(maptools)
+library(maps)
 #
 #
-# x <-  matrix.coords[,1]-180
-# y <-  matrix.coords[,2]
-#
-# #Using GGPLOT, plot the Base World Map
-# mp <- NULL
-# mapWorld <- borders("world", colour="gray50", fill="gray50") # create a layer of borders
-# mp <- ggplot() +   mapWorld
-#
-# #Now Layer the cities on top
-# mp <- mp + geom_point(aes(x=x, y=y, color = runif(nrow(d$shum))), size=1) + scale_colour_gradient(low = "red", high="blue")
-# mp
-#
+x <-  matrix.coords[,1]-180
+y <-  matrix.coords[,2]
+
+# binomial
+#Using GGPLOT, plot the Base World Map
+mp_bin <- NULL
+mapWorld <- borders("world", colour="gray50", fill="gray50") # create a layer of borders
+mp_bin <- ggplot() +   mapWorld
+
+#Now Layer the cities on top
+mp_bin <- mp_bin + geom_point(aes(x=x, y=y, color = resmat[,1]), size=1) + scale_colour_gradient(low = "red", high="blue")
+mp_bin
+
+# tvsearch
+mp_search <- NULL
+mapWorld <- borders("world", colour="gray50", fill="gray50") # create a layer of borders
+mp_search <- ggplot() +   mapWorld
+
+#Now Layer the cities on top
+mp_search <- mp_search + geom_point(aes(x=x, y=y, color = resmat[,2]), size=1) + scale_colour_gradient(low = "red", high="blue")
+mp_search
+
+
+plot(resmat[,1], resmat[,2], col="black",pch=19,xlab="binomial-test",ylab="asymptotic-tv-search",font.lab=1,font.main=1, cex = 0.7)
+abline(0,1,col="blue",lty=2)
