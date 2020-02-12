@@ -2,6 +2,7 @@
 
 # options
 RANK.TRANSFORMATION <- FALSE
+SPLIT.TRAIN.TEST <- 1
 
 # source
 source("./Climate/climate-preprocessing.R")
@@ -47,22 +48,29 @@ for (k in 283:p){
 #for (k in 1:20) {
   X <- apply(cbind( data$air[k,], data$mslp[k,], data$prate[k,], data$shum[k,]),2,diff)
 
-  train <- (round(n/4):round(n*3/4))
-  test <- (1:n)[-train]
+  # splits train-test
+  if (SPLIT.TRAIN.TEST == 0) {
+    ind.train <- which(1:nrow(dat)%%2 == 0)
+    ind.test <- which(1:nrow(dat)%%2 == 1)
+  } else if (SPLIT.TRAIN.TEST == 1) {
+    n <- length(air)
+    ind.train <- (round(n/4):round(n*3/4))
+    ind.test <- (1:n)[-ind.train]
+  }
+
   Y <- as.factor((1:n)>round(n/2))
 
-  rf <- ranger(formula = y~., data = data.frame(x=X[train,], y=Y[train]), probability = TRUE)
+  rf <- ranger(formula = y~., data = data.frame(x=X[ind.train,], y=Y[ind.train]), probability = TRUE)
 
+  pred <- predict(rf, data = data.frame(x=X[ind.test,]))$predictions[,"TRUE"]
 
-
-  pred <- predict(rf, data = data.frame(x=X[test,]))$predictions[,"TRUE"]
-
-  tvhat_bin <- dWit( t=as.numeric(Y[test])-1, rho=pred, tv.seq  = tvseq, estimator.type = "binomial-test")$tvhat
-  tvhat_search <- dWit( t=as.numeric(Y[test])-1, rho=pred, tv.seq  = tvseq, estimator.type = "asymptotic-tv-search")$tvhat
+  tvhat_bin <- dWit( t=as.numeric(Y[ind.test])-1, rho = pred, tv.seq  = tvseq, estimator.type = "binomial-test")$tvhat
+  tvhat_search <- dWit( t=as.numeric(Y[ind.test])-1, rho = pred, tv.seq  = tvseq, estimator.type = "asymptotic-tv-search")$tvhat
 
   resmat[k,] <- c(tvhat_bin, tvhat_search)
-  if (k%%10==0){
-  print(k)
+
+  if (k%%10==0) {
+    print(k)
   }
 }
 
@@ -110,7 +118,8 @@ mapWorld <- borders("world", colour="gray50", fill="gray50") # create a layer of
 mp_bin <- ggplot() +   mapWorld
 
 #Now Layer the cities on top
-mp_bin <- mp_bin + geom_point(aes(x=x, y=y, color = resmat[,1]), size=1) + scale_colour_gradient(low = "red", high="blue")
+tv <- resmat[,1]
+mp_bin <- mp_bin + geom_point(aes(x=x, y=y, color = tv), size=3) + scale_colour_gradient(low = "white", high="black")
 mp_bin
 
 # tvsearch
@@ -125,3 +134,4 @@ mp_search
 
 plot(resmat[,1], resmat[,2], col="black",pch=19,xlab="binomial-test",ylab="asymptotic-tv-search",font.lab=1,font.main=1, cex = 0.7)
 abline(0,1,col="blue",lty=2)
+

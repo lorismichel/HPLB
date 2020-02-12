@@ -2,7 +2,7 @@
 
 # options
 RANK.TRANSFORMATION <- FALSE
-
+SPLIT.TRAIN.TEST <- 1
 
 # source
 source("./Climate/climate-preprocessing.R")
@@ -54,9 +54,16 @@ abline(v = as.Date(d$time)[as.numeric(quantile(1:length(air), seq(0.1,0.9,length
 
 # run analysis
 
-# splits train-test (one observation over two)
-ind.train <- which(1:nrow(dat)%%2 == 0)
-ind.test <- which(1:nrow(dat)%%2 == 1)
+# splits train-test
+if (SPLIT.TRAIN.TEST == 0) {
+  ind.train <- which(1:nrow(dat)%%2 == 0)
+  ind.test <- which(1:nrow(dat)%%2 == 1)
+} else if (SPLIT.TRAIN.TEST == 1) {
+  n <- length(air)
+  ind.train <- (round(n/4):round(n*3/4))
+  ind.test <- (1:n)[-ind.train]
+}
+
 
 # fit a forest
 mRF_air <- ranger::ranger(t~., data = data.frame(t=1:length(air), x=air)[ind.train,])
