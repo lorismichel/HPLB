@@ -44,16 +44,15 @@ resmat <- matrix(nrow=p,ncol=2)
 tvseq <- sort(unique(c(seq(0,1,by=0.01),seq(0,0.1,by=0.001),seq(0,0.2,by=0.005),c(0,0.0001,0.001,0.002,0.005,0.01,0.015,0.02))))
 
 #sample(1:p,p)
-for (k in 283:p){
+for (k in 1:p){
 #for (k in 1:20) {
   X <- apply(cbind( data$air[k,], data$mslp[k,], data$prate[k,], data$shum[k,]),2,diff)
 
   # splits train-test
   if (SPLIT.TRAIN.TEST == 0) {
-    ind.train <- which(1:nrow(dat)%%2 == 0)
-    ind.test <- which(1:nrow(dat)%%2 == 1)
+    ind.train <- which(1:n%%2 == 0)
+    ind.test <- which(1:n%%2 == 1)
   } else if (SPLIT.TRAIN.TEST == 1) {
-    n <- length(air)
     ind.train <- (round(n/4):round(n*3/4))
     ind.test <- (1:n)[-ind.train]
   }
