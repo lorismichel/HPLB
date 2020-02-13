@@ -63,7 +63,7 @@ dWitMatrix <- function(labels,
   }
 
   # ordering.array check
-  if (!is.numeric(ordering.array) || any(!is.finite(ordering.array)) || !is.array(ordering.array) || (length(dim(ordering)) != 3)
+  if (!is.numeric(ordering.array) || any(!is.finite(ordering.array)) || !is.array(ordering.array) || (length(dim(ordering.array)) != 3)
       || (dim(ordering.array)[1] != dim(ordering.array)[2]) || (dim(ordering.array)[1] != length(unique(labels))) || (length(labels) != dim(ordering.array)[3])) {
     stop("Invalid values or type for ordering.array or compatibilities with labels, please see ?dWit.")
   }

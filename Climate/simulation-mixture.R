@@ -13,6 +13,7 @@ x.train <- ifelse(t.train<=1/3, rnorm(n, 0), ifelse(t.train<=2/3, rnorm(n, 1), r
 t.test <- runif(n, 0, 1)
 x.test <- ifelse(t.test<=1/3, rnorm(n, 0), ifelse(t.test<=2/3, rnorm(n, 1), rnorm(n, 2)))
 
+png(filename = "./Plots/PLOT_SIMULATION_MIXTURE_1.png", width = 1000)
 plot(t.train,x.train,pch=19,cex=0.5,xlab='Time', ylab='x', font.lab=1, font.main=1)
 rf <- ranger::ranger(t~., data = data.frame(t=t.train, x=x.train))
 
@@ -61,9 +62,10 @@ require(dWit)
 tvhat <- dWit(t = t.test, rho = predict(rf, data.frame(x=x.test))$predictions,
               s = seq(0.05, 0.95, 0.05), estimator.type = "asymptotic-tv-search")
 plot(seq(0.05, 0.95, 0.05), tvhat$tvhat,type='b',pch=19,font.lab=1, font.main=1,ylab=expression(hat(lambda)[H]),xlab="Time")
-
+dev.off()
 
 # PLOT_SIMULATION_MIXTURE_2.png
+png(filename = "./Plots/PLOT_SIMULATION_MIXTURE_2.png", width = 1000)
 par(mfrow=c(3,2))
 # example 4: multivariate change
 n <- 10000
@@ -100,5 +102,5 @@ plot(t.train,x.train[,2],pch=19,cex=0.5,xlab='Time', ylab=expression(x[2]),font.
 plot(seq(0.05, 0.95, 0.05), tvhat_x2$tvhat,type='b',pch=19,font.lab=1, font.main=1,ylab=expression(hat(lambda)[H]),xlab="Time")
 plot(x.train[,1],x.train[,2],pch=19,cex=0.5,xlab=expression(x[1]), ylab=expression(x[2]),col=c("darkblue","grey")[(t.train>0.5)+1],font.lab=1, font.main=1)
 plot(seq(0.05, 0.95, 0.05), tvhat_joint$tvhat,type='b',pch=19,font.lab=1, font.main=1,ylab=expression(hat(lambda)[H]),xlab="Time")
-
+dev.off()
 
