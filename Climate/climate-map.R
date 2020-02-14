@@ -1,11 +1,12 @@
 # climate map
 
 # options
-PATH.CLIMATE.DATA <- "~/Downloads/reanalysis_jeff_loris/"
+PATH.CLIMATE.DATA <- "C:/Users/jeffr/Downloads/reanalysis_jeff_loris/"
+
 
 PRODUCE.PLOTS <- TRUE
 RUN.ANALYSIS <- FALSE
-RUN.COMBINED.METHOD <- FALSE
+RUN.COMBINED.METHOD <- TRUE
 
 PREPRO <- 2
 SPLIT.TRAIN.TEST <- 0
@@ -87,7 +88,7 @@ if (RUN.ANALYSIS) {
     tvhat_search <- dWit(t=as.numeric(Y[ind.test])-1, rho = pred, tv.seq  = tvseq,
                          estimator.type = "asymptotic-tv-search")$tvhat
     if (RUN.COMBINED.METHOD) {
-      tvhat_combined <- dWit(t=as.numeric(Y[ind.test])-1, rho = pred, tv.seq  = Filter(x = tvseq, f = function(x) x>=tvhat_bin),
+      tvhat_combined <- dWit(t=as.numeric(Y[ind.test])-1, rho = pred, tv.seq  = c(tvhat_bin,Filter(x = tvseq, f = function(x) x > tvhat_bin)),
                              estimator.type = "asymptotic-tv-search")$tvhat
       resmat[k,] <- c(tvhat_bin, tvhat_search, tvhat_combined)
     } else {
@@ -106,9 +107,9 @@ if (RUN.ANALYSIS) {
 }
 
 # get coordinates
-matrix.coords <- matrix(nrow=nrow(d$shum),ncol=2)
+matrix.coords <- matrix(nrow=nrow(data$shum),ncol=2)
 
-for (i in 1:nrow(d$shum)) {
+for (i in 1:nrow(data$shum)) {
   matrix.coords[i,] <- xyFromCell(object = d$shum_raster, i)
 }
 
@@ -116,6 +117,8 @@ for (i in 1:nrow(d$shum)) {
 
 
 if (PRODUCE.PLOTS) {
+
+
 
   # load the data
   info <- load(paste0("Data/DATA_CLIMATE_MAP_SPLIT_", SPLIT.TRAIN.TEST, "_PREPRO_", PREPRO, ".Rdata"))
@@ -134,6 +137,22 @@ if (PRODUCE.PLOTS) {
   mp_bin <- NULL
   mapWorld <- borders("world", colour="gray50", fill="gray50") # create a layer of borders
   mp_bin <- ggplot() +   mapWorld
+
+
+
+  if (RUN.COMBINED.METHOD){
+    tv <- resmat[,3]
+    mp_bin <- mp_bin + geom_point(aes(x=x, y=y, color = tv), size=2) + scale_colour_gradient(low = "white", high="black")
+    mp_bin
+    dev.off()
+
+    png(filename = paste0("Plots/PLOT_CLIMATE_MAP_SPLIT_", SPLIT.TRAIN.TEST, "_PREPRO_", PREPRO, "_PLOT_2"), width = 1000)
+    # # tvsearch tv
+    mp_search <- NULL
+    mapWorld <- borders("world", colour="gray50", fill="gray50") # create a layer of borders
+    mp_search <- ggplot() +   mapWorld
+
+  }{
 
   tv <- resmat[,1]
   mp_bin <- mp_bin + geom_point(aes(x=x, y=y, color = tv), size=2) + scale_colour_gradient(low = "white", high="black")
@@ -155,4 +174,5 @@ if (PRODUCE.PLOTS) {
   plot(resmat[,1], resmat[,2], col="black",pch=19,xlab="binomial-test",ylab="asymptotic-tv-search",font.lab=1,font.main=1, cex = 0.7)
   abline(0,1,col="blue",lty=2)
   dev.off()
+  }
 }
