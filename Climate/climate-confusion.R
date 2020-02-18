@@ -2,8 +2,8 @@
 
 ## options
 PATH.CLIMATE.DATA <- "~/Downloads/reanalysis_jeff_loris/"
-PREPRO <- 0
-SPLIT.TRAIN.TEST <- 0
+PREPRO <- 2
+SPLIT.TRAIN.TEST <- 1
 
 # source
 source("./Climate/climate-preprocessing.R")
@@ -42,56 +42,70 @@ if (PREPRO == 1) {
   mslp  <- rank(diff(mslp))
 }
 
-## core of analysis
-dat <- data.frame(class = d$tenyears.ind,
-                  x = cbind(t(air),t(mslp),t(prate),t(shum)))
-
 # run analysis
 
 # splits train-test
 if (SPLIT.TRAIN.TEST == 0) {
+
   ind.train <- which(1:nrow(dat)%%2 == 0)
   ind.test <- which(1:nrow(dat)%%2 == 1)
 } else if (SPLIT.TRAIN.TEST == 1) {
+
   n <- length(air)
-  ind.train <- (round(n/4):round(n*3/4))
+  ind <- cut(1:n, c(-1, split.ids, n+1), FALSE)
+  ind.train <- Filter(x = 1:n,f =  function(i) {
+    s <- which(ind==ind[i])[1]
+    l <- length(which(ind==ind[i]))
+    i %in% ((round(s + l/4):round(s + l*3/4)))
+  })
   ind.test <- (1:n)[-ind.train]
 }
 
 
-# define the multiclass by quantile splits
+# define the class by quantile splits
 b <- as.numeric(quantile(1:length(air), c(seq(0,1,length.out = 5))))
 b[1] <- 0
 class <- cut(1:length(air), breaks = b, labels = FALSE)
 
+# create train and test sets
+train <- data.frame(class=class, air = air, mslp = mslp, shum = shum, prate = prate)[ind.train,]
+test  <- data.frame(class=class, air = air, mslp = mslp, shum = shum, prate = prate)[ind.test,]
+
+
 # fit a forest
-mRF_air <- ranger::ranger(class~air, data = data.frame(class = class, air=air)[ind.train,], probability = TRUE)
-mRF_mslp <- ranger::ranger(class~mslp, data = data.frame(class = class, mslp=mslp)[ind.train,],  probability = TRUE)
-mRF_prate <- ranger::ranger(class~prate, data = data.frame(class = class, prate=prate)[ind.train,],  probability = TRUE)
-mRF_shum <- ranger::ranger(class~shum, data = data.frame(class = class, shum=shum)[ind.train,],  probability = TRUE)
-mRF_joint <- ranger::ranger(class~., data = data.frame(class = class, air=air, mslp=mslp, prate=prate, shum=shum)[ind.train,], importance = 'permutation',  probability = TRUE)
+mRF_air <- ranger::ranger(class~air, data = train, probability = TRUE)
+mRF_mslp <- ranger::ranger(class~mslp, data = train,  probability = TRUE)
+mRF_prate <- ranger::ranger(class~prate, data = train,  probability = TRUE)
+mRF_shum <- ranger::ranger(class~shum, data = train,  probability = TRUE)
+mRF_joint <- ranger::ranger(class~., data = train, importance = 'permutation',  probability = TRUE)
 
 
-# construct the test set
+# construct the test set labels
 labels <- (class - 1)[-ind.train]
-dat.test <- data.frame(class = class, t=1:length(shum), air=air, mslp=mslp, prate=prate, shum=shum)[-ind.train,]
 
 
-ordering.array.air <- array(dim=c(4,4,nrow(dat.test)))
-ordering.array.mslp <- array(dim=c(4,4,nrow(dat.test)))
-ordering.array.prate <- array(dim=c(4,4,nrow(dat.test)))
-ordering.array.shum <- array(dim=c(4,4,nrow(dat.test)))
-ordering.array.joint <- array(dim=c(4,4,nrow(dat.test)))
+ordering.array.air <- array(dim=c(4,4,nrow(test)))
+ordering.array.mslp <- array(dim=c(4,4,nrow(test)))
+ordering.array.prate <- array(dim=c(4,4,nrow(test)))
+ordering.array.shum <- array(dim=c(4,4,nrow(test)))
+ordering.array.joint <- array(dim=c(4,4,nrow(test)))
 
 
-# build the rho function
+# getting prediction and building the rho
+preds_air <- predict(mRF_air, data = test)$predictions
+preds_mslp <- predict(mRF_mslp, data = test)$predictions
+preds_prate <- predict(mRF_prate, data = test)$predictions
+preds_shum <- predict(mRF_shum, data = test)$predictions
+preds_joint <- predict(mRF_joint, data = test)$predictions
+
+
 for (i in 1:4) {
   for (j in 1:4) {
-    ordering.array.air[i,j,] <- predict(mRF_air, data = dat.test)$predictions[,j]-predict(mRF_air, data = dat.test)$predictions[,i]
-    ordering.array.mslp[i,j,] <- predict(mRF_mslp, data = dat.test)$predictions[,j]-predict(mRF_mslp, data = dat.test)$predictions[,i]
-    ordering.array.prate[i,j,] <- predict(mRF_prate, data = dat.test)$predictions[,j]-predict(mRF_prate, data = dat.test)$predictions[,i]
-    ordering.array.shum[i,j,] <- predict(mRF_shum, data = dat.test)$predictions[,j]-predict(mRF_shum, data = dat.test)$predictions[,i]
-    ordering.array.joint[i,j,] <- predict(mRF_joint, data = dat.test)$predictions[,j]-predict(mRF_joint, data = dat.test)$predictions[,i]
+    ordering.array.air[i,j,] <- preds_air[,j]-preds_air[,i]
+    ordering.array.mslp[i,j,] <- preds_mslp[,j]-preds_mslp[,i]
+    ordering.array.prate[i,j,] <- preds_prate[,j]-preds_prate[,i]
+    ordering.array.shum[i,j,] <- preds_shum[,j]-preds_shum[,i]
+    ordering.array.joint[i,j,] <- preds_joint[,j]-preds_joint[,i]
   }
   print(i)
 }
@@ -108,4 +122,8 @@ save(tv.mat.air,
      tv.mat.prate,
      tv.mat.shum,
      tv.mat.joint,
-     file = paste0("./Data/DATA_CLIMATE_CONFUSION_SPLIT", SPLIT.TRAIN.TEST,"_PREPRO_",PREPRO,".Rdata"))
+     file = paste0("./Data/DATA_CLIMATE_CONFUSION_SPLIT",
+                   SPLIT.TRAIN.TEST,
+                   "_PREPRO_",
+                   PREPRO,
+                   ".Rdata"))

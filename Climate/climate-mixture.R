@@ -2,8 +2,8 @@
 
 ## options
 PATH.CLIMATE.DATA <- "~/Downloads/reanalysis_jeff_loris/"
-PREPRO <- 0
-SPLIT.TRAIN.TEST <- 0
+PREPRO <- 2
+SPLIT.TRAIN.TEST <- 1
 
 # source
 source("./Climate/climate-preprocessing.R")
@@ -24,6 +24,40 @@ shum  <- extract(d$shum_raster, matrix(zurich.coord,ncol=2),method="bilinear")[1
 prate <- extract(d$prate_raster, matrix(zurich.coord,ncol=2),method="bilinear")[1,1:14641]
 mslp  <- extract(d$mslp_raster, matrix(zurich.coord,ncol=2),method="bilinear")[1,1:14641]
 
+
+# time
+time <- as.Date(d$time)
+
+# split ids
+split.ids   <- as.numeric(quantile(1:length(air), seq(0,1,length.out = 5)[-c(1,5)]))
+split.dates <- time[split.ids]
+
+# PLOT_CLIMATE_MIXTURE_1.png
+png(filename = paste0("./Plots/PLOT_CLIMATE_MIXTURE_SPLIT_",
+                      SPLIT.TRAIN.TEST,
+                      "_PREPRO_",
+                      PREPRO,
+                      "_PLOT_1.png"),
+    width = 1000)
+
+par(mfrow=c(2,2))
+plot(as.Date(d$time), air,type="l",xlab='Time',ylab='Temperature',
+     main="Zürich temperature",font.lab = 1,font.main=1)
+abline(v = split.dates,lty=2,col='blue')
+
+plot(as.Date(d$time), mslp,type="l",xlab='Time',ylab='Pressure',
+     main="Zürich pressure",font.lab = 1,font.main=1)
+abline(v = split.dates,lty=2,col='blue')
+
+plot(as.Date(d$time), prate,type="l",xlab='Time',ylab='Precipitation',
+     main="Zürich precipitation",font.lab = 1,font.main=1)
+abline(v = split.dates,lty=2,col='blue',font.lab = 1,font.main=1)
+
+plot(as.Date(d$time), shum,type="l",xlab='Time',ylab='Humidity',
+     main="Zürich humidity",font.lab = 1,font.main=1)
+abline(v = split.dates,lty=2,col='blue')
+dev.off()
+
 # preprocessing
 if (PREPRO == 1) {
   air   <- rank(air)
@@ -31,37 +65,20 @@ if (PREPRO == 1) {
   prate <- rank(prate)
   mslp  <- rank(mslp)
 } else if (PREPRO == 2) {
+  time <- time[-1]
   air   <- diff(air)
   shum  <- diff(shum)
   prate <- diff(prate)
   mslp  <- diff(mslp)
 } else if (PREPRO == 3) {
+  time <- time[-1]
   air   <- rank(diff(air))
   shum  <- rank(diff(shum))
   prate <- rank(diff(prate))
   mslp  <- rank(diff(mslp))
 }
 
-## core of analysis
-dat <- data.frame(class = d$tenyears.ind,
-                  x = cbind(t(air),t(mslp),t(prate),t(shum)))
 
-
-# PLOT_CLIMATE_MIXTURE_1.png
-png(filename = paste0("./Plots/PLOT_CLIMATE_MIXTURE_SPLIT_",SPLIT.TRAIN.TEST,"_PREPRO_",PREPRO,"_PLOT_1.png"), width = 1000)
-par(mfrow=c(2,2))
-plot(as.Date(d$time), air,type="l",xlab='Time',ylab='Temperature', main="Zürich temperature",font.lab = 1,font.main=1)
-abline(v = as.Date(d$time)[as.numeric(quantile(1:length(air), seq(0.1,0.9,length.out = 10)))],lty=2,col='blue')
-
-plot(as.Date(d$time), mslp,type="l",xlab='Time',ylab='Pressure', main="Zürich pressure",font.lab = 1,font.main=1)
-abline(v = as.Date(d$time)[as.numeric(quantile(1:length(air), seq(0.1,0.9,length.out = 10)))],lty=2,col='blue')
-
-plot(as.Date(d$time), prate,type="l",xlab='Time',ylab='Precipitation', main="Zürich precipitation",font.lab = 1,font.main=1)
-abline(v = as.Date(d$time)[as.numeric(quantile(1:length(air), seq(0.1,0.9,length.out = 10)))],lty=2,col='blue',font.lab = 1,font.main=1)
-
-plot(as.Date(d$time), shum,type="l",xlab='Time',ylab='Humidity', main="Zürich humidity",font.lab = 1,font.main=1)
-abline(v = as.Date(d$time)[as.numeric(quantile(1:length(air), seq(0.1,0.9,length.out = 10)))],lty=2,col='blue')
-dev.off()
 
 # run analysis
 
@@ -73,69 +90,118 @@ if (SPLIT.TRAIN.TEST == 0) {
 } else if (SPLIT.TRAIN.TEST == 1) {
 
   n <- length(air)
-  ind.train <- (round(n/4):round(n*3/4))
+  ind <- cut(1:n, c(-1, split.ids, n+1), FALSE)
+  ind.train <- Filter(x = 1:n,f =  function(i) {
+                        s <- which(ind==ind[i])[1]
+                        l <- length(which(ind==ind[i]))
+                        i %in% ((round(s + l/4):round(s + l*3/4)))
+                      })
   ind.test <- (1:n)[-ind.train]
 }
 
+# create train and test sets
+train <- data.frame(t=1:length(air), air = air, mslp = mslp, shum = shum, prate = prate)[ind.train,]
+test  <- data.frame(t=1:length(air), air = air, mslp = mslp, shum = shum, prate = prate)[ind.test,]
 
-# fit a forest
-mRF_air <- ranger::ranger(t~., data = data.frame(t=1:length(air), x=air)[ind.train,])
-mRF_mslp <- ranger::ranger(t~., data = data.frame(t=1:length(mslp), x=mslp)[ind.train,])
-mRF_prate <- ranger::ranger(t~., data = data.frame(t=1:length(prate), x=prate)[ind.train,])
-mRF_shum <- ranger::ranger(t~., data = data.frame(t=1:length(shum), x=shum)[ind.train,])
+# fit the different forests
+mRF_air   <- ranger::ranger(t~air, data = train)
+mRF_mslp  <- ranger::ranger(t~mslp, data = train)
+mRF_prate <- ranger::ranger(t~prate, data = train)
+mRF_shum  <- ranger::ranger(t~shum, data = train)
+mRF_joint <- ranger::ranger(t~., data = train,
+                            importance = 'permutation')
 
-mRF_joint <- ranger::ranger(t~., data = data.frame(t=1:length(shum), air=air, mslp=mslp, prate=prate, shum=shum)[ind.train,], importance = 'permutation')
-
-# run dWit
-require(dWit)
 
 # marginals
 # PLOT_CLIMATE_MIXTURE_2.png
-png(filename = paste0("./Plots/PLOT_CLIMATE_MIXTURE_SPLIT_",SPLIT.TRAIN.TEST,"_PREPRO_",PREPRO,"_PLOT_2.png"), width = 1000)
+png(filename = paste0("./Plots/PLOT_CLIMATE_MIXTURE_SPLIT_",
+                      SPLIT.TRAIN.TEST,
+                      "_PREPRO_",
+                      PREPRO,
+                      "_PLOT_2.png"),
+    width = 1000)
+
 par(mfrow=c(2,2))
-plot(as.Date(d$time)[as.numeric(quantile(1:length(air), seq(0.1,0.9,length.out = 10)))], dWit(t = c(1:length(air))[ind.test], rho = predict(mRF_air, data.frame(x=air[ind.test]))$predictions,
-     s = as.numeric(quantile(1:length(air), seq(0.1,0.9,length.out = 10))), estimator.type = "asymptotic-tv-search")$tvhat,ylab=expression(hat(lambda)[H]),type="b",pch=19,xlab="Time",ylim=c(0,0.1),font.lab = 1,font.main=1,main="Zürich temperature")
-plot(as.Date(d$time)[as.numeric(quantile(1:length(air), seq(0.1,0.9,length.out = 10)))],dWit(t = c(1:length(mslp))[ind.test], rho = predict(mRF_mslp, data.frame(x=mslp[ind.test]))$predictions,
-     s = as.numeric(quantile(1:length(air), seq(0.1,0.9,length.out = 10))), estimator.type = "asymptotic-tv-search")$tvhat,ylab=expression(hat(lambda)[H]),type="b",pch=19,xlab="Time",ylim=c(0,0.1),font.lab = 1,font.main=1,main="Zürich pressure")
-plot(as.Date(d$time)[as.numeric(quantile(1:length(air), seq(0.1,0.9,length.out = 10)))], dWit(t = c(1:length(prate))[ind.test], rho = predict(mRF_prate, data.frame(x=prate[ind.test]))$predictions,
-     s = as.numeric(quantile(1:length(air), seq(0.1,0.9,length.out = 10))), estimator.type = "asymptotic-tv-search")$tvhat,ylab=expression(hat(lambda)[H]),type="b",pch=19,xlab="Time",ylim=c(0,0.1),font.lab = 1,font.main=1,main="Zürich precipitation")
-plot(as.Date(d$time)[as.numeric(quantile(1:length(air), seq(0.1,0.9,length.out = 10)))], dWit(t = c(1:length(shum))[ind.test], rho = predict(mRF_shum, data.frame(x=shum[ind.test]))$predictions,
-     s = as.numeric(quantile(1:length(air), seq(0.1,0.9,length.out = 10))), estimator.type = "asymptotic-tv-search")$tvhat,ylab=expression(hat(lambda)[H]),type="b",pch=19,xlab="Time",ylim=c(0,0.1),font.lab = 1,font.main=1,main="Zürich humidity")
+plot(split.dates,
+     dWit(t = c(1:length(air))[ind.test], rho = predict(mRF_air, test)$predictions,
+     s = split.ids,
+     estimator.type = "asymptotic-tv-search")$tvhat,ylab=expression(hat(lambda)[H]),type="b",pch=19,
+     xlab="Time",ylim=c(0,0.1),font.lab = 1,font.main=1,main="Zürich temperature")
+plot(split.dates,
+     dWit(t = c(1:length(mslp))[ind.test], rho = predict(mRF_mslp, test)$predictions,
+     s = split.ids,
+     estimator.type = "asymptotic-tv-search")$tvhat,ylab=expression(hat(lambda)[H]),type="b",pch=19,
+     xlab="Time",ylim=c(0,0.1),font.lab = 1,font.main=1,main="Zürich pressure")
+plot(split.dates,
+     dWit(t = c(1:length(prate))[ind.test], rho = predict(mRF_prate, test)$predictions,
+     s = split.ids,
+     estimator.type = "asymptotic-tv-search")$tvhat,ylab=expression(hat(lambda)[H]),type="b",pch=19,
+     xlab="Time",ylim=c(0,0.1),font.lab = 1,font.main=1,main="Zürich precipitation")
+plot(split.dates,
+     dWit(t = c(1:length(shum))[ind.test], rho = predict(mRF_shum, test)$predictions,
+     s = split.ids,
+     estimator.type = "asymptotic-tv-search")$tvhat,ylab=expression(hat(lambda)[H]),type="b",pch=19,
+     xlab="Time",ylim=c(0,0.1),font.lab = 1,font.main=1,main="Zürich humidity")
 dev.off()
 
 # joint
 # PLOT_CLIMATE_MIXTURE_3.png
-png(filename = paste0("./Plots/PLOT_CLIMATE_MIXTURE_SPLIT_",SPLIT.TRAIN.TEST,"_PREPRO_",PREPRO,"_PLOT_3.png"), width = 1000)
+png(filename = paste0("./Plots/PLOT_CLIMATE_MIXTURE_SPLIT_",
+                      SPLIT.TRAIN.TEST,
+                      "_PREPRO_",
+                      PREPRO,"_PLOT_3.png"),
+    width = 1000)
+
 par(mfrow=c(1,1))
-plot(as.Date(d$time)[as.numeric(quantile(1:length(air), seq(0.1,0.9,length.out = 10)))], dWit(t = c(1:length(air))[ind.test], rho = predict(mRF_joint, data.frame(air=air, mslp=mslp, prate=prate, shum=shum)[ind.test,])$predictions,
-     s = as.numeric(quantile(1:length(air), seq(0.1,0.9,length.out = 10))), estimator.type = "asymptotic-tv-search")$tvhat,type="b",pch=19,ylim=c(0,0.1),font.lab = 1,font.main=1,xlab="Time",ylab=expression(hat(lambda)[H]),main="Zürich (all signals)")
+plot(split.dates,
+     dWit(t = c(1:length(air))[ind.test], rho = predict(mRF_joint, test)$predictions,
+     s = split.ids, estimator.type = "asymptotic-tv-search")$tvhat,
+     type="b",pch=19,ylim=c(0,0.1),font.lab = 1,font.main=1,xlab="Time",
+     ylab=expression(hat(lambda)[H]),main="Zürich (all signals)")
 dev.off()
 
 # PLOT_CLIMATE_MIXTURE_4.png
-png(filename = paste0("./Plots/PLOT_CLIMATE_MIXTURE_SPLIT_",SPLIT.TRAIN.TEST,"_PREPRO_",PREPRO,"_PLOT_4.png"), width = 1000)
+png(filename = paste0("./Plots/PLOT_CLIMATE_MIXTURE_SPLIT_",
+                      SPLIT.TRAIN.TEST,
+                      "_PREPRO_",PREPRO,
+                      "_PLOT_4.png"),
+    width = 1000)
+
 par(mfrow=c(2,2))
-plot(density(air[(1:length(shum)>7971.667)]),col="grey",xlab='Temperature',ylab='Density', main="Zürich temperature (marginal)",font.lab = 1,font.main=1)
-lines(density(air[(1:length(shum)<=7971.667)]),col="darkblue")
+plot(density(air[(1:length(shum)>7320.50)]),col="grey",xlab='Temperature',
+     ylab='Density', main="Zürich temperature (marginal)",font.lab = 1,font.main=1)
+lines(density(air[(1:length(shum)<=7320.50)]),col="darkblue")
 
-plot(density(mslp[(1:length(shum)>7971.667)]),col="grey",xlab='Pressure',ylab='Density', main="Zürich pressure (marginal)",font.lab = 1,font.main=1)
-lines(density(mslp[(1:length(shum)<=7971.667)]),col="darkblue")
+plot(density(mslp[(1:length(shum)>7320.50)]),col="grey",xlab='Pressure',
+     ylab='Density', main="Zürich pressure (marginal)",font.lab = 1,font.main=1)
+lines(density(mslp[(1:length(shum)<=7320.50)]),col="darkblue")
 
-plot(density(prate[(1:length(shum)>7971.667)]),col="grey",xlab='',ylab='Precipitation', main="Zürich precipitation (marginal)",font.lab = 1,font.main=1)
-lines(density(prate[(1:length(shum)<=7971.667)]),col="darkblue")
+plot(density(prate[(1:length(shum)>7320.50)]),col="grey",xlab='',
+     ylab='Precipitation', main="Zürich precipitation (marginal)",font.lab = 1,font.main=1)
+lines(density(prate[(1:length(shum)<=7320.50)]),col="darkblue")
 
-plot(density(shum[(1:length(shum)>7971.667)]),col="grey",xlab='Humidity',ylab='Density', main="Zürich humidity (marginal)",font.lab = 1,font.main=1)
-lines(density(shum[(1:length(shum)<=7971.667)]),col="darkblue")
+plot(density(shum[(1:length(shum)>7320.50)]),col="grey",xlab='Humidity',
+     ylab='Density', main="Zürich humidity (marginal)",font.lab = 1,font.main=1)
+lines(density(shum[(1:length(shum)<=7320.50)]),col="darkblue")
 dev.off()
 
 # investigation plot
 par(mfrow=c(4,3))
-for (s in as.numeric(quantile(1:length(air), seq(0.1,0.9,length.out = 10)))) {
-  plot(density(shum[(1:length(shum)>s)]),col="grey",xlab='Humidity',ylab='Density', main="Zürich humidity (marginal)",font.lab = 1,font.main=1)
+for (s in split.ids) {
+  plot(density(shum[(1:length(shum)>s)]),col="grey",xlab='Humidity',
+       ylab='Density', main="Zürich humidity (marginal)",font.lab = 1,font.main=1)
   lines(density(shum[(1:length(shum)<=s)]),col="darkblue")
 }
 
 # PLOT_CLIMATE_MIXTURE_5.png
-png(filename = paste0("./Plots/PLOT_CLIMATE_MIXTURE_SPLIT_",SPLIT.TRAIN.TEST,"_PREPRO_",PREPRO,"_PLOT_5.png"), width = 1000)
+png(filename = paste0("./Plots/PLOT_CLIMATE_MIXTURE_SPLIT_",
+                      SPLIT.TRAIN.TEST,
+                      "_PREPRO_",
+                      PREPRO,
+                      "_PLOT_5.png"),
+    width = 1000)
+
 par(mfrow=c(1,1))
-pairs(cbind(temperature=air,pressure=mslp,precipitation=prate,humidity=shum), col=c('darkblue', 'grey')[(1:length(shum)>7971.667)+1],pch=19,cex=0.5,font.lab = 1,font.main=1)
+pairs(cbind(temperature=air, pressure=mslp, precipitation=prate, humidity=shum),
+      col=c('darkblue', 'grey')[(1:length(shum)>7320.50)+1],pch=19,cex=0.5,font.lab = 1,font.main=1)
 dev.off()

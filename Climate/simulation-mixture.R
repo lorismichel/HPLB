@@ -13,7 +13,8 @@ x.train <- ifelse(t.train<=1/3, rnorm(n, 0), ifelse(t.train<=2/3, rnorm(n, 1), r
 t.test <- runif(n, 0, 1)
 x.test <- ifelse(t.test<=1/3, rnorm(n, 0), ifelse(t.test<=2/3, rnorm(n, 1), rnorm(n, 2)))
 
-png(filename = "./Plots/PLOT_SIMULATION_MIXTURE_1.png", width = 1000)
+png(filename = "./Plots/PLOT_SIMULATION_MIXTURE_1.png",
+    width = 1000)
 plot(t.train,x.train,pch=19,cex=0.5,xlab='Time', ylab='x', font.lab=1, font.main=1)
 rf <- ranger::ranger(t~., data = data.frame(t=t.train, x=x.train))
 
@@ -65,7 +66,8 @@ plot(seq(0.05, 0.95, 0.05), tvhat$tvhat,type='b',pch=19,font.lab=1, font.main=1,
 dev.off()
 
 # PLOT_SIMULATION_MIXTURE_2.png
-png(filename = "./Plots/PLOT_SIMULATION_MIXTURE_2.png", width = 1000)
+png(filename = "./Plots/PLOT_SIMULATION_MIXTURE_2.png",
+    width = 1000)
 par(mfrow=c(3,2))
 # example 4: multivariate change
 n <- 10000
