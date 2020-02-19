@@ -169,19 +169,19 @@ png(filename = paste0("./Plots/PLOT_CLIMATE_MIXTURE_SPLIT_",
 
 par(mfrow=c(2,2))
 plot(density(air[(1:length(shum)>7320.50)]),col="grey",xlab='Temperature',
-     ylab='Density', main="Zürich temperature (marginal)",font.lab = 1,font.main=1)
+     ylab='Density', main="Temperature (marginal)",font.lab = 1,font.main=1)
 lines(density(air[(1:length(shum)<=7320.50)]),col="darkblue")
 
 plot(density(mslp[(1:length(shum)>7320.50)]),col="grey",xlab='Pressure',
-     ylab='Density', main="Zürich pressure (marginal)",font.lab = 1,font.main=1)
+     ylab='Density', main="Pressure (marginal)",font.lab = 1,font.main=1)
 lines(density(mslp[(1:length(shum)<=7320.50)]),col="darkblue")
 
 plot(density(prate[(1:length(shum)>7320.50)]),col="grey",xlab='',
-     ylab='Precipitation', main="Zürich precipitation (marginal)",font.lab = 1,font.main=1)
+     ylab='Precipitation', main="Precipitation (marginal)",font.lab = 1,font.main=1)
 lines(density(prate[(1:length(shum)<=7320.50)]),col="darkblue")
 
 plot(density(shum[(1:length(shum)>7320.50)]),col="grey",xlab='Humidity',
-     ylab='Density', main="Zürich humidity (marginal)",font.lab = 1,font.main=1)
+     ylab='Density', main="ZHumidity (marginal)",font.lab = 1,font.main=1)
 lines(density(shum[(1:length(shum)<=7320.50)]),col="darkblue")
 dev.off()
 
@@ -189,7 +189,7 @@ dev.off()
 par(mfrow=c(4,3))
 for (s in split.ids) {
   plot(density(shum[(1:length(shum)>s)]),col="grey",xlab='Humidity',
-       ylab='Density', main="Zürich humidity (marginal)",font.lab = 1,font.main=1)
+       ylab='Density', main="Humidity (marginal)",font.lab = 1,font.main=1)
   lines(density(shum[(1:length(shum)<=s)]),col="darkblue")
 }
 
