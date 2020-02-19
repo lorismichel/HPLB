@@ -181,7 +181,7 @@ plot(density(prate[(1:length(shum)>7320.50)]),col="grey",xlab='',
 lines(density(prate[(1:length(shum)<=7320.50)]),col="darkblue")
 
 plot(density(shum[(1:length(shum)>7320.50)]),col="grey",xlab='Humidity',
-     ylab='Density', main="ZHumidity (marginal)",font.lab = 1,font.main=1)
+     ylab='Density', main="Humidity (marginal)",font.lab = 1,font.main=1)
 lines(density(shum[(1:length(shum)<=7320.50)]),col="darkblue")
 dev.off()
 
