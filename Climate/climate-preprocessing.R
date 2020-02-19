@@ -27,11 +27,17 @@ climatePrePro <- function(path ="C:/Users/Jeff/Downloads/reanalysis_jeff_loris/"
     return(sub(sub(substr(x, start = 2, stop = 11), pattern = "\\.", replacement = "-"), pattern = "\\.", replacement = "-"))
   }
 
-  # times
+  # extract times
   t_air <- as.Date(sapply(colnames(air_raster[1,1]), toDate))
   t_mslp <- as.Date(sapply(colnames(mslp_raster[1,1]), toDate))
   t_prate <- as.Date(sapply(colnames(prate_raster[1,1]), toDate))
   t_shum <- as.Date(sapply(colnames(shum_raster[1,1]), toDate))
+
+  # rotate the data
+  air_raster <- rotate(air_raster)
+  mslp_raster <- rotate(mslp_raster)
+  prate_raster <- rotate(prate_raster)
+  shum_raster <- rotate(shum_raster)
 
   # subset to smaller time step
   air <- getValues(air_raster)[,1:14641]
@@ -47,7 +53,17 @@ climatePrePro <- function(path ="C:/Users/Jeff/Downloads/reanalysis_jeff_loris/"
                                                "2009-01-01",
                                                "2019-02-01")), labels=FALSE)
 
+
+  # get coordinates
+  matrix.coords <- matrix(nrow = nrow(air),
+                          ncol = 2)
+
+  for (i in 1:nrow(air)) {
+    matrix.coords[i,] <- xyFromCell(object = air_raster, cell = i)
+  }
+
   return(list(time = time, tenyears.ind = tenyears.ind, air = air, mslp = mslp, prate = prate, shum = shum,
-              air_raster = air_raster, mslp_raster = mslp_raster, prate_raster = prate_raster, shum_raster = shum_raster))
+              air_raster = air_raster, mslp_raster = mslp_raster, prate_raster = prate_raster, shum_raster = shum_raster,
+              matrix.coords = matrix.coords))
 }
 
