@@ -144,8 +144,8 @@ if (PRODUCE.PLOTS) {
   library(maps)
 
   # coords
-  x <-  matrix.coords[,1]
-  y <-  matrix.coords[,2]
+  x <-  d$matrix.coords[,1]
+  y <-  d$matrix.coords[,2]
 
   png(filename = paste0("Plots/PLOT_CLIMATE_MAP_SPLIT_",
                         SPLIT.TRAIN.TEST,
