@@ -4,7 +4,7 @@
 PATH.CLIMATE.DATA <- "~/Downloads/reanalysis_jeff_loris/"
 
 
-PRODUCE.PLOTS       <- FALSE
+PRODUCE.PLOTS       <- TRUE
 RUN.ANALYSIS        <- FALSE
 RUN.COMBINED.METHOD <- TRUE
 
@@ -155,11 +155,11 @@ if (PRODUCE.PLOTS) {
       width = 1000)
   ## binomial tv
   mp_bin <- NULL
-  mapWorld <- borders("world", colour="gray50", fill="gray50") # create a layer of borders
-  mp_bin <- ggplot() +   mapWorld
+  mapWorld <- borders("world", colour="darkblue") # create a layer of borders
+  mp_bin <- ggplot() + mapWorld
 
-  tv <- resmat[,1]
-  mp_bin <- mp_bin + geom_point(aes(x=x, y=y, color = tv), size=2) + scale_colour_gradient(low = "white", high="black")
+  HPLB <- resmat[,1]
+  mp_bin <- mp_bin + geom_point(aes(x=x, y=y, color = HPLB), size=2.5) + scale_colour_gradient(low = "white", high="black")
   mp_bin
   dev.off()
 
@@ -168,15 +168,15 @@ if (PRODUCE.PLOTS) {
                         PREPRO, "_PLOT_2.png"),  width = 1000)
   ## tvsearch tv
   mp_search <- NULL
-  mapWorld <- borders("world", colour="gray50", fill="gray50") # create a layer of borders
-  mp_search <- ggplot() +   mapWorld
+  mapWorld <- borders("world", colour="darkblue") # create a layer of borders
+  mp_search <- ggplot() + mapWorld
 
-  tv <- resmat[,2]
-  mp_search <- mp_search + geom_point(aes(x=x, y=y, color = tv), size=2) + scale_colour_gradient(low = "white", high="black")
+  HPLB <- resmat[,2]
+  mp_search <- mp_search + geom_point(aes(x=x, y=y, color = HPLB), size=2.5) + scale_colour_gradient(low = "white", high="black")
   mp_search
   dev.off()
 
-  png(filename = paste0("Plots/PLOT_CLIMATE_MAP_SPLIT_", SPLIT.TRAIN.TEST, "_PREPRO_", PREPRO, "_PLOT_3"), width = 1000)
+  png(filename = paste0("Plots/PLOT_CLIMATE_MAP_SPLIT_", SPLIT.TRAIN.TEST, "_PREPRO_", PREPRO, "_PLOT_3.png"), width = 1000)
   plot(resmat[,1], resmat[,2], col="black",pch=19,xlab="binomial-test",ylab="asymptotic-tv-search",font.lab=1,font.main=1, cex = 0.7)
   abline(0,1,col="blue",lty=2)
   dev.off()
@@ -188,15 +188,15 @@ if (PRODUCE.PLOTS) {
     png(filename = paste0("Plots/PLOT_CLIMATE_MAP_SPLIT_",
                           SPLIT.TRAIN.TEST,
                           "_PREPRO_", PREPRO,
-                          "_PLOT_3.png"), width = 1000)
+                          "_PLOT_4.png"), width = 1000)
     # # tvsearch tv
-    mp_search <- NULL
-    mapWorld <- borders("world", colour="gray50", fill="gray50") # create a layer of borders
-    mp_search <- ggplot() +   mapWorld
+    mp_combined <- NULL
+    mapWorld <- borders("world", colour="darkblue") # create a layer of borders
+    mp_combined <- ggplot() + mapWorld
 
-    tv <- resmat[,3]
-    mp_bin <- mp_bin + geom_point(aes(x=x, y=y, color = tv), size=2) + scale_colour_gradient(low = "white", high="black")
-    mp_bin
+    HPLB <- resmat[,3]
+    mp_combined <- mp_combined + geom_point(aes(x=x, y=y, color = HPLB), size=2.5) + scale_colour_gradient(low = "white", high="black")
+    mp_combined
     dev.off()
 
   }

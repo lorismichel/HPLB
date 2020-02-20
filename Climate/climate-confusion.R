@@ -107,7 +107,6 @@ for (i in 1:4) {
     ordering.array.shum[i,j,] <- preds_shum[,j]-preds_shum[,i]
     ordering.array.joint[i,j,] <- preds_joint[,j]-preds_joint[,i]
   }
-  print(i)
 }
 
 # get the TV matrices

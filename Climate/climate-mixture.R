@@ -1,7 +1,7 @@
 # climate continuous change point detection
 
 ## options
-PATH.CLIMATE.DATA <- "C:/Users/Jeff/Downloads/reanalysis_jeff_loris/" #"~/Downloads/reanalysis_jeff_loris/"
+PATH.CLIMATE.DATA <- "~/Downloads/reanalysis_jeff_loris/"
 PREPRO <- 2
 SPLIT.TRAIN.TEST <- 1
 
@@ -41,20 +41,16 @@ png(filename = paste0("./Plots/PLOT_CLIMATE_MIXTURE_SPLIT_",
     width = 1000)
 
 par(mfrow=c(2,2))
-plot(as.Date(d$time), air,type="l",xlab='Time',ylab='Temperature',
-     main="Zürich temperature",font.lab = 1,font.main=1)
+plot(as.Date(d$time), air,type="l",xlab='Time',ylab='Temperature',font.lab = 1,font.main=1)
 abline(v = split.dates,lty=2,col='blue')
 
-plot(as.Date(d$time), mslp,type="l",xlab='Time',ylab='Pressure',
-     main="Zürich pressure",font.lab = 1,font.main=1)
+plot(as.Date(d$time), mslp,type="l",xlab='Time',ylab='Pressure',font.lab = 1,font.main=1)
 abline(v = split.dates,lty=2,col='blue')
 
-plot(as.Date(d$time), prate,type="l",xlab='Time',ylab='Precipitation',
-     main="Zürich precipitation",font.lab = 1,font.main=1)
+plot(as.Date(d$time), prate,type="l",xlab='Time',ylab='Precipitation',font.lab = 1,font.main=1)
 abline(v = split.dates,lty=2,col='blue',font.lab = 1,font.main=1)
 
-plot(as.Date(d$time), shum,type="l",xlab='Time',ylab='Humidity',
-     main="Zürich humidity",font.lab = 1,font.main=1)
+plot(as.Date(d$time), shum,type="l",xlab='Time',ylab='Humidity',font.lab = 1,font.main=1)
 abline(v = split.dates,lty=2,col='blue')
 dev.off()
 
@@ -156,7 +152,7 @@ par(mfrow=c(1,1))
 plot(split.dates,
      dWit(t = c(1:length(air))[ind.test], rho = predict(mRF_joint, test)$predictions,
      s = split.ids, estimator.type = "asymptotic-tv-search")$tvhat,
-     type="b",pch=19,ylim=c(0,0.3),font.lab = 1,font.main=1,xlab="Time",
+     type="b",pch=19,ylim=c(0,0.2),font.lab = 1,font.main=1,xlab="Time",
      ylab=expression(hat(lambda)[H]),main="All variables")
 dev.off()
 
