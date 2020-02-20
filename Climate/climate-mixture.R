@@ -1,7 +1,7 @@
 # climate continuous change point detection
 
 ## options
-PATH.CLIMATE.DATA <- "~/Downloads/reanalysis_jeff_loris/"
+PATH.CLIMATE.DATA <- "C:/Users/Jeff/Downloads/reanalysis_jeff_loris/" #"~/Downloads/reanalysis_jeff_loris/"
 PREPRO <- 2
 SPLIT.TRAIN.TEST <- 1
 
@@ -18,7 +18,7 @@ require(dWit)
 d <- climatePrePro(path = PATH.CLIMATE.DATA)
 
 # loc coordinates and data
-loc.coord <- c(8.5391825, 47.3686498)
+loc.coord <- c(-45,-8) #c(8.5391825, 47.3686498)
 air   <- extract(d$air_raster, matrix(loc.coord,ncol=2),method="bilinear")[1,1:14641]
 shum  <- extract(d$shum_raster, matrix(loc.coord,ncol=2),method="bilinear")[1,1:14641]
 prate <- extract(d$prate_raster, matrix(loc.coord,ncol=2),method="bilinear")[1,1:14641]
@@ -156,7 +156,7 @@ par(mfrow=c(1,1))
 plot(split.dates,
      dWit(t = c(1:length(air))[ind.test], rho = predict(mRF_joint, test)$predictions,
      s = split.ids, estimator.type = "asymptotic-tv-search")$tvhat,
-     type="b",pch=19,ylim=c(0,0.1),font.lab = 1,font.main=1,xlab="Time",
+     type="b",pch=19,ylim=c(0,0.3),font.lab = 1,font.main=1,xlab="Time",
      ylab=expression(hat(lambda)[H]),main="All variables")
 dev.off()
 
@@ -205,4 +205,4 @@ par(mfrow=c(1,1))
 pairs(cbind(temperature=air, pressure=mslp, precipitation=prate, humidity=shum),
       col=c('darkblue', 'grey')[(1:length(shum)>7320.50)+1],pch=19,cex=0.5,font.lab = 1,font.main=1)
 dev.off()
-y
+

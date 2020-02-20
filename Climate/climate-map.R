@@ -5,7 +5,7 @@ PATH.CLIMATE.DATA <- "~/Downloads/reanalysis_jeff_loris/"
 
 
 PRODUCE.PLOTS       <- FALSE
-RUN.ANALYSIS        <- TRUE
+RUN.ANALYSIS        <- FALSE
 RUN.COMBINED.METHOD <- TRUE
 
 PREPRO <- 2
@@ -183,6 +183,9 @@ if (PRODUCE.PLOTS) {
 
 
   if (RUN.COMBINED.METHOD) {
+    mp_bin <- NULL
+    mapWorld <- borders("world", colour="gray50", fill="gray50") # create a layer of borders
+    mp_bin <- ggplot() +   mapWorld
 
     tv <- resmat[,3]
     mp_bin <- mp_bin + geom_point(aes(x=x, y=y, color = tv), size=2) + scale_colour_gradient(low = "white", high="black")
