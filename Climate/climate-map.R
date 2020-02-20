@@ -165,7 +165,7 @@ if (PRODUCE.PLOTS) {
 
   png(filename = paste0("Plots/PLOT_CLIMATE_MAP_SPLIT_",
                         SPLIT.TRAIN.TEST, "_PREPRO_",
-                        PREPRO, "_PLOT_2.png"), width = 1000)
+                        PREPRO, "_PLOT_2.png"),  width = 1000)
   ## tvsearch tv
   mp_search <- NULL
   mapWorld <- borders("world", colour="gray50", fill="gray50") # create a layer of borders
@@ -183,14 +183,7 @@ if (PRODUCE.PLOTS) {
 
 
   if (RUN.COMBINED.METHOD) {
-    mp_bin <- NULL
-    mapWorld <- borders("world", colour="gray50", fill="gray50") # create a layer of borders
-    mp_bin <- ggplot() +   mapWorld
 
-    tv <- resmat[,3]
-    mp_bin <- mp_bin + geom_point(aes(x=x, y=y, color = tv), size=2) + scale_colour_gradient(low = "white", high="black")
-    mp_bin
-    dev.off()
 
     png(filename = paste0("Plots/PLOT_CLIMATE_MAP_SPLIT_",
                           SPLIT.TRAIN.TEST,
@@ -200,6 +193,11 @@ if (PRODUCE.PLOTS) {
     mp_search <- NULL
     mapWorld <- borders("world", colour="gray50", fill="gray50") # create a layer of borders
     mp_search <- ggplot() +   mapWorld
+
+    tv <- resmat[,3]
+    mp_bin <- mp_bin + geom_point(aes(x=x, y=y, color = tv), size=2) + scale_colour_gradient(low = "white", high="black")
+    mp_bin
+    dev.off()
 
   }
 

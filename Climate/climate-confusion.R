@@ -18,7 +18,7 @@ require(dWit)
 d <- climatePrePro(path = PATH.CLIMATE.DATA)
 
 # location coordinates and data
-loc.coord <- c(8.5391825, 47.3686498)
+loc.coord <- c(-45,-8) #c(8.5391825, 47.3686498)
 air   <- extract(d$air_raster, matrix(loc.coord,ncol=2),method="bilinear")[1,1:14641]
 shum  <- extract(d$shum_raster, matrix(loc.coord,ncol=2),method="bilinear")[1,1:14641]
 prate <- extract(d$prate_raster, matrix(loc.coord,ncol=2),method="bilinear")[1,1:14641]
