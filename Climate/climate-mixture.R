@@ -75,6 +75,33 @@ if (PREPRO == 1) {
 }
 
 
+# Plot preprocessed data
+
+if (PREPRO == 2) {
+# PLOT_CLIMATE_MIXTURE_1.png
+png(filename = paste0("./Plots/PLOT_CLIMATE_MIXTURE_SPLIT_",
+                      SPLIT.TRAIN.TEST,
+                      "_PREPRO_",
+                      PREPRO,
+                      "_PLOT_1_preprocessed.png"),
+    width = 1000)
+
+par(mfrow=c(2,2))
+plot(as.Date(d$time), air,type="l",xlab='Time',ylab='Temperature',font.lab = 1,font.main=1)
+abline(v = split.dates,lty=2,col='blue')
+
+plot(as.Date(d$time), mslp,type="l",xlab='Time',ylab='Pressure',font.lab = 1,font.main=1)
+abline(v = split.dates,lty=2,col='blue')
+
+plot(as.Date(d$time), prate,type="l",xlab='Time',ylab='Precipitation',font.lab = 1,font.main=1)
+abline(v = split.dates,lty=2,col='blue',font.lab = 1,font.main=1)
+
+plot(as.Date(d$time), shum,type="l",xlab='Time',ylab='Humidity',font.lab = 1,font.main=1)
+abline(v = split.dates,lty=2,col='blue')
+dev.off()
+}
+
+
 
 # run analysis
 
