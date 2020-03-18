@@ -28,29 +28,29 @@ mslp  <- extract(d$mslp_raster, matrix(loc.coord,ncol=2),method="bilinear")[1,1:
 # time
 time <- as.Date(d$time)
 
-# split ids
+# split ids (plots)
 split.ids   <- as.numeric(quantile(1:length(air), seq(0,1,length.out = 5)[-c(1,5)]))
 split.dates <- time[split.ids]
 
 # PLOT_CLIMATE_MIXTURE_1.png
-png(filename = paste0("./Plots/PLOT_CLIMATE_MIXTURE_SPLIT_",
+png(filename = paste0("./Plots/PLOT_CLIMATE_MIXTURE_RAW_SPLIT_",
                       SPLIT.TRAIN.TEST,
                       "_PREPRO_",
                       PREPRO,
                       "_PLOT_1.png"),
-    width = 1000)
-
+    width = 1000, height = 700)
+par(mar=c(5.4,4.5,4.5,2.3))
 par(mfrow=c(2,2))
-plot(as.Date(d$time), air,type="l",xlab='Time',ylab='Temperature',font.lab = 1,font.main=1)
+plot(as.Date(d$time), air,type="l",xlab='Time',ylab='Temperature',font.lab = 1,font.main=1, cex.axis = 2, cex.lab = 2)
 abline(v = split.dates,lty=2,col='blue')
 
-plot(as.Date(d$time), mslp,type="l",xlab='Time',ylab='Pressure',font.lab = 1,font.main=1)
+plot(as.Date(d$time), mslp,type="l",xlab='Time',ylab='Pressure',font.lab = 1,font.main=1, cex.axis = 2, cex.lab = 2)
 abline(v = split.dates,lty=2,col='blue')
 
-plot(as.Date(d$time), prate,type="l",xlab='Time',ylab='Precipitation',font.lab = 1,font.main=1)
+plot(as.Date(d$time), prate,type="l",xlab='Time',ylab='Precipitation',font.lab = 1,font.main=1, cex.axis = 2, cex.lab = 2)
 abline(v = split.dates,lty=2,col='blue',font.lab = 1,font.main=1)
 
-plot(as.Date(d$time), shum,type="l",xlab='Time',ylab='Humidity',font.lab = 1,font.main=1)
+plot(as.Date(d$time), shum,type="l",xlab='Time',ylab='Humidity',font.lab = 1,font.main=1, cex.axis = 2, cex.lab = 2)
 abline(v = split.dates,lty=2,col='blue')
 dev.off()
 
@@ -79,31 +79,34 @@ if (PREPRO == 1) {
 
 if (PREPRO == 2) {
 # PLOT_CLIMATE_MIXTURE_1.png
-png(filename = paste0("./Plots/PLOT_CLIMATE_MIXTURE_SPLIT_",
+png(filename = paste0("./Plots/PLOT_CLIMATE_MIXTURE_TRANS_SPLIT_",
                       SPLIT.TRAIN.TEST,
                       "_PREPRO_",
                       PREPRO,
-                      "_PLOT_1_preprocessed.png"),
-    width = 1000)
-
+                      "_PLOT_1.png"),
+    width = 1000, height = 700)
+par(mar=c(5.4,4.5,4.5,2.3))
 par(mfrow=c(2,2))
-plot(as.Date(d$time), air,type="l",xlab='Time',ylab='Temperature',font.lab = 1,font.main=1)
+par
+plot(time, air,type="l",xlab='Time',ylab='Diff. temperature',font.lab = 1,font.main=1, cex.axis = 2, cex.lab = 2)
 abline(v = split.dates,lty=2,col='blue')
 
-plot(as.Date(d$time), mslp,type="l",xlab='Time',ylab='Pressure',font.lab = 1,font.main=1)
+plot(time, mslp,type="l",xlab='Time',ylab='Diff. pressure',font.lab = 1,font.main=1, cex.axis = 2, cex.lab = 2)
 abline(v = split.dates,lty=2,col='blue')
 
-plot(as.Date(d$time), prate,type="l",xlab='Time',ylab='Precipitation',font.lab = 1,font.main=1)
+plot(time, prate,type="l",xlab='Time',ylab='Diff. precipitation',font.lab = 1,font.main=1, cex.axis = 2, cex.lab = 2)
 abline(v = split.dates,lty=2,col='blue',font.lab = 1,font.main=1)
 
-plot(as.Date(d$time), shum,type="l",xlab='Time',ylab='Humidity',font.lab = 1,font.main=1)
+plot(time, shum,type="l",xlab='Time',ylab='Diff. humidity',font.lab = 1,font.main=1, cex.axis = 2, cex.lab = 2)
 abline(v = split.dates,lty=2,col='blue')
 dev.off()
 }
 
-
-
 # run analysis
+
+# split ids (analysis)
+split.ids   <- as.numeric(quantile(1:length(air), seq(0,1,length.out = 9)[-c(1,9)]))
+split.dates <- time[split.ids]
 
 # splits train-test
 if (SPLIT.TRAIN.TEST == 0) {
@@ -148,23 +151,23 @@ par(mfrow=c(2,2))
 plot(split.dates,
      dWit(t = c(1:length(air))[ind.test], rho = predict(mRF_air, test)$predictions,
      s = split.ids,
-     estimator.type = "asymptotic-tv-search")$tvhat,ylab=expression(hat(lambda)[H]),type="b",pch=19,
-     xlab="Time",ylim=c(0,0.1),font.lab = 1,font.main=1,main="Temperature")
+     estimator.type = "asymptotic-tv-search")$tvhat,ylab=expression(hat(lambda)[abc]),type="b",pch=19,
+     xlab="Time",ylim=c(0,0.1),font.lab = 1,font.main=1,main="Diff. temperature",cex.lab=2.5,cex.main=2.5,cex.axis=2)
 plot(split.dates,
      dWit(t = c(1:length(mslp))[ind.test], rho = predict(mRF_mslp, test)$predictions,
      s = split.ids,
-     estimator.type = "asymptotic-tv-search")$tvhat,ylab=expression(hat(lambda)[H]),type="b",pch=19,
-     xlab="Time",ylim=c(0,0.1),font.lab = 1,font.main=1,main="Pressure")
+     estimator.type = "asymptotic-tv-search")$tvhat,ylab=expression(hat(lambda)[abc]),type="b",pch=19,
+     xlab="Time",ylim=c(0,0.1),font.lab = 1,font.main=1,main="Diff. pressure",cex.lab=2.5,cex.main=2.5,cex.axis=2)
 plot(split.dates,
      dWit(t = c(1:length(prate))[ind.test], rho = predict(mRF_prate, test)$predictions,
      s = split.ids,
-     estimator.type = "asymptotic-tv-search")$tvhat,ylab=expression(hat(lambda)[H]),type="b",pch=19,
-     xlab="Time",ylim=c(0,0.1),font.lab = 1,font.main=1,main="Precipitation")
+     estimator.type = "asymptotic-tv-search")$tvhat,ylab=expression(hat(lambda)[abc]),type="b",pch=19,
+     xlab="Time",ylim=c(0,0.1),font.lab = 1,font.main=1,main="Diff. precipitation",cex.lab=2.5,cex.main=2.5,cex.axis=2)
 plot(split.dates,
      dWit(t = c(1:length(shum))[ind.test], rho = predict(mRF_shum, test)$predictions,
      s = split.ids,
-     estimator.type = "asymptotic-tv-search")$tvhat,ylab=expression(hat(lambda)[H]),type="b",pch=19,
-     xlab="Time",ylim=c(0,0.1),font.lab = 1,font.main=1,main="Humidity")
+     estimator.type = "asymptotic-tv-search")$tvhat,ylab=expression(hat(lambda)[abc]),type="b",pch=19,
+     xlab="Time",ylim=c(0,0.1),font.lab = 1,font.main=1,main="Diff. humidity",cex.lab=2.5,cex.main=2.5,cex.axis=2)
 dev.off()
 
 # joint
@@ -180,7 +183,7 @@ plot(split.dates,
      dWit(t = c(1:length(air))[ind.test], rho = predict(mRF_joint, test)$predictions,
      s = split.ids, estimator.type = "asymptotic-tv-search")$tvhat,
      type="b",pch=19,ylim=c(0,0.2),font.lab = 1,font.main=1,xlab="Time",
-     ylab=expression(hat(lambda)[H]),main="All variables")
+     ylab=expression(hat(lambda)[H]),main="All differenced variables",cex.lab=2.5,cex.main=2.5,cex.axis=2)
 dev.off()
 
 # PLOT_CLIMATE_MIXTURE_4.png
@@ -191,20 +194,20 @@ png(filename = paste0("./Plots/PLOT_CLIMATE_MIXTURE_SPLIT_",
     width = 1000)
 
 par(mfrow=c(2,2))
-plot(density(air[(1:length(shum)>7320.50)]),col="grey",xlab='Temperature',
-     ylab='Density', main="Temperature (marginal)",font.lab = 1,font.main=1)
+plot(density(air[(1:length(shum)>7320.50)]),lwd=2,col="grey",xlab='Temperature',
+     ylab='Density', main="Temperature (marginal)",font.lab = 1,font.main=1,cex.lab=2.5,cex.main=2.5,cex.axis=2,ylim=c(0,0.9))
 lines(density(air[(1:length(shum)<=7320.50)]),col="darkblue")
 
-plot(density(mslp[(1:length(shum)>7320.50)]),col="grey",xlab='Pressure',
-     ylab='Density', main="Pressure (marginal)",font.lab = 1,font.main=1)
+plot(density(mslp[(1:length(shum)>7320.50)]),lwd=2,col="grey",xlab='Pressure',
+     ylab='Density', main="Pressure (marginal)",font.lab = 1,font.main=1,cex.lab=2.5,cex.main=2.5,cex.axis=2)
 lines(density(mslp[(1:length(shum)<=7320.50)]),col="darkblue")
 
-plot(density(prate[(1:length(shum)>7320.50)]),col="grey",xlab='',
-     ylab='Precipitation', main="Precipitation (marginal)",font.lab = 1,font.main=1)
+plot(density(prate[(1:length(shum)>7320.50)]),lwd=2,col="grey",xlab='',
+     ylab='Precipitation', main="Precipitation (marginal)",font.lab = 1,font.main=1,cex.lab=2.5,cex.main=2.5,cex.axis=2)
 lines(density(prate[(1:length(shum)<=7320.50)]),col="darkblue")
 
-plot(density(shum[(1:length(shum)>7320.50)]),col="grey",xlab='Humidity',
-     ylab='Density', main="Humidity (marginal)",font.lab = 1,font.main=1)
+plot(density(shum[(1:length(shum)>7320.50)]),lwd=2,col="grey",xlab='Humidity',
+     ylab='Density', main="Humidity (marginal)",font.lab = 1,font.main=1,cex.lab=2.5,cex.main=2.5,cex.axis=2, ylim=c(0,800))
 lines(density(shum[(1:length(shum)<=7320.50)]),col="darkblue")
 dev.off()
 
@@ -212,7 +215,7 @@ dev.off()
 par(mfrow=c(4,3))
 for (s in split.ids) {
   plot(density(shum[(1:length(shum)>s)]),col="grey",xlab='Humidity',
-       ylab='Density', main="Humidity (marginal)",font.lab = 1,font.main=1)
+       ylab='Density', main="Humidity (marginal)",font.lab = 1,font.main=1,cex.lab=2.5,cex.main=2.5,cex.axis=2)
   lines(density(shum[(1:length(shum)<=s)]),col="darkblue")
 }
 
@@ -226,6 +229,6 @@ png(filename = paste0("./Plots/PLOT_CLIMATE_MIXTURE_SPLIT_",
 
 par(mfrow=c(1,1))
 pairs(cbind(temperature=air, pressure=mslp, precipitation=prate, humidity=shum),
-      col=c('darkblue', 'grey')[(1:length(shum)>7320.50)+1],pch=19,cex=0.5,font.lab = 1,font.main=1)
+      col=c('darkblue', 'grey')[(1:length(shum)>7320.50)+1],pch=19,cex=0.5,font.lab = 1,font.main=1,cex.lab=2.5,cex.main=2.5,cex.axis=2)
 dev.off()
 

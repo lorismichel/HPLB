@@ -44,6 +44,13 @@ if (PREPRO == 1) {
 
 # run analysis
 
+# time
+time <- as.Date(d$time)
+
+# split ids
+split.ids   <- as.numeric(quantile(1:length(air), seq(0,1,length.out = 5)[-c(1,5)]))
+split.dates <- time[split.ids]
+
 # splits train-test
 if (SPLIT.TRAIN.TEST == 0) {
 
