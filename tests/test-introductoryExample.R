@@ -68,6 +68,27 @@ dev.off()
 permPval(table(preds[,2]>0.5, intro_testing$t), nsim = 1000)
 permPval(table(preds[,2]>0.7, intro_testing$t), nsim = 1000)
 
+
+# Actual estimated TV values
+
+dWit(t = intro_testing$t, rho = preds[,2],
+     s = 0.5,
+     estimator.type = "binomial-test")
+
+
+dWit(t = intro_testing$t, rho = preds[,2],
+     s = 0.5,
+     estimator.type = "asymptotic-tv-search")
+
+
+
+
+
+
+
+
+
+
 # case where 0.7 is winning
 # set.seed(1)
 # perm1 <- sapply(1:1000, function(i) {ex <- introExample(n = 10000, p = 0.01); computeStats(t = ex$t, rho = ex$rho, s = 0.5)})
