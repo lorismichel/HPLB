@@ -1,6 +1,6 @@
 # Introductory example for section 1.2
 introExample <- function(n = 1000, p = 0.01,   d = 10,
-                         m.core = c(0.01, 0.01, rep(0, d)),
+                         m.core = c(0, 0, rep(0, d)),
                          m.outlier = c(3, 3, rep(0, d))) {
   ids.outliers <- sample(c(0, 1), size = n, prob = c(1-p,p), replace = TRUE)
   x1 <- matrix(rnorm(n*(2+d)), ncol=2+d)
