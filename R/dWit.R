@@ -127,6 +127,7 @@ dWit <- function(t,
                                                                "custom-tv-search",
                                                                "empirical-tv-search",
                                                                "binomial-test",
+                                                               "asymptotic-binomial-test",
                                                                "hypergeometric-test",
                                                                "asymptotic-dwit-search"
   ))) {
@@ -290,6 +291,34 @@ dWit <- function(t,
       tvhat <- max(phat0 + phat1 - 1, 0)
 
     }
+
+
+
+    ## binomial estimator
+    if (estimator.type == "asymptotic-binomial-test") {
+
+      # compute the decisions
+      decision <- ifelse(rho == 0.5,
+                         sample(c(TRUE, FALSE), size = length(rho), replace = TRUE),
+                         rho > threshold)
+
+
+      # probability for class 0
+      Ahat0<-sum(!decision & t == 0)/sum(t==0)
+
+      # probability for class 1
+      Ahat1<-sum(decision & t == 1)/sum(t==1)
+
+      # compute the Variance
+      sigma= sqrt(Ahat0 * (1-Ahat0)/sum(t==0)  +  Ahat1 * (1-Ahat1)/sum(t==1) )
+
+
+
+      # compute the tvhat value
+      tvhat <- max(Ahat0 + Ahat1 - 1 -  qnorm(1-alpha)*sigma, 0)
+
+    }
+
 
 
     ## branching on estimators using the V-function
