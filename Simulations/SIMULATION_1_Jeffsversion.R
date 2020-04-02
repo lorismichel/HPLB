@@ -30,9 +30,9 @@ generateUnifMixturesDensities <- function(boundaries = matrix(c(-10,-9, -1, 0, 0
 }
 
 
-nrep <- 1
-grid.gamma <- 0.8 #rep(seq(0.8,  1, by = 0.1), nrep)
-grid.n <- rep(10^{seq(6,8,length.out = 3)}, nrep)
+nrep <- 5
+grid.gamma <- rep(seq(0.3,  1.0, by = 0.1), nrep)
+grid.n <- rep(10^{seq(2,5,length.out = 4)}, nrep)
 grid <- expand.grid(grid.n, grid.gamma)
 
 RUN_SC_2=T
