@@ -30,9 +30,10 @@ generateUnifMixturesDensities <- function(boundaries = matrix(c(-10,-9, -1, 0, 0
 }
 
 
-nrep <- 1
-grid.gamma <- rep(seq(0.3,  1.0, by = 0.1), nrep)
-grid.n <- rep( round(10^{seq(3,6,length.out = 10)}), nrep)
+nrep <- 50
+grid.gamma <- rep(seq(0.3,  0.8, by = 0.1), nrep)
+#grid.n <- rep(round(10^{seq(3,6,length.out = 10)}), nrep)
+grid.n <- rep(round(10^{seq(3,5.5,length.out = 6)}), nrep)
 grid <- expand.grid(grid.n, grid.gamma)
 
 RUN_SC_1=T
@@ -91,6 +92,8 @@ power.data <- data.table(logn = log(grid[,1], base = 10),
                          loglambda = -log(grid[,1], base = 10)*grid[,2],
                          tv_search = res_tv_search_1, tv_binomial = res_binomial_1)
 power.table <- power.data[,.(power_search = mean(tv_search>0), power_binomial = mean(tv_binomial>0)),by=c("logn","loglambda")]
+
+save.image(file="DATA_SIMULATION_1_SC1.Rdata")
 
 
 }
@@ -156,6 +159,8 @@ if (RUN_SC_2) {
   power.table <- power.data[,.(power_search = mean(tv_search>0), power_binomial = mean(tv_binomial>0)),by=c("logn","loglambda")]
 
 
+  save.image(file="DATA_SIMULATION_1_SC2.Rdata")
+
 }
 
 
@@ -215,6 +220,8 @@ if (RUN_SC_3) {
                            tv_search = res_tv_search_3, tv_binomial = res_binomial_3)
   power.table <- power.data[,.(power_search = mean(tv_search>0), power_binomial = mean(tv_binomial>0)),by=c("logn","loglambda")]
 
+
+  save.image(file="DATA_SIMULATION_1_SC3.Rdata")
 
 }
 
