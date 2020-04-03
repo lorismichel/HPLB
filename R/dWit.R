@@ -113,7 +113,7 @@ dWit <- function(t,
   ## parameters checks
 
   # seed check
-  if (!is.numeric(seed) || any(!is.finite(seed))  || length(seed) != 1) {
+  if (!is.null(seed) && (!is.numeric(seed) || any(!is.finite(seed))  || length(seed) != 1)) {
     stop("Invalid seed, please see ?dWit.")
   }
 
@@ -333,7 +333,7 @@ dWit <- function(t,
       max.stat <- 1
       step     <- 1
 
-      while (max.stat > 0) {
+      while (max.stat > 0 ) {
 
         # search updates
         tv.cur <- tv.seq[step]
@@ -384,7 +384,13 @@ dWit <- function(t,
                main="Observed centered V-function with asymptotic bounding function", xlab="z", ylab="V(z)")
           lines(beta.left * sd0, col="blue")
         }
-      }
+
+        if (tv.cur==max(tv.seq)){
+          break
+        }
+
+
+        }
 
       # return the tv estimate
       tvhat[k] <- tv.cur

@@ -30,12 +30,12 @@ generateUnifMixturesDensities <- function(boundaries = matrix(c(-10,-9, -1, 0, 0
 }
 
 
-nrep <- 5
+nrep <- 1
 grid.gamma <- rep(seq(0.3,  1.0, by = 0.1), nrep)
-grid.n <- rep(10^{seq(2,5,length.out = 4)}, nrep)
+grid.n <- rep( round(10^{seq(3,6,length.out = 10)}), nrep)
 grid <- expand.grid(grid.n, grid.gamma)
 
-RUN_SC_2=T
+RUN_SC_1=T
 
 
 if (RUN_SC_1) {
@@ -45,6 +45,8 @@ if (RUN_SC_1) {
 set.seed(123, "L'Ecuyer")
 res_tv_search_1 <- mapply(FUN = function(n, gamma) {
 
+  print(paste(toString(n),toString(gamma) ))
+
   p1 <- (1/2)*n^{-gamma}
   weights <- c((1/2)-p1, (1/2)+p1)
 
@@ -56,12 +58,17 @@ res_tv_search_1 <- mapply(FUN = function(n, gamma) {
 
   bayesRatio <- function(x) d.right(x) / (d.left(x) + d.right(x))
 
-  dWit(t = rep(0:1, each = n), rho = sapply(c(x1,x2), function(x) bayesRatio(x)), estimator.type = "asymptotic-tv-search")$tvhat
+  tv.seq= seq(from = 0, to = 1, by = 1)
+  rho<-sapply(c(x1,x2), function(x) bayesRatio(x))
+
+  dWit(t = rep(0:1, each = n), rho =rho, seed=NULL ,tv.seq=tv.seq , estimator.type = "asymptotic-tv-search")$tvhat
 }, grid[,1], grid[,2])
 
 set.seed(123, "L'Ecuyer")
 res_binomial_1 <- mapply(FUN = function(n, gamma) {
 
+  print(paste(toString(n),toString(gamma) ))
+
   p1 <- (1/2)*n^{-gamma}
   weights <- c((1/2)-p1, (1/2)+p1)
 
@@ -73,7 +80,9 @@ res_binomial_1 <- mapply(FUN = function(n, gamma) {
 
   bayesRatio <- function(x) d.right(x) / (d.left(x) + d.right(x))
 
-  dWit(t = rep(0:1, each = n), rho = sapply(c(x1,x2), function(x) bayesRatio(x)), estimator.type = "binomial-test")$tvhat
+  rho<-sapply(c(x1,x2), function(x) bayesRatio(x))
+
+  dWit(t = rep(0:1, each = n), rho = rho, seed=NULL, estimator.type = "binomial-test")$tvhat
 }, grid[,1], grid[,2])
 
 
@@ -95,6 +104,8 @@ if (RUN_SC_2) {
   set.seed(123, "L'Ecuyer")
   res_tv_search_2 <- mapply(FUN = function(n, gamma) {
 
+    print(paste(toString(n),toString(gamma) ))
+
     p1 <- (1/2)*n^{-gamma}
     p2 <- (1/2) + (1/2)*n^{-gamma}
     weights <- c(p1, (1-p1)*p2, (1-p1)*(1-p2))
@@ -107,12 +118,17 @@ if (RUN_SC_2) {
 
     bayesRatio <- function(x) d.right(x) / (d.left(x) + d.right(x))
 
-    dWit(t = rep(0:1, each = n), rho = sapply(c(x1,x2), function(x) bayesRatio(x)), estimator.type = "asymptotic-tv-search")$tvhat
+    tv.seq=seq(from = 0, to = 1, by = 1)
+    rho=sapply(c(x1,x2), function(x) bayesRatio(x))
+
+    dWit(t = rep(0:1, each = n), rho = rho, seed=NULL, tv.seq=tv.seq, estimator.type = "asymptotic-tv-search")$tvhat
   }, grid[,1], grid[,2])
 
   set.seed(123, "L'Ecuyer")
   res_binomial_2 <- mapply(FUN = function(n, gamma) {
 
+    print(paste(toString(n),toString(gamma) ))
+
     p1 <- (1/2)*n^{-gamma}
     p2 <- (1/2) + (1/2)*n^{-gamma}
     weights <- c(p1, (1-p1)*p2, (1-p1)*(1-p2))
@@ -120,12 +136,16 @@ if (RUN_SC_2) {
     x1 <- generateUnifMixturesData(n=n, boundaries = matrix(c(-4, -3, -2, -1, 1, 2), ncol=2, byrow = TRUE), weights = weights)
     x2 <- generateUnifMixturesData(n=n, boundaries = matrix(c(3, 4, 1, 2, -2, -1), ncol=2, byrow = TRUE), weights = weights)
 
+
     d.left <- generateUnifMixturesDensities(boundaries = matrix(c(-4, -3, -2, -1, 1, 2), ncol=2, byrow = TRUE), weights = weights)
     d.right <- generateUnifMixturesDensities(boundaries = matrix(c(3, 4, 1, 2, -2, -1), ncol=2, byrow = TRUE), weights = weights)
 
     bayesRatio <- function(x) d.right(x) / (d.left(x) + d.right(x))
 
-    dWit(t = rep(0:1, each = n), rho = sapply(c(x1,x2), function(x) bayesRatio(x)), estimator.type = "binomial-test")$tvhat
+
+    rho<-sapply(c(x1,x2), function(x) bayesRatio(x))
+
+    dWit(t = rep(0:1, each = n), rho =rho, seed=NULL , estimator.type = "binomial-test")$tvhat
   }, grid[,1], grid[,2])
 
 
@@ -148,6 +168,8 @@ if (RUN_SC_3) {
   set.seed(123, "L'Ecuyer")
   res_tv_search_3 <- mapply(FUN = function(n, gamma) {
 
+    print(paste(toString(n),toString(gamma) ))
+
     p1 <- (1/2)*n^{-gamma}
     weights <- c(p1, 1-p1)
 
@@ -159,12 +181,17 @@ if (RUN_SC_3) {
 
     bayesRatio <- function(x) d.right(x) / (d.left(x) + d.right(x))
 
-    dWit(t = rep(0:1, each = n), rho = sapply(c(x1,x2), function(x) bayesRatio(x)), estimator.type = "asymptotic-tv-search")$tvhat
+    tv.seq= seq(from = 0, to = 1, by = 1)
+    rho=sapply(c(x1,x2), function(x) bayesRatio(x))
+
+    dWit(t = rep(0:1, each = n), rho =rho, seed=NULL , tv.seq=tv.seq, estimator.type = "asymptotic-tv-search")$tvhat
   }, grid[,1], grid[,2])
 
   set.seed(123, "L'Ecuyer")
   res_binomial_3 <- mapply(FUN = function(n, gamma) {
 
+    print(paste(toString(n),toString(gamma) ))
+
     p1 <- (1/2)*n^{-gamma}
     weights <- c(p1, 1-p1)
 
@@ -176,7 +203,9 @@ if (RUN_SC_3) {
 
     bayesRatio <- function(x) d.right(x) / (d.left(x) + d.right(x))
 
-    dWit(t = rep(0:1, each = n), rho = sapply(c(x1,x2), function(x) bayesRatio(x)), estimator.type = "binomial-test")$tvhat
+    rho=sapply(c(x1,x2), function(x) bayesRatio(x))
+
+    dWit(t = rep(0:1, each = n), rho = rho, seed=NULL, estimator.type = "binomial-test")$tvhat
   }, grid[,1], grid[,2])
 
 
