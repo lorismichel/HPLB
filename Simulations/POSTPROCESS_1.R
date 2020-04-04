@@ -14,6 +14,10 @@ for (i in 1:3) {
 
   load(paste0(PATH.DATA, fnames.in[i]))
 
+  power.table$power_search<-ifelse(power.table$power_search <= 0.05, 0, power.table$power_search)
+  power.table$power_binomial<-ifelse(power.table$power_binomial <= 0.05, 0, power.table$power_binomial)
+
+
   # libs
   require(data.table)
 
@@ -21,7 +25,7 @@ for (i in 1:3) {
   colfunc <- colorRampPalette(c("black", "white"))
   cols = rev(colfunc(length(seq(-0.1,1.1,0.1))))
   print(cut(power.table$power_search, labels = FALSE, breaks = seq(-0.1,1.1,0.1)))
-		 
+
   # loglogplot
   png(filename = paste0(PATH.PLOTS,fnames.out[i]))
   par(mfrow=c(2,1))
