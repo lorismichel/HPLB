@@ -30,13 +30,16 @@ generateUnifMixturesDensities <- function(boundaries = matrix(c(-10,-9, -1, 0, 0
 }
 
 
-nrep <- 50
-grid.gamma <- rep(seq(0.3,  0.8, by = 0.1), nrep)
+nrep <- 100
+grid.gamma <- rep(seq(0.3,  0.8, by = 0.1), 1)
 #grid.n <- rep(round(10^{seq(3,6,length.out = 10)}), nrep)
-grid.n <- rep(round(10^{seq(3,5.5,length.out = 6)}), nrep)
+grid.n <- rep(round(10^{seq(3,5.5,length.out = 6)}), 1)
 grid <- expand.grid(grid.n, grid.gamma)
+grid<-grid[rep(seq_len(nrow(grid)), each = nrep), ]
+rownames(grid)<-c(1:dim(grid)[1])
 
-RUN_SC_1=T
+
+RUN_SC_1=F
 
 
 if (RUN_SC_1) {
@@ -104,7 +107,7 @@ if (RUN_SC_2) {
   ##### scenario 2: asymptotic-tv-search should win
 
   # running simulations
-  set.seed(123, "L'Ecuyer")
+  set.seed(1, "L'Ecuyer")
   res_tv_search_2 <- mapply(FUN = function(n, gamma) {
 
     print(paste(toString(n),toString(gamma) ))
@@ -127,7 +130,7 @@ if (RUN_SC_2) {
     dWit(t = rep(0:1, each = n), rho = rho, seed=NULL, tv.seq=tv.seq, estimator.type = "asymptotic-tv-search")$tvhat
   }, grid[,1], grid[,2])
 
-  set.seed(123, "L'Ecuyer")
+  set.seed(1, "L'Ecuyer")
   res_binomial_2 <- mapply(FUN = function(n, gamma) {
 
     print(paste(toString(n),toString(gamma) ))
@@ -170,7 +173,7 @@ if (RUN_SC_3) {
   # scenario 3: comtamination case
 
   # running simulations
-  set.seed(123, "L'Ecuyer")
+  set.seed(1, "L'Ecuyer")
   res_tv_search_3 <- mapply(FUN = function(n, gamma) {
 
     print(paste(toString(n),toString(gamma) ))
@@ -192,7 +195,7 @@ if (RUN_SC_3) {
     dWit(t = rep(0:1, each = n), rho =rho, seed=NULL , tv.seq=tv.seq, estimator.type = "asymptotic-tv-search")$tvhat
   }, grid[,1], grid[,2])
 
-  set.seed(123, "L'Ecuyer")
+  set.seed(1, "L'Ecuyer")
   res_binomial_3 <- mapply(FUN = function(n, gamma) {
 
     print(paste(toString(n),toString(gamma) ))
