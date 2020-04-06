@@ -46,7 +46,7 @@ if (RUN_SC_1) {
 ##### scenario 1: bad for both methods
 
 # running simulations
-set.seed(123, "L'Ecuyer")
+set.seed(1, "L'Ecuyer")
 res_tv_search_1 <- mapply(FUN = function(n, gamma) {
 
   print(paste(toString(n),toString(gamma) ))
@@ -68,7 +68,7 @@ res_tv_search_1 <- mapply(FUN = function(n, gamma) {
   dWit(t = rep(0:1, each = n), rho =rho, seed=NULL ,tv.seq=tv.seq , estimator.type = "asymptotic-tv-search")$tvhat
 }, grid[,1], grid[,2])
 
-set.seed(123, "L'Ecuyer")
+set.seed(1, "L'Ecuyer")
 res_binomial_1 <- mapply(FUN = function(n, gamma) {
 
   print(paste(toString(n),toString(gamma) ))
