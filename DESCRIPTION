@@ -1,18 +1,20 @@
-Package: dWit
+Package: HPLB
 Type: Package
-Title: Distributional Witness algorithms
-Version: 0.2.0
+Title: High-Probability Lower Bounds for the Total Variance Distance 
+Version: 1.0.0
 Author: Loris Michel, Jeffrey Naef
 Maintainer: Loris Michel <michel@stat.math.ethz.ch>
-Description: R library for algorithms around the notion of distributional witnesses
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Description: An implementation of high-probability lower bounds for the total variance distance 
+             as introduced in Michel et al. (2019) <arXiv:???>.
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Depends: data.table,
-         ranger,
-         distrEx
+         stats,
+         graphics
 Suggests: 
     testthat,
-    fields
-RoxygenNote: 6.1.1
+    fields,
+    ranger,
+    distrEx
+RoxygenNote: 7.0.2

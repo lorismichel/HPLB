@@ -1,10 +1,10 @@
-# dWit: an R-library for algorithms around the notion of distributional witnesses
+# HPLB
 
-## Overview & Examples
+## Overview
 
-### Two sample total variation lower bound
+HPLB is a package intended to provided high-probability lower bounds (HPLB) for the total variance distance (TV) based on finite samples. In particular, it implements the abc and bc estimators described in [Michel et al. 2020](https://arxiv.org/abs/?). The main idea is to compute HPLBs for TV from uni-dimensional projections that would practically be obtained from standard learning algorithms. For more information  the user can refer to the original paper. Examples of use of the library are shown below.
 
-A simulation file canbe found in `tests/test_twoSampleTvLb.R`.
+A simulation file can be found in `tests/test_twoSampleTvLb.R`.
 
 ### Total Variation Lower Bound for time ordered mixtures
 
@@ -12,11 +12,10 @@ A simulation file canbe found in `tests/test_dwlb.R`.
 
 ## Installation
 
-To install the package from github (private repository), you first need to go to [this setting page](https://github.com/settings/tokens) to create an access token, say `TOKEN`, with all **repo** scopes, and then run the following commands in R (using your newly generated token, `TOKEN`):
-
+The package should be (soon) available on CRAN, To install the package from github you can run
 ``` r
 install.packages("devtools")
-devtools::install_github("lorismichel/dWit", auth_token = "TOKEN")
+devtools::install_github("lorismichel/HPLB")
 ```
 
 ## Examples: 
@@ -116,4 +115,4 @@ dWit(t = y.test, rho = preds.soft, estimator.type = "asymptotic-tv-search", s = 
 
 ## Issues
 
-To report an issue, please use the [issue tracker](http://github.com/lorismichel/dWit/issues) on github.com.
+To report an issue, please use the [issue tracker](http://github.com/lorismichel/HPLB/issues) on github.com.

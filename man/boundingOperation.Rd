@@ -11,11 +11,11 @@ boundingOperation(v, left, right, m, n)
 
 \item{left}{a numeric value giving the number of witnesses left.}
 
+\item{right}{a numeric value giving the number of witnesses right.}
+
 \item{m}{a numeric value, the number of observations left.}
 
 \item{n}{a numeric value, the number of observations right.}
-
-\item{left}{a numeric value giving the number of witnesses right.}
 }
 \value{
 a cumulative counting function represented as a numeric vector.

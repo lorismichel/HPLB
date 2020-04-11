@@ -2,7 +2,7 @@
 #'
 #' @param v a a numeric value giving an ordering permutation of 1 to m+n.
 #' @param left a numeric value giving the number of witnesses left.
-#' @param left a numeric value giving the number of witnesses right.
+#' @param right a numeric value giving the number of witnesses right.
 #' @param m a numeric value, the number of observations left.
 #' @param n a numeric value, the number of observations right.
 #'
