@@ -1,14 +1,11 @@
 # HPLB
 
+[![Build Status](https://travis-ci.org/lorismichel/HPLB.svg?branch=master)](https://travis-ci.org/lorismichel/HPLB)
+[![Build status](https://ci.appveyor.com/api/projects/status/jirtk3gmc4sdp0gl?svg=true)](https://ci.appveyor.com/project/lorismichel/hplb)
 ## Overview
 
 HPLB is a package intended to provided high-probability lower bounds (HPLB) for the total variance distance (TV) based on finite samples. In particular, it implements the abc and bc estimators described in [Michel et al. 2020](https://arxiv.org/abs/?). The main idea is to compute HPLBs for TV from uni-dimensional projections that would practically be obtained from standard learning algorithms. For more information  the user can refer to the original paper. Examples of use of the library are shown below.
 
-A simulation file can be found in `tests/test_twoSampleTvLb.R`.
-
-### Total Variation Lower Bound for time ordered mixtures
-
-A simulation file canbe found in `tests/test_dwlb.R`.
 
 ## Installation
 
@@ -21,12 +18,9 @@ devtools::install_github("lorismichel/HPLB")
 ## Examples: 
 
 
-### Two-sample tests and lower-bound on total variation distance
-
-
 The first example is a shift in mean.
 ``` r
-library(dWit)
+library(HPLB)
 library(stats)
 library(ranger)
 library(distrEx)
@@ -54,22 +48,12 @@ TotalVarDist(Norm(0,1),Norm(2,1))
 
 # getting lower-bounds on total variation distance N(0,1) and N(2,1) with different estimators
 
-# binomial test (expected to be the stronger there)
-dWit(t = y.test, rho = preds.hard, estimator.type = "binomial-test", s = 0.5, threshold = 0.5)
+# binary classifier (bc)
+HPLB(t = y.test, rho = preds.hard, estimator.type = "bc")
 
-# hypergeometric test selected at the z where the sup is "expected" to be realized under maximal signal
-dWit(t = y.test, rho = preds.soft, estimator.type = "hypergeometric-test", s = 0.5, z = m)
+# adaptive binary classifier (bc)
+HPLB(t = y.test, rho = preds.hard, estimator.type = "abc")
 
-# hypergeometric test selected by the random forest coupled with the confusion table test
-dWit(t = y.test, rho = preds.hard, estimator.type = "hypergeometric-test", s = 0.5, z = sum(1-preds.hard))
-dWit(t = y.test, rho = preds.hard, estimator.type = "confusion-table-test", s = 0.5, threshold = 0.5)
-
-# sup test 
-dWit(t = y.test, rho = preds.soft, estimator.type = "asymptotic-tv-search", s = 0.5)
-```
-
-
-The second example is a contamination
 ``` r
 library(dWit)
 library(stats)
@@ -94,23 +78,16 @@ preds.hard <- as.numeric(predict(rf, data.frame(x = x.test))$predictions)-1
 preds.soft <- predict(rf.prob, data.frame(x = x.test))$predictions[,"1"]
 
 
-# Total variation distance between N(0,1) and N(2,1)
-TotalVarDist(Norm(0,1), UnivarMixingDistribution(Norm(0,1),Norm(5,1), mixCoeff = c(0.95,0.05)) )
+# Total variation distance between N(0,1) and 0.05 x N(5,1) + 0.95 x N(0,1)
+TotalVarDist(Norm(0,1), UnivarMixingDistribution(Norm(0,1),Norm(5,1), mixCoeff = c(0.95,0.05)))
 
 # getting lower-bounds on total variation distance between N(0,1) and 0.05 x N(5,1) + 0.95 x N(0,1) with different estimators
 
-# binomial test (expected to be the stronger there)
-dWit(t = y.test, rho = preds.hard, estimator.type = "binomial-test", s = 0.5, threshold = 0.5)
+# binary classifier (bc)
+HPLB(t = y.test, rho = preds.hard, estimator.type = "bc")
 
-# hypergeometric test selected at the z where the sup is "expected" to be realized under maximal signal
-dWit(t = y.test, rho = preds.soft, estimator.type = "hypergeometric-test", s = 0.5, z = m)
-
-# hypergeometric test selected by the random forest coupled with the confusion table test
-dWit(t = y.test, rho = preds.hard, estimator.type = "hypergeometric-test", s = 0.5, z = sum(1-preds.hard))
-dWit(t = y.test, rho = preds.hard, estimator.type = "confusion-table-test", s = 0.5, threshold = 0.5)
-
-# sup test 
-dWit(t = y.test, rho = preds.soft, estimator.type = "asymptotic-tv-search", s = 0.5)
+# adaptive binary classifier (bc)
+HPLB(t = y.test, rho = preds.hard, estimator.type = "abc")
 ```
 
 ## Issues
