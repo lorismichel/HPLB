@@ -18,14 +18,15 @@ devtools::install_github("lorismichel/HPLB")
 ## Examples: 
 
 
-The first example is a shift in mean.
+We provide two examples, a shift in mean and a contamination example.
+
 ``` r
 library(HPLB)
 library(stats)
 library(ranger)
 library(distrEx)
 
-# univariate shift in mean for normals using random forest as a lower-dimensional projceion
+## univariate shift in mean for normals using random forest as a lower-dimensional projceion
 m <- n <- 500
 
 x.train <- c(rnorm(n = m, mean = 0), rnorm(n = n, mean = 2))
@@ -54,13 +55,8 @@ HPLB(t = y.test, rho = preds.hard, estimator.type = "bc")
 # adaptive binary classifier (bc)
 HPLB(t = y.test, rho = preds.hard, estimator.type = "abc")
 
-``` r
-library(dWit)
-library(stats)
-library(ranger)
-library(distrEx)
 
-# univariate shift in mean for normals using random forest as a lower-dimensional projceion
+## contamination  using random forest as a lower-dimensional projceion
 m <- n <- 500
 
 x.train <- c(rnorm(n = m, mean = 0), ifelse(runif(n = n) <= 0.05, rnorm(n = n, mean = 5), rnorm(n = n, mean = 0)))
