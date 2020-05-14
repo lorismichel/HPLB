@@ -1,10 +1,10 @@
 #' High Probability Lower Bounds (HPLB) for the Total Variation Distance (TV) Based on Finite Samples
 #'
-#' Implementations of differen HPLBs for TV as described in (Michel et al., 2020).
+#' Implementations of different HPLBs for TV as described in (Michel et al., 2020).
 #'
 #' @param t a numeric vector value corresponding to a natural ordering of the observations. For a two-sample
 #'   test 0-1 numeric values values should be provided.
-#' @param rho a numeric vetor value providing an ordering. This could be
+#' @param rho a numeric vector value providing an ordering. This could be
 #'   a binary classifier, a regressor, a witness function from a MMD kernel or anything else that would witness a distributional difference.
 #' @param s a numeric vector value giving split points on t.
 #' @param estimator.type a character value indicating which estimator to use. One option out of:
@@ -22,7 +22,7 @@
 #' @param direction a character vector value made of "left" or "right" giving which distribution witness count to estimate (t<=s or t>s?).
 #' @param cutoff a numeric value. This is the cutoff used if bayes estimators are used. The theory suggests to use 1/2 but this can be changed.
 #' @param verbose.plot a boolean value for additional plots.
-#' @param seed an integer value. The seed for reproducility.
+#' @param seed an integer value. The seed for reproducibility.
 #' @param ... additional parameters for the function \code{empiricalBF}.
 #'
 #' @return a \code{list} containing the relevant lower bounds estimates. For the total variation distance the relevant entry is \code{tvhat}.

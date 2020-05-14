@@ -1,11 +1,11 @@
 #' Pairwise Total Variation Distance Lower Bound Matrix for the Multi-Class Setting
 #'
 #' @param labels a numeric vector value. The labels of the classes, should be encoded in [0,nclass-1].
-#' @param ordering.array a numeric array of size (nclass, nclass, nobs) such that the value (i,j,k) represents a propensity of beeing of class j instead of i for observation k.
+#' @param ordering.array a numeric array of size (nclass, nclass, nobs) such that the value (i,j,k) represents a propensity of being of class j instead of i for observation k.
 #' @param alpha a numeric value. The type-I error level.
 #' @param computation.type a character value. For the moment only "non-optimized" (default) available.
 #' @param seed an integer value. The seed for reproducility.
-#' @param ... additionnal parameters to be passed to the HPLB function.
+#' @param ... additional parameters to be passed to the HPLB function.
 #'
 #' @return a numeric matrix of size (nclass, nclass) giving the matrix of pairwise total variation lower bounds.
 #'
