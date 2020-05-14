@@ -5,7 +5,7 @@
 
 ## Overview
 
-HPLB is a package intended to provided high-probability lower bounds (HPLB) for the total variance distance (TV) based on finite samples. In particular, it implements the abc and bc estimators described in [Michel et al. 2020](https://arxiv.org/abs/?). The main idea is to compute HPLBs for TV from uni-dimensional projections that would practically be obtained from standard learning algorithms. For more information  the user can refer to the original paper. Examples of use of the library are shown below.
+HPLB is a package intended to provided high-probability lower bounds (HPLB) for the total variance distance (TV) based on finite samples. In particular, it implements the abc and bc estimators described in [Michel et al. 2020](https://arxiv.org/abs/2005.06006). The main idea is to compute HPLBs for TV from uni-dimensional projections that would practically be obtained from standard learning algorithms. For more information  the user can refer to the original paper. Examples of use of the library are shown below.
 
 
 ## Installation
