@@ -8,7 +8,7 @@ HPLB(
   t,
   rho,
   s = 0.5,
-  estimator.type = "abc",
+  estimator.type = "adapt",
   alpha = 0.05,
   tv.seq = seq(from = 0, to = 1, by = 1/length(t)),
   custom.bounding.seq = NULL,
@@ -30,12 +30,12 @@ a binary classifier, a regressor, a witness function from a MMD kernel or anythi
 
 \item{estimator.type}{a character value indicating which estimator to use. One option out of:
 \itemize{
-\item{\code{abc}:}{adaptive binary classification estimator (asymptotic bounding function)}
-\item{\code{bc}:}{binary classification estimator}
-\item{\code{bc_finite_sample}:}{binary classification finite sample estimator}
-\item{\code{abc_empirical}:}{adaptive binary classification estimator (simulation-based bounding function)}
-\item{\code{abc_custom}:}{adaptive binary classificatrion estimator (user-defined bounding function)}
-\item{\code{abc_dwit}:}{adaptive binary classificatrion estimator (for distributional witnesses estimation)}
+\item{\code{adapt}:}{adaptive binary classification estimator (asymptotic bounding function)}
+\item{\code{bayes}:}{binary classification estimator}
+\item{\code{bayes_finite_sample}:}{binary classification finite sample estimator}
+\item{\code{adapt_empirical}:}{adaptive binary classification estimator (simulation-based bounding function)}
+\item{\code{adapt_custom}:}{adaptive binary classificatrion estimator (user-defined bounding function)}
+\item{\code{adapt_dwit}:}{adaptive binary classificatrion estimator (for distributional witnesses estimation)}
 }}
 
 \item{alpha}{a numeric value giving the overall type-I error control level.}
@@ -46,7 +46,7 @@ a binary classifier, a regressor, a witness function from a MMD kernel or anythi
 
 \item{direction}{a character vector value made of "left" or "right" giving which distribution witness count to estimate (t<=s or t>s?).}
 
-\item{cutoff}{a numeric value. This is the cutoff used if bc estimators are used. The theory suggests to use 1/2 but this can be changed.}
+\item{cutoff}{a numeric value. This is the cutoff used if bayes estimators are used. The theory suggests to use 1/2 but this can be changed.}
 
 \item{verbose.plot}{a boolean value for additional plots.}
 
@@ -70,7 +70,7 @@ library(distrEx)
 ## reproducibility
 set.seed(0)
 
-## Example 1: TV lower bound based on two samples (bc estimator), Gaussian mean-shift example
+## Example 1: TV lower bound based on two samples (bayes estimator), Gaussian mean-shift example
 
 n <- 1000
 means <- rep(c(0,2), each = n / 2)
@@ -83,11 +83,11 @@ bayesRate <- function(x) {
 }
 
 # estimated HPLB
-tvhat <- HPLB(t = t, rho = bayesRate(x), estimator.type = "bc")
+tvhat <- HPLB(t = t, rho = bayesRate(x), estimator.type = "bayes")
 # true TV
 TotalVarDist(e1 = Norm(2,1), e2 = Norm(0,1))
 
-## Example 2: optimal mixture detection (abc estimator), Gaussian mean-shift example
+## Example 2: optimal mixture detection (adapt estimator), Gaussian mean-shift example
 
 n <- 1000
 mean.shift <- 2
@@ -101,7 +101,7 @@ x.test <- ifelse(t.test>0.5, stats::rnorm(n, mean.shift), stats::rnorm(n))
 rho <- predict(rf, data.frame(t=t.test,x=x.test))$predictions
 
 ## out-of-sample
-tv.oos <- HPLB(t = t.test, rho = rho, s = seq(0.1,0.9,0.1), estimator.type = "abc")
+tv.oos <- HPLB(t = t.test, rho = rho, s = seq(0.1,0.9,0.1), estimator.type = "adapt")
 
 
 

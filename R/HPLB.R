@@ -9,18 +9,18 @@
 #' @param s a numeric vector value giving split points on t.
 #' @param estimator.type a character value indicating which estimator to use. One option out of:
 #'   \itemize{
-#'   \item{\code{abc}:}{adaptive binary classification estimator (asymptotic bounding function)}
-#'   \item{\code{bc}:}{binary classification estimator}
-#'   \item{\code{bc_finite_sample}:}{binary classification finite sample estimator}
-#'   \item{\code{abc_empirical}:}{adaptive binary classification estimator (simulation-based bounding function)}
-#'   \item{\code{abc_custom}:}{adaptive binary classificatrion estimator (user-defined bounding function)}
-#'   \item{\code{abc_dwit}:}{adaptive binary classificatrion estimator (for distributional witnesses estimation)}
+#'   \item{\code{adapt}:}{adaptive binary classification estimator (asymptotic bounding function)}
+#'   \item{\code{bayes}:}{binary classification estimator}
+#'   \item{\code{bayes_finite_sample}:}{binary classification finite sample estimator}
+#'   \item{\code{adapt_empirical}:}{adaptive binary classification estimator (simulation-based bounding function)}
+#'   \item{\code{adapt_custom}:}{adaptive binary classificatrion estimator (user-defined bounding function)}
+#'   \item{\code{adapt_dwit}:}{adaptive binary classificatrion estimator (for distributional witnesses estimation)}
 #'   }
 #' @param alpha a numeric value giving the overall type-I error control level.
 #' @param tv.seq a sequence of values between 0 and 1 used as the grid search for the total variation distance in case of tv-search.
 #' @param custom.bounding.seq a list of bounding functions respecting the order of tv.seq used in case of estimator.type "custom-tv-search".
 #' @param direction a character vector value made of "left" or "right" giving which distribution witness count to estimate (t<=s or t>s?).
-#' @param cutoff a numeric value. This is the cutoff used if bc estimators are used. The theory suggests to use 1/2 but this can be changed.
+#' @param cutoff a numeric value. This is the cutoff used if bayes estimators are used. The theory suggests to use 1/2 but this can be changed.
 #' @param verbose.plot a boolean value for additional plots.
 #' @param seed an integer value. The seed for reproducility.
 #' @param ... additional parameters for the function \code{empiricalBF}.
@@ -44,7 +44,7 @@
 #' ## reproducibility
 #' set.seed(0)
 #'
-#' ## Example 1: TV lower bound based on two samples (bc estimator), Gaussian mean-shift example
+#' ## Example 1: TV lower bound based on two samples (bayes estimator), Gaussian mean-shift example
 #'
 #' n <- 1000
 #' means <- rep(c(0,2), each = n / 2)
@@ -57,11 +57,11 @@
 #' }
 #'
 #' # estimated HPLB
-#' tvhat <- HPLB(t = t, rho = bayesRate(x), estimator.type = "bc")
+#' tvhat <- HPLB(t = t, rho = bayesRate(x), estimator.type = "bayes")
 #' # true TV
 #' TotalVarDist(e1 = Norm(2,1), e2 = Norm(0,1))
 #'
-#' ## Example 2: optimal mixture detection (abc estimator), Gaussian mean-shift example
+#' ## Example 2: optimal mixture detection (adapt estimator), Gaussian mean-shift example
 #'
 #' n <- 1000
 #' mean.shift <- 2
@@ -75,7 +75,7 @@
 #' rho <- predict(rf, data.frame(t=t.test,x=x.test))$predictions
 #'
 #' ## out-of-sample
-#' tv.oos <- HPLB(t = t.test, rho = rho, s = seq(0.1,0.9,0.1), estimator.type = "abc")
+#' tv.oos <- HPLB(t = t.test, rho = rho, s = seq(0.1,0.9,0.1), estimator.type = "adapt")
 #'
 #'
 #'
@@ -112,7 +112,7 @@
 HPLB <- function(t,
                  rho,
                  s                   = 0.5,
-                 estimator.type      = "abc",
+                 estimator.type      = "adapt",
                  alpha               = 0.05,
                  tv.seq              = seq(from = 0, to = 1, by = 1/length(t)),
                  custom.bounding.seq = NULL,
@@ -135,11 +135,11 @@ HPLB <- function(t,
   }
 
   # estimator.type check
-  if (!is.character(estimator.type) || !(estimator.type %in% c("abc",
-                                                               "bc",
-                                                               "bc_finite_sample",
-                                                               "abc_empirical",
-                                                               "abc_dwit"
+  if (!is.character(estimator.type) || !(estimator.type %in% c("adapt",
+                                                               "bayes",
+                                                               "bayes_finite_sample",
+                                                               "adapt_empirical",
+                                                               "adapt_dwit"
   ))) {
     stop("Invalid estimator type, please see ?HPLB.")
   }
@@ -153,11 +153,6 @@ HPLB <- function(t,
   if (!is.numeric(s) || any(!is.finite(s)) || any(s > max(t)) || any(s < min(t)) || is.matrix(s)) {
     stop("Invalid values or type for s, please see ?HPLB.")
   }
-
-  # z check
-  #if ((estimator.type == "hypergeometric-test") && (!is.numeric(z) || any(!is.finite(z)) || (length(s) != length(z)) || any(z < 0) || any(z > length(t)))) {
-  #  stop("Invalid values or type for z, please check ?HPLB.")
-  #}
 
   # rho check
   if (!is.numeric(rho) || any(!is.finite(rho))) {
@@ -183,7 +178,7 @@ HPLB <- function(t,
   }
 
   # ordering.type check
-  if (estimator.type == "bc" && ordering.type == "multiple") {
+  if (estimator.type == "bayes" && ordering.type == "multiple") {
     stop("Invalid ordering type for binomial-test estimator, please see ?HPLB.")
   }
 
@@ -198,16 +193,16 @@ HPLB <- function(t,
   }
 
   # direction check
-  if ((estimator.type == "abc_dwit") && (!is.character(direction) || !(direction %in% c("left", "right")) || (length(s) != length(direction)))) {
+  if ((estimator.type == "adapt_dwit") && (!is.character(direction) || !(direction %in% c("left", "right")) || (length(s) != length(direction)))) {
     stop("Invalid direction, please see ?HPLB.")
   }
 
   # check that with user-defined bounding sequence or empirical-tv-seach s should be uni-dim
-  if (estimator.type %in% c("abc_empirical", "abc_custom")) {
+  if (estimator.type %in% c("adapt_empirical", "adapt_custom")) {
     if (length(s) != 1) {
       stop("Incompatible value of s and estimator.type, please see ?HPLB.")
     }
-    if (estimator.type == "abc_custom") {
+    if (estimator.type == "adapt_custom") {
       if (is.null(custom.bounding.seq)) {
         stop("Invalid custom.bounding.seq, please see ?HPLB.")
       } else {
@@ -217,7 +212,7 @@ HPLB <- function(t,
       }
     }
 
-    if (estimator.type %in% c("abc_empirical")) {
+    if (estimator.type %in% c("adapt_empirical")) {
       custom.bounding.seq <- empiricalBF(tv.seq = tv.seq,
                                          alpha = alpha,
                                          m = sum(t <= s),
@@ -271,8 +266,8 @@ HPLB <- function(t,
     }
 
 
-    ## binary classifer (finite sample version of bc)
-    if (estimator.type == "bc_finite_sample") {
+    ## binary classifer (finite sample version of bayes)
+    if (estimator.type == "bayes_finite_sample") {
 
       # compute the decisions with randomization when rho is exactly 0.5
         decision <- ifelse(rho == 0.5,
@@ -305,8 +300,8 @@ HPLB <- function(t,
     }
 
 
-    ## binary classifier (bc from the paper)
-    if (estimator.type == "bc") {
+    ## binary classifier (bayes from the paper)
+    if (estimator.type == "bayes") {
 
       # compute the decisions
       decision <- ifelse(rho == 0.5,
@@ -329,13 +324,13 @@ HPLB <- function(t,
 
     }
 
-    ## estimators based on adaptive binary classification (abc)
+    ## estimators based on adaptive binary classification (adapt)
 
     # define the V function corresponding to m and z (and n and z respectively)
     V.left  <- cumsum(ranks.table$t <= s[k])
     V.right <- cumsum(rev(ranks.table$t > s[k]))
 
-    if (estimator.type == "abc") {
+    if (estimator.type == "adapt") {
 
       # recursive search
       max.stat <- 1
@@ -405,7 +400,7 @@ HPLB <- function(t,
       # return the tv LB estimate
       tvhat[k] <- tv.cur
 
-    } else if (estimator.type %in% c("abc_empirical", "abc_custom")) {
+    } else if (estimator.type %in% c("adapt_empirical", "adapt_custom")) {
 
       # recursive search
       max.stat <- 1
@@ -428,7 +423,7 @@ HPLB <- function(t,
       # return the tv LB estimate
       tvhat[k] <- tv.cur
 
-    } else if (estimator.type == "abc_wit") {
+    } else if (estimator.type == "adapt_wit") {
 
       if (direction[k] == "left") {
 
