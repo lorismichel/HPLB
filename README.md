@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/lorismichel/HPLB.svg?branch=master)](https://travis-ci.org/lorismichel/HPLB)
 [![Build status](https://ci.appveyor.com/api/projects/status/jirtk3gmc4sdp0gl?svg=true)](https://ci.appveyor.com/project/lorismichel/hplb)
+
 ## Overview
 
 HPLB is a package intended to provided high-probability lower bounds (HPLB) for the total variance distance (TV) based on finite samples. In particular, it implements the abc and bc estimators described in [Michel et al. 2020](https://arxiv.org/abs/?). The main idea is to compute HPLBs for TV from uni-dimensional projections that would practically be obtained from standard learning algorithms. For more information  the user can refer to the original paper. Examples of use of the library are shown below.
