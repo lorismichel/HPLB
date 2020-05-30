@@ -46,7 +46,7 @@
 #'
 #' ## Example 1: TV lower bound based on two samples (bayes estimator), Gaussian mean-shift example
 #'
-#' n <- 1000
+#' n <- 200
 #' means <- rep(c(0,2), each = n / 2)
 #' x <- stats::rnorm(n, mean = means)
 #' t <- rep(c(0,1), each = n / 2)
@@ -63,13 +63,13 @@
 #'
 #' ## Example 2: optimal mixture detection (adapt estimator), Gaussian mean-shift example
 #'
-#' n <- 1000
+#' n <- 200
 #' mean.shift <- 2
 #' t.train <- runif(n, 0 ,1)
 #' x.train <- ifelse(t.train>0.5, stats::rnorm(n, mean.shift), stats::rnorm(n))
 #' rf <- ranger::ranger(t~x, data.frame(t=t.train,x=x.train))
 #'
-#' n <- 1000
+#' n <- 200
 #' t.test <- runif(n, 0 ,1)
 #'x.test <- ifelse(t.test>0.5, stats::rnorm(n, mean.shift), stats::rnorm(n))
 #' rho <- predict(rf, data.frame(t=t.test,x=x.test))$predictions
