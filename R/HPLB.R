@@ -35,7 +35,7 @@
 #' L. Michel, J. Naef and N. Meinshausen (2020). High-Probability Lower Bounds for the Total Variation Distance \cr
 #'
 #' @examples
-#'
+#' \dontrun{
 #' ## libs
 #' library(HPLB)
 #' library(ranger)
@@ -107,7 +107,7 @@
 #' plot(t.test,x.test,pch=19,xlab="t",ylab="x")
 #' plot(seq(0.1,0.9,0.1), tv.oos$tvhat,type="l",ylim=c(0,1),xlab="t", ylab="TV")
 #' lines(seq(0.1,0.9,0.1), tv, col="red",type="l")
-#'
+#' }
 #' @export
 HPLB <- function(t,
                  rho,

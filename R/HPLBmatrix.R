@@ -15,6 +15,7 @@
 #' L. Michel, J. Naef and N. Meinshausen (2020). High-Probability Lower Bounds for the Total Variation Distance \cr
 #'
 #' @examples
+#' \dontrun{
 #'  # iris example
 #'  require(HPLB)
 #'  require(ranger)
@@ -43,7 +44,7 @@
 #'  # getting the lower bound matrix
 #'  tvhat.iris <- HPLBmatrix(labels = y[-ind.train], ordering.array = ar)
 #'  tvhat.iris
-#'
+#' }
 #' @export
 HPLBmatrix <- function(labels,
                        ordering.array,
