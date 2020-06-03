@@ -33,6 +33,7 @@ a numeric matrix of size (nclass, nclass) giving the matrix of pairwise total va
 Pairwise Total Variation Distance Lower Bound Matrix for the Multi-Class Setting
 }
 \examples{
+\dontrun{
  # iris example
  require(HPLB)
  require(ranger)
@@ -61,7 +62,7 @@ Pairwise Total Variation Distance Lower Bound Matrix for the Multi-Class Setting
  # getting the lower bound matrix
  tvhat.iris <- HPLBmatrix(labels = y[-ind.train], ordering.array = ar)
  tvhat.iris
-
+}
 }
 \references{
 L. Michel, J. Naef and N. Meinshausen (2020). High-Probability Lower Bounds for the Total Variation Distance \cr

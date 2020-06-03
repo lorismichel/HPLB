@@ -61,7 +61,7 @@ a \code{list} containing the relevant lower bounds estimates. For the total vari
 Implementations of different HPLBs for TV as described in (Michel et al., 2020).
 }
 \examples{
-
+\dontrun{
 ## libs
 library(HPLB)
 library(ranger)
@@ -72,7 +72,7 @@ set.seed(0)
 
 ## Example 1: TV lower bound based on two samples (bayes estimator), Gaussian mean-shift example
 
-n <- 1000
+n <- 200
 means <- rep(c(0,2), each = n / 2)
 x <- stats::rnorm(n, mean = means)
 t <- rep(c(0,1), each = n / 2)
@@ -89,13 +89,13 @@ TotalVarDist(e1 = Norm(2,1), e2 = Norm(0,1))
 
 ## Example 2: optimal mixture detection (adapt estimator), Gaussian mean-shift example
 
-n <- 1000
+n <- 200
 mean.shift <- 2
 t.train <- runif(n, 0 ,1)
 x.train <- ifelse(t.train>0.5, stats::rnorm(n, mean.shift), stats::rnorm(n))
 rf <- ranger::ranger(t~x, data.frame(t=t.train,x=x.train))
 
-n <- 1000
+n <- 200
 t.test <- runif(n, 0 ,1)
 x.test <- ifelse(t.test>0.5, stats::rnorm(n, mean.shift), stats::rnorm(n))
 rho <- predict(rf, data.frame(t=t.test,x=x.test))$predictions
@@ -133,7 +133,7 @@ par(mfrow=c(2,1))
 plot(t.test,x.test,pch=19,xlab="t",ylab="x")
 plot(seq(0.1,0.9,0.1), tv.oos$tvhat,type="l",ylim=c(0,1),xlab="t", ylab="TV")
 lines(seq(0.1,0.9,0.1), tv, col="red",type="l")
-
+}
 }
 \references{
 L. Michel, J. Naef and N. Meinshausen (2020). High-Probability Lower Bounds for the Total Variation Distance \cr
