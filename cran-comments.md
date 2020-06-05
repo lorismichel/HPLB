@@ -1,5 +1,8 @@
 ## General
-* This is the first release of the package.
+* This is the first release of the package. What was updated from last submission. 
+- extended description field
+- added back smaller examples and donttest command when too costly
+- added the resetting of par.
 
 ## Test environments
 * Local, macOS Mojave 10.14.6, R-3.5.2

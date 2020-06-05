@@ -35,7 +35,6 @@
 #' L. Michel, J. Naef and N. Meinshausen (2020). High-Probability Lower Bounds for the Total Variation Distance \cr
 #'
 #' @examples
-#' \dontrun{
 #' ## libs
 #' library(HPLB)
 #' library(ranger)
@@ -46,7 +45,7 @@
 #'
 #' ## Example 1: TV lower bound based on two samples (bayes estimator), Gaussian mean-shift example
 #'
-#' n <- 200
+#' n <- 100
 #' means <- rep(c(0,2), each = n / 2)
 #' x <- stats::rnorm(n, mean = means)
 #' t <- rep(c(0,1), each = n / 2)
@@ -63,13 +62,13 @@
 #'
 #' ## Example 2: optimal mixture detection (adapt estimator), Gaussian mean-shift example
 #'
-#' n <- 200
+#' n <- 100
 #' mean.shift <- 2
 #' t.train <- runif(n, 0 ,1)
 #' x.train <- ifelse(t.train>0.5, stats::rnorm(n, mean.shift), stats::rnorm(n))
 #' rf <- ranger::ranger(t~x, data.frame(t=t.train,x=x.train))
 #'
-#' n <- 200
+#' n <- 100
 #' t.test <- runif(n, 0 ,1)
 #'x.test <- ifelse(t.test>0.5, stats::rnorm(n, mean.shift), stats::rnorm(n))
 #' rho <- predict(rf, data.frame(t=t.test,x=x.test))$predictions
@@ -77,8 +76,7 @@
 #' ## out-of-sample
 #' tv.oos <- HPLB(t = t.test, rho = rho, s = seq(0.1,0.9,0.1), estimator.type = "adapt")
 #'
-#'
-#'
+#' \donttest{
 #' ## total variation values
 #' tv <- c()
 #' for (s in seq(0.1,0.9,0.1)) {
@@ -103,10 +101,12 @@
 #' }
 #'
 #' ## plot
+#' oldpar <- par(no.readonly =TRUE)
 #' par(mfrow=c(2,1))
 #' plot(t.test,x.test,pch=19,xlab="t",ylab="x")
 #' plot(seq(0.1,0.9,0.1), tv.oos$tvhat,type="l",ylim=c(0,1),xlab="t", ylab="TV")
 #' lines(seq(0.1,0.9,0.1), tv, col="red",type="l")
+#' par(oldpar)
 #' }
 #' @export
 HPLB <- function(t,
